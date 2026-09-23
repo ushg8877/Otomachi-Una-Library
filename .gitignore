@@ -1,0 +1,19 @@
+# Build products and local scratch files
+*.exe
+*.bin
+*.o
+*.obj
+*.aux
+*.log
+*.out
+*.toc
+*.synctex*
+__pycache__/
+manual/*_build*
+manual/input.txt
+manual/output.txt
+manual/test.cpp
+manual/a.cpp
+manual/Jul3rd.zip
+manual/generated/
+manual/generated-handbook.*

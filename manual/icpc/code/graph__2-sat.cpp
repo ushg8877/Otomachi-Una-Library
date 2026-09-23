@@ -1,0 +1,46 @@
+struct two_sat{
+int tot=0,scnt=0,top=0,n=0;
+vector<int> low,dfn,stk,bel;
+vector<vector<int>> edg;vector<char> inq;
+void init(){set_n(0);}
+void set_n(int _n){
+	// 1-index, 2i-1 true 2i false
+	assert(0<=_n&&_n<(INT_MAX-2)/2);n=_n;
+	low.assign(2*n+2,0);dfn.assign(2*n+2,0);stk.assign(2*n+2,0);
+	bel.assign(2*n+2,0);inq.assign(2*n+2,0);edg.assign(2*n+2,{});
+	tot=scnt=top=0;
+}
+void tarjan(int u){
+	low[u]=dfn[u]=++tot;stk[++top]=u;inq[u]=true;
+	for(int v:edg[u]){
+		if(!dfn[v]) tarjan(v),low[u]=min(low[u],low[v]);
+		else if(inq[v]) low[u]=min(low[u],dfn[v]);
+	} 
+	if(low[u]==dfn[u]){
+		++scnt;
+		while(1){
+			int v=stk[top--];
+			inq[v]=false;
+			bel[v]=scnt;
+			if(v==u)break;
+		}
+	}
+}
+vector<int> solve(){
+	// if impossible return empty
+	// else return a vector with length n+1, the a[i] - any valid answer
+	tot=scnt=top=0;
+	for(int i=1;i<=2*n;i++) low[i]=dfn[i]=bel[i]=inq[i]=0;
+	for(int i=1;i<=2*n;i++) if(!dfn[i]) tarjan(i); 
+	for(int i=1;i<=n;i++) if(bel[2*i-1]==bel[2*i]) return {};
+	vector<int> ans(n+1);
+	for(int i=1;i<=n;i++) ans[i]=bel[2*i-1]<bel[2*i];
+	return ans;
+}
+void add(int x1,int o1,int x2,int o2){
+	// x1 = o1 or x2 = o2
+	assert(1<=min(x1,x2)&&max(x1,x2)<=n&&0<=min(o1,o2)&&max(o1,o2)<=1);
+	edg[2*x1-(!o1)].push_back(2*x2-o2);
+	edg[2*x2-(!o2)].push_back(2*x1-o1);
+}
+};
