@@ -1,4 +1,4 @@
-# ushg8877
+# Otomachi Una Library
 
 Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 
