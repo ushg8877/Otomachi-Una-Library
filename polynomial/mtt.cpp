@@ -1,15 +1,17 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ModInt, use x.pow(k) / x.inv()
-// version 2.0 (Last Update Jun 13th, 2026)
+// template for MTT with runtime modulus
 //
 // usage:
-//   init(n); mint a,b; C(n,k); MOD=1e9+7
+//   mint::setM(mod); poly h=f*g; // 2<=mod<=INT_MAX
+//   init(n); C(n,k); // setM clears fac / ifac / inv
 //
 ////////////////////////////////////////////////////////////////
 template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-static_assert(1<MOD&&MOD<=INT_MAX);
+static_assert(_M==0||(1<_M&&_M<=INT_MAX));
+static inline conditional_t<_M==0,unsigned,const unsigned> MOD=_M?_M:1000000007;
+static inline unsigned long long NEG_INV_M=-1ULL/MOD;
+static void setM(unsigned m);
 unsigned x;
 constexpr ModInt():x(0){}
 constexpr ModInt(unsigned y):x(y%MOD){}
@@ -18,7 +20,15 @@ constexpr ModInt(unsigned long long y):x(y%MOD){}
 constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
 ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
 ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
+ModInt& operator *=(const ModInt &a){
+	unsigned long long v=(unsigned long long)x*a.x;
+	if constexpr(_M)x=v%MOD;
+	else{
+		unsigned long long q=(__uint128_t)NEG_INV_M*v>>64,r=v-q*MOD;
+		x=r-MOD*(r>=MOD);
+	}
+	return *this;
+}
 ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
 bool operator ==(const ModInt &a)const{return x==a.x;}
 bool operator !=(const ModInt &a)const{return x!=a.x;}
@@ -60,21 +70,23 @@ friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
 ////////////////////////////////////////////////////////////////////
 // Basic function, fac, ifac, binom
 // init(n) prepares fac / ifac / inv through n
-const int MOD=1e9+7;
-using mint=ModInt<MOD>;
+using mint=ModInt<0>;
+const unsigned &MOD=mint::MOD;
 using poly=vector<mint>;
 using Poly=poly;
 vector<mint> fac{1},ifac{1},inv{0,1};
+template<unsigned _M> void ModInt<_M>::setM(unsigned m){
+	static_assert(_M==0,"only the target modulus can change");
+	assert(1<m&&m<=INT_MAX);MOD=m;NEG_INV_M=-1ULL/m;
+	fac.assign(1,1);ifac.assign(1,1);::inv={0,1};
+}
 void init(int n=0){
-	assert(0<=n&&n<MOD);
+	assert(0<=n&&(unsigned)n<MOD);
 	int m=fac.size();if(n<m)return;
-	n=max(n,(int)min(2ll*m,(ll)MOD-1));
 	fac.resize(n+1);ifac.resize(n+1);inv.resize(max(n+1,2));
-	for(int i=m;i<=n;i++){
-		fac[i]=fac[i-1]*i;
-		if(i>1)inv[i]=-(MOD/i)*inv[MOD%i];
-		ifac[i]=ifac[i-1]*inv[i];
-	}
+	for(int i=m;i<=n;i++)fac[i]=fac[i-1]*i;
+	ifac[n]=fac[n].inv();
+	for(int i=n;i>=m;i--){ifac[i-1]=ifac[i]*i;inv[i]=ifac[i]*fac[i-1];}
 }
 inline mint C(int x,int y){
 	// choose x from y
@@ -89,7 +101,9 @@ inline mint binom(int y,int x){return C(x,y);}
 // usage:
 //   poly h=f*g; Inv(f); Ln(f); Exp(f);
 //   diff, integ, value, BM, FSPE, RSPE, lagrange;
-//   MOD is prime; Ln needs f[0]=1, Exp needs f[0]=0
+//   Multiplication allows composite moduli; division requires a unit.
+//   init(n) needs gcd(n!,MOD)=1; Ln / Exp need 1..n-1 invertible.
+//   Ln needs f[0]=1, Exp needs f[0]=0
 //   convolution length <= 2^23; FPS length <= 2^22
 //
 ////////////////////////////////////////////////////////////////
@@ -373,4 +387,4 @@ poly lagrange(const vector<mint> &x,const vector<mint> &y){
 }
 // end for polynomial/mtt.cpp
 /////////////////////////
-// !!!!! Choose only one polynomial implementation; it already defines modular arithmetic. Check constant terms before inv/ln/exp and the transform size limit. !!!!
+// !!!!! Call mint::setM(mod) before constructing polynomials; changing mod invalidates old values and clears tables. Do not paste another mint. Division requires invertible divisors; check Ln/Exp constant terms and length limits. !!!!

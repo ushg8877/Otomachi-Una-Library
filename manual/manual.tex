@@ -1403,10 +1403,11 @@ c=convolution_xor(a,b); assert((c==vector<int>{11,10}));
 \subsection{\texttt{polynomial/mtt.cpp}}
 \textbf{非 NTT 模数下的多项式}
 
-\TemplUsage{默认目标模数 10\textasciicircum{}9+7，三模 NTT 后 CRT 还原；常用 FPS 功能与 poly-fast 对齐，但每次卷积都会回到目标模数。}
+\TemplUsage{目标模数运行时设置，三模 NTT 后 CRT 还原。卷积支持 2 至 INT\_MAX 之间的任意模数，包括合数；常用 FPS 功能与 ntt-fast 对齐。}
 \TemplApi{\begin{itemize}
+\item 先调用 \texttt{mint::setM(mod)}，再创建多项式。切换模数会清空 fac/ifac/inv，旧 mint 和 poly 值失效；同一时刻使用一个目标模数。
 \item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
+\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须在目标模数下可逆。
 \item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
 \item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
 \item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
@@ -1414,6 +1415,7 @@ c=convolution_xor(a,b); assert((c==vector<int>{11,10}));
 \end{itemize}}
 \textbf{最小示例（放入 main）：}
 \begin{lstlisting}
+mint::setM(1000000007);
 poly f{1,1,0,0};
 auto g=Inv(f); auto h=f*g; h.resize(4);
 assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
@@ -1423,7 +1425,7 @@ assert(FSPE({0,1},{1,-1,-1},10).x==55);
 auto p=lagrange({0,1,2},{1,4,9});
 assert(p[0].x==1 && p[1].x==2 && p[2].x==1);
 \end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度还要小于目标质数。没有 poly-new 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
+\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度 n 还要小于模数，且 1..n-1 均可逆。init(n) 要求 n! 可逆，integ(f) 要求 1..f.size() 可逆；使用质数模数且次数小于模数即可满足这些条件。BM、递推求值和插值中的除数也必须可逆；合数模数下仅仅非零或取值点互异不足以保证这一点。没有 poly-new 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
 \end{minipage}\par\vspace{1.2em}
 \noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{polynomial/ntt-fast.cpp}}
