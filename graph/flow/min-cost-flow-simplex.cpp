@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for min cost max flow (network simplex)
 //
@@ -9,7 +9,7 @@
 //   setN clears the graph; editing the graph makes the next solve start over
 //   flow and cost must fit ll; potentials use ll when safe, otherwise __int128
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 struct Cost_Flow_Graph{
 private:
 struct edge{int u,v;ll w,c;};
@@ -125,4 +125,5 @@ pair<ll,ll> min_cost_flow(){
 };
 // end for graph/flow/min-cost-flow-simplex.cpp
 /////////////////////////
-// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative cost cycle; flow and total cost must fit ll. !!!!
+// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative
+// cost cycle; flow and total cost must fit ll. !!!!

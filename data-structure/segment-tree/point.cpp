@@ -142,4 +142,5 @@ int find_last(ll x){
 #undef USE_COMPARE
 // end for data-structure/segment-tree/point.cpp
 /////////////////////////
-// !!!!! Edit info for the problem; find_first/last require monotonicity; only paste one segt variant. !!!!
+// !!!!! Edit info for the problem; find_first/last require monotonicity; only
+// paste one segt variant. !!!!

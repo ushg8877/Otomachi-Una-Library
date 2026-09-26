@@ -36,4 +36,5 @@ bool contains(vector<T> x)const{
 };
 // end for math/linear-basis/field.cpp
 /////////////////////////
-// !!!!! T must be an exact field type, e.g. mint from math/mod-int.cpp; coordinates are 0..n-1. !!!!
+// !!!!! T must be an exact field type, e.g. mint from math/mod-int.cpp;
+// coordinates are 0..n-1. !!!!

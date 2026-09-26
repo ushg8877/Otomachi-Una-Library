@@ -19,4 +19,5 @@ void roll_back(int t){
 }
 // end for data-structure/rollback-int.cpp
 /////////////////////////
-// !!!!! Do not paste both rollback variants; saved elements must keep their addresses until roll_back(). !!!!
+// !!!!! Do not paste both rollback variants; saved elements must keep their
+// addresses until roll_back(). !!!!

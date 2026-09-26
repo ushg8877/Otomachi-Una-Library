@@ -109,4 +109,5 @@ result build(const vector<int> &v){
 };
 // end for tree/divide-combine-tree.cpp
 /////////////////////////
-// !!!!! Paste data-structure/linear-rmq.cpp first; input must be a permutation of 1..n. !!!!
+// !!!!! Paste data-structure/linear-rmq.cpp first; input must be a permutation
+// of 1..n. !!!!

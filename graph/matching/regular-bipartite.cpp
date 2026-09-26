@@ -102,4 +102,5 @@ vector<vector<int>> solve()const{
 };
 // end for graph/matching/regular-bipartite.cpp
 /////////////////////////
-// !!!!! Both sides must have the same size and every vertex the same degree; parallel edges count separately. !!!!
+// !!!!! Both sides must have the same size and every vertex the same degree;
+// parallel edges count separately. !!!!

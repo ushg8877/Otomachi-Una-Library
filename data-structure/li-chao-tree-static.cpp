@@ -80,4 +80,7 @@ void add(int i,F f){
 };
 // end for data-structure/li-chao-tree-static.cpp
 /////////////////////////
-// !!!!! F needs value_type and const operator()(ll). Pairwise preference must switch at most once on the domain. Default F must be no better than any valid function; ties may return either. Compressed queries must belong to X; intervals and setRange use [l,r). All evaluations must fit value_type. !!!!
+// !!!!! F needs value_type and const operator()(ll). Pairwise preference must
+// switch at most once on the domain. Default F must be no better than any valid
+// function; ties may return either. Compressed queries must belong to X;
+// intervals and setRange use [l,r). All evaluations must fit value_type. !!!!

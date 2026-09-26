@@ -5,7 +5,8 @@
 //   Directed_MST g; g.setN(n); g.add_edge(u,v,w); auto a=g.solve(S);
 //   a.ok; a.cost; a.id[v] is the incoming edge of v, a.id[S]=0.
 //   Vertices / edge ids are 1-indexed; edges point away from the root S.
-//   Negative weights / parallel edges / loops are allowed. No solution: ok=false.
+//   Negative weights / parallel edges / loops are allowed. No solution:
+//   ok=false.
 //   O((n+m)*log(n+1)) time, O(n+m) space; cost uses __int128.
 //
 ////////////////////////////////////////////////////////////////
@@ -100,4 +101,5 @@ result solve(int S)const{
 };
 // end for graph/directed-mst.cpp
 /////////////////////////
-// !!!!! The result cost is __int128; basic/fast-io.cpp provides decimal IO if needed. !!!!
+// !!!!! The result cost is __int128; basic/fast-io.cpp provides decimal IO if
+// needed. !!!!

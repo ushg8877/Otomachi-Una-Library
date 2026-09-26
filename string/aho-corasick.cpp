@@ -56,4 +56,5 @@ vector<ll> count(const string &s)const{
 };
 // end for string/aho-corasick.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; insert every pattern before build(). !!!!
+// !!!!! Leading space and lowercase letters; insert every pattern before
+// build(). !!!!

@@ -30,4 +30,5 @@ inline int merge(int x,int y){
 };
 // end for data-structure/disjoint-set-rollback.cpp
 /////////////////////////
-// !!!!! Paste data-structure/rollback-int.cpp first; saved elements must keep their addresses until roll_back(). !!!!
+// !!!!! Paste data-structure/rollback-int.cpp first; saved elements must keep
+// their addresses until roll_back(). !!!!

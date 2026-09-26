@@ -119,4 +119,5 @@ void output(){
 };
 // end for tree/heavy-light-decomposition.cpp
 /////////////////////////
-// !!!!! Call setN() and build() before queries; do not paste with the other Tree definition. !!!!
+// !!!!! Call setN() and build() before queries; do not paste with the other
+// Tree definition. !!!!

@@ -150,4 +150,5 @@ inline ld min_cross(const vector<Point> &I,ld x,ld y){
 }
 // end for geometry/geometry-2d.cpp
 /////////////////////////
-// !!!!! Requires ll and using ld=long double; choose eps and numeric range for the problem. !!!!
+// !!!!! Requires ll and using ld=long double; choose eps and numeric range for
+// the problem. !!!!

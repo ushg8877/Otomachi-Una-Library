@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for Single-source shortest path
 // last update Jun 23rd, 2026
@@ -7,7 +7,7 @@
 //   graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
 //   auto d = G.SSSP();  // unreachable 1e18, non-negative weights
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 struct graph_SSSP{
 private:
 int n=0,s=0;
@@ -40,4 +40,5 @@ vector<ll> SSSP(){
 };
 // end for graph/dijkstra.cpp
 /////////////////////////
-// !!!!! Edge weights must be nonnegative; finite distances must be below the INF sentinel. !!!!
+// !!!!! Edge weights must be nonnegative; finite distances must be below the
+// INF sentinel. !!!!

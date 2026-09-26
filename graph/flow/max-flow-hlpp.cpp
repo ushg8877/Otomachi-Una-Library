@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for max flow (highest label push-relabel)
 //
@@ -10,7 +10,7 @@
 //   Excess is returned to S, so edge_flow gives a feasible flow.
 //   Capacities and total flow must fit ll; excess uses __int128.
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 struct Flow_Graph{
 private:
 
@@ -148,4 +148,5 @@ ll max_flow(){
 };
 // end for graph/flow/max-flow-hlpp.cpp
 /////////////////////////
-// !!!!! Capacities and total flow must fit ll; setN clears the residual graph. !!!!
+// !!!!! Capacities and total flow must fit ll; setN clears the residual graph.
+// !!!!

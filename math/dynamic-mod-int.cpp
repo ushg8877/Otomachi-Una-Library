@@ -100,4 +100,5 @@ inline mint C(int x,int y){
 inline mint binom(int y,int x){return C(x,y);}
 // end for math/dynamic-mod-int.cpp
 /////////////////////////
-// !!!!! Call mint::setM first; changing the modulus invalidates old values and factorial tables; choose only one mint definition. !!!!
+// !!!!! Call mint::setM first; changing the modulus invalidates old values and
+// factorial tables; choose only one mint definition. !!!!

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for minimum Steiner tree
 //
@@ -10,7 +10,7 @@
 //   Weights and finite answer must be less than LLONG_MAX.
 //   O(n*3^k+m*log(m+2)*2^k) time, O(n*2^k+n+m) space.
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 struct Steiner_Tree{
 private:
 static constexpr ll inf=LLONG_MAX;
@@ -58,4 +58,5 @@ ll solve(vector<int> s)const{
 };
 // end for graph/steiner-tree.cpp
 /////////////////////////
-// !!!!! Undirected nonnegative weights; memory is O(n*2^k+n+m), so the number of terminals must be small. !!!!
+// !!!!! Undirected nonnegative weights; memory is O(n*2^k+n+m), so the number
+// of terminals must be small. !!!!

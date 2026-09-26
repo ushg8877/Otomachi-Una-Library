@@ -63,4 +63,5 @@ void tell(int res){
 };
 // end for number-theory/stern-brocot.cpp
 /////////////////////////
-// !!!!! Paste math/rational.cpp first. tell(-1/0/1) describes the last ask() result, not the target; l/r with q=0 are sentinels. !!!!
+// !!!!! Paste math/rational.cpp first. tell(-1/0/1) describes the last ask()
+// result, not the target; l/r with q=0 are sentinels. !!!!

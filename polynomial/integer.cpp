@@ -7,7 +7,8 @@
 //   recurrence(a,c,i); // a[n]=sum c[j]*a[n-1-j], a.size()==c.size()
 //   RSPE(a,i); // infer from samples; at least 2*d terms for order d
 //   Indices start at 0; the true returned coefficients / term must fit ll.
-//   Fast NTT core from ntt-fast.cpp; three-prime CRT; convolution O(n log n), length <= 2^23.
+//   Fast NTT core from ntt-fast.cpp; three-prime CRT; convolution O(n log n),
+//   length <= 2^23.
 //   Recurrence O(d log(d+1) log(i+1)); RSPE also needs O(a.size()*d).
 //
 ////////////////////////////////////////////////////////////////
@@ -221,4 +222,7 @@ ll RSPE(const poly &a,ll k){
 }
 // end for polynomial/integer.cpp
 /////////////////////////
-// !!!!! Choose one poly implementation. True returned values must fit ll; CRT assertions cannot detect every overflow. RSPE needs enough samples of an integer-coefficient linear recurrence; internal intermediates need not fit ll. !!!!
+// !!!!! Choose one poly implementation. True returned values must fit ll; CRT
+// assertions cannot detect every overflow. RSPE needs enough samples of an
+// integer-coefficient linear recurrence; internal intermediates need not fit
+// ll. !!!!

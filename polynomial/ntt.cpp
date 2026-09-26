@@ -165,7 +165,8 @@ void invFft(mint *as, int n) {
 		mint prod = 1U;
 		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
 			for (int i = i0; i < i0 + m; ++i) {
-				const unsigned long long y = as[i].x + MO - as[i + m].x;	// < 2 MO
+				// < 2 MO
+				const unsigned long long y = as[i].x + MO - as[i + m].x;
 				as[i].x += as[i + m].x;	// < 2 MO
 				as[i + m].x = (prod.x * y) % MO;	// < MO
 			}
@@ -177,13 +178,16 @@ void invFft(mint *as, int n) {
 		mint prod = 1U;
 		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
 			for (int i = i0; i < i0 + (m >> 1); ++i) {
-				const unsigned long long y = as[i].x + MO2 - as[i + m].x;	// < 4 MO
+				// < 4 MO
+				const unsigned long long y = as[i].x + MO2 - as[i + m].x;
 				as[i].x += as[i + m].x;	// < 4 MO
-				as[i].x = (as[i].x >= MO2) ? (as[i].x - MO2) : as[i].x;	// < 2 MO
+				// < 2 MO
+				as[i].x = (as[i].x >= MO2) ? (as[i].x - MO2) : as[i].x;
 				as[i + m].x = (prod.x * y) % MO;	// < MO
 			}
 			for (int i = i0 + (m >> 1); i < i0 + m; ++i) {
-				const unsigned long long y = as[i].x + MO - as[i + m].x;	// < 2 MO
+				// < 2 MO
+				const unsigned long long y = as[i].x + MO - as[i + m].x;
 				as[i].x += as[i + m].x;	// < 2 MO
 				as[i + m].x = (prod.x * y) % MO;	// < MO
 			}
@@ -513,4 +517,6 @@ poly S2line(int n){
 }
 // end for polynomial/ntt.cpp
 /////////////////////////
-// !!!!! Choose only one polynomial implementation; it already defines modular arithmetic. Check constant terms before inv/ln/exp and the transform size limit. !!!!
+// !!!!! Choose only one polynomial implementation; it already defines modular
+// arithmetic. Check constant terms before inv/ln/exp and the transform size
+// limit. !!!!

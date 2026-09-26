@@ -37,4 +37,5 @@ friend ostream& operator<<(ostream &o,Rat a){return o<<a.p<<'/'<<a.q;}
 };
 // end for math/rational.cpp
 /////////////////////////
-// !!!!! Requires ll; inputs and reduced results must fit ll, q must be positive after reduction. Do not modify p/q directly. !!!!
+// !!!!! Requires ll; inputs and reduced results must fit ll, q must be positive
+// after reduction. Do not modify p/q directly. !!!!

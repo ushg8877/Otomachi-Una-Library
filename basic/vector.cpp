@@ -61,4 +61,7 @@ template<typename T> vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 }
 // end for basic/vector.cpp
 /////////////////////////
-// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices. vunique sorts first. Operators take a scalar on the right; ^ means bitwise xor. vmap / scalar operations infer the result type from the expression; arithmetic must not overflow. !!!!
+// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices. vunique sorts
+// first. Operators take a scalar on the right; ^ means bitwise xor. vmap /
+// scalar operations infer the result type from the expression; arithmetic must
+// not overflow. !!!!

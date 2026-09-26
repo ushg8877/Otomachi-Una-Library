@@ -73,4 +73,5 @@ int pop(){
 };
 // end for data-structure/priority-queue-two-stacks.cpp
 /////////////////////////
-// !!!!! Requires chkmin from basic/template.cpp; call prep() before each query. !!!!
+// !!!!! Requires chkmin from basic/template.cpp; call prep() before each query.
+// !!!!

@@ -31,4 +31,5 @@ ll ask(ll x)const{
 };
 // end for data-structure/fenwick/min.cpp
 /////////////////////////
-// !!!!! upd is chmin; arbitrary assignment and interval subtraction are not supported. !!!!
+// !!!!! upd is chmin; arbitrary assignment and interval subtraction are not
+// supported. !!!!

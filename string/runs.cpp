@@ -43,4 +43,5 @@ vector<array<int,3>> build(const string &s)const{
 };
 // end for string/runs.cpp
 /////////////////////////
-// !!!!! Paste data-structure/linear-rmq.cpp, then string/suffix-array.cpp; leading space, bytes 1..255. !!!!
+// !!!!! Paste data-structure/linear-rmq.cpp, then string/suffix-array.cpp;
+// leading space, bytes 1..255. !!!!

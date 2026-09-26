@@ -65,4 +65,5 @@ ll ask(int x){return ask(x,x);}
 };
 // end for data-structure/segment-tree/range-add-min.cpp
 /////////////////////////
-// !!!!! Requires chkmin from basic/template.cpp; check the initial leaf value before range additions. !!!!
+// !!!!! Requires chkmin from basic/template.cpp; check the initial leaf value
+// before range additions. !!!!

@@ -74,4 +74,5 @@ void merge(int &x,int &y){
 };
 // end for data-structure/segment-tree/merge.cpp
 /////////////////////////
-// !!!!! merge consumes the merged roots; do not reuse the old separate trees. !!!!
+// !!!!! merge consumes the merged roots; do not reuse the old separate trees.
+// !!!!

@@ -42,4 +42,5 @@ T operator [](int x)const{
 };
 // end for basic/coordinate-compression.cpp
 /////////////////////////
-// !!!!! Call set() before reuse; build() after inserting new values renumbers the coordinates. !!!!
+// !!!!! Call set() before reuse; build() after inserting new values renumbers
+// the coordinates. !!!!

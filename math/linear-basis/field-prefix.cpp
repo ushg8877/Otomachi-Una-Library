@@ -45,4 +45,5 @@ bool contains(vector<T> x,int l=1)const{
 };
 // end for math/linear-basis/field-prefix.cpp
 /////////////////////////
-// !!!!! Requires an exact field type; ids must be positive and strictly increasing; a dependent insertion may remove its own id. !!!!
+// !!!!! Requires an exact field type; ids must be positive and strictly
+// increasing; a dependent insertion may remove its own id. !!!!

@@ -31,4 +31,5 @@ ull ask(ull x=0)const{
 };
 // end for math/linear-basis/xor.cpp
 /////////////////////////
-// !!!!! Inserted values must fit m bits; setM clears the basis. ask(x) keeps bits above m unchanged. !!!!
+// !!!!! Inserted values must fit m bits; setM clears the basis. ask(x) keeps
+// bits above m unchanged. !!!!

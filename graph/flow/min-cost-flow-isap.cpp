@@ -1,18 +1,19 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for min cost max flow (potential + dijkstra + ISAP)
 //
 // usage:
 //   Cost_Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap,cost);
 //   auto [flow,cost]=g.min_cost_flow(); g.edge_flow(id);
-//   Alternative to min-cost-flow-simplex.cpp; use only one of the two templates.
+//   Alternative to min-cost-flow-simplex.cpp; use only one of the two
+//   templates.
 //   Negative costs allowed, input graph must have no negative cost cycle.
 //   Editing the graph makes the next solve start over.
 //   Flow and intermediate total cost must fit ll; distances use __int128.
 //   Initial SPFA: O(n*m); each cost phase:
 //   O(n*n*m+(n+m)*log(n+m+2)), O(n+m) space.
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 struct Cost_Flow_Graph{
 private:
 static constexpr __int128 inf=(__int128)1<<120;
@@ -168,4 +169,5 @@ pair<ll,ll> min_cost_flow(){
 };
 // end for graph/flow/min-cost-flow-isap.cpp
 /////////////////////////
-// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative cost cycle; flow and total cost must fit ll. !!!!
+// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative
+// cost cycle; flow and total cost must fit ll. !!!!

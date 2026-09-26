@@ -42,4 +42,6 @@ ull ask(ull x=0,int l=1)const{
 };
 // end for math/linear-basis/xor-prefix.cpp
 /////////////////////////
-// !!!!! Inserted values must fit m bits; setM clears the basis and ids. Ids must be positive and strictly increasing; a dependent insertion may remove its own id. !!!!
+// !!!!! Inserted values must fit m bits; setM clears the basis and ids. Ids
+// must be positive and strictly increasing; a dependent insertion may remove
+// its own id. !!!!

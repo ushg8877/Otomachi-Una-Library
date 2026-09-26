@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 //
 // template for FWT and bitwise convolution
 //
@@ -10,7 +10,7 @@
 //   transform size must be a positive power of 2
 //   integer intermediates must fit the type; mint XOR needs inverse of 2
 //
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 template<typename T>
 void fwt_and(vector<T> &a,bool inverse=false){
 	assert(!a.empty()&&a.size()<=INT_MAX&&!(a.size()&(a.size()-1)));
@@ -90,4 +90,5 @@ vector<T> convolution_xor(vector<T> a,vector<T> b){
 }
 // end for polynomial/fwt.cpp
 /////////////////////////
-// !!!!! Transform length must be a power of two; integer intermediates must fit T; mint XOR requires 2 to be invertible. !!!!
+// !!!!! Transform length must be a power of two; integer intermediates must fit
+// T; mint XOR requires 2 to be invertible. !!!!

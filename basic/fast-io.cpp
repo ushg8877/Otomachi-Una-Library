@@ -90,4 +90,6 @@ ostream& operator<<(ostream &o,lll x){
 }
 // end for basic/fast-io.cpp
 /////////////////////////
-// !!!!! GNU C++17; integer input must fit T. Do not mix input/output with cin/cout on the same stream; call output.flush() and fflush(stdout) before interactive reads. !!!!
+// !!!!! GNU C++17; integer input must fit T. Do not mix input/output with
+// cin/cout on the same stream; call output.flush() and fflush(stdout) before
+// interactive reads. !!!!

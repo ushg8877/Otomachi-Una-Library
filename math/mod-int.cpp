@@ -94,4 +94,5 @@ inline mint Apple_in_Box(int n,int m,int k){
 }
 // end for math/mod-int.cpp
 /////////////////////////
-// !!!!! Choose only one mint definition; division requires an invertible divisor, factorial formulas require a suitable prime modulus. !!!!
+// !!!!! Choose only one mint definition; division requires an invertible
+// divisor, factorial formulas require a suitable prime modulus. !!!!

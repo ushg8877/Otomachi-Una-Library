@@ -47,4 +47,5 @@ int solve(){
 };
 // end for math/xor-equations.cpp
 /////////////////////////
-// !!!!! Uses GNU libstdc++ bitset extensions; variables are ll and coordinates are 0..n-1. !!!!
+// !!!!! Uses GNU libstdc++ bitset extensions; variables are ll and coordinates
+// are 0..n-1. !!!!

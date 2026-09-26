@@ -67,4 +67,5 @@ T det(vector<vector<T>> a)const{
 };
 // end for math/gaussian-elimination.cpp
 /////////////////////////
-// !!!!! Gauss<mint> needs a field type such as math/mod-int.cpp; floating point results depend on eps. !!!!
+// !!!!! Gauss<mint> needs a field type such as math/mod-int.cpp; floating point
+// results depend on eps. !!!!

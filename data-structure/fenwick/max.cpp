@@ -31,4 +31,5 @@ ll ask(ll x)const{
 };
 // end for data-structure/fenwick/max.cpp
 /////////////////////////
-// !!!!! upd is chmax; arbitrary assignment and interval subtraction are not supported. !!!!
+// !!!!! upd is chmax; arbitrary assignment and interval subtraction are not
+// supported. !!!!

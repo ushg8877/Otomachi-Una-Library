@@ -73,4 +73,5 @@ __int128 sum_phi(ll n){
 };
 // end for number-theory/dujiao-sieve.cpp
 /////////////////////////
-// !!!!! Call init_mu/init_phi for the needed function; sum_phi returns __int128, basic/fast-io.cpp provides decimal IO. !!!!
+// !!!!! Call init_mu/init_phi for the needed function; sum_phi returns
+// __int128, basic/fast-io.cpp provides decimal IO. !!!!

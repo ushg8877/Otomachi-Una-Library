@@ -387,4 +387,7 @@ poly lagrange(const vector<mint> &x,const vector<mint> &y){
 }
 // end for polynomial/mtt.cpp
 /////////////////////////
-// !!!!! Call mint::setM(mod) before constructing polynomials; changing mod invalidates old values and clears tables. Do not paste another mint. Division requires invertible divisors; check Ln/Exp constant terms and length limits. !!!!
+// !!!!! Call mint::setM(mod) before constructing polynomials; changing mod
+// invalidates old values and clears tables. Do not paste another mint. Division
+// requires invertible divisors; check Ln/Exp constant terms and length limits.
+// !!!!

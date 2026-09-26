@@ -128,4 +128,5 @@ int ask(int i,int j)const{return lcs(i,j);}
 };
 // end for string/suffix-array.cpp
 /////////////////////////
-// !!!!! Paste data-structure/linear-rmq.cpp first; leading space, bytes in [1,M); LCS indices are prefix endpoints. !!!!
+// !!!!! Paste data-structure/linear-rmq.cpp first; leading space, bytes in
+// [1,M); LCS indices are prefix endpoints. !!!!

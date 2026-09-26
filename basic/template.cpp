@@ -82,7 +82,7 @@ inline int first_bit(ull x){assert(x);return __builtin_ctzll(x);}
 inline int popc(ull x){return __builtin_popcountll(x);}
 template<typename A,typename B> inline bool chkmax(A &x,const B &y){if(x<y){x=y;return true;}return false;}
 template<typename A,typename B> inline bool chkmin(A &x,const B &y){if(x>y){x=y;return true;}return false;}
-///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 int main(){
 	#ifdef LOCAL
 		if(!freopen("Otomachi_Una.in","r",stdin)) return 1;
@@ -93,4 +93,5 @@ int main(){
 }
 // end for basic/template.cpp
 /////////////////////////
-// !!!!! LOCAL enables Otomachi_Una.in/out; DEBUG enables cerr/debug. first_bit/last_bit require nonzero arguments. !!!!
+// !!!!! LOCAL enables Otomachi_Una.in/out; DEBUG enables cerr/debug.
+// first_bit/last_bit require nonzero arguments. !!!!

@@ -52,4 +52,5 @@ vector<array<int,3>> insert(int l,int r,int c){
 };
 // end for data-structure/ordered-disjoint-interval-tree-fast.cpp
 /////////////////////////
-// !!!!! Paste data-structure/fast-set.cpp first, with the helpers from basic/template.cpp. !!!!
+// !!!!! Paste data-structure/fast-set.cpp first, with the helpers from
+// basic/template.cpp. !!!!

@@ -406,4 +406,6 @@ poly lagrange(vector<mint> x,vector<mint> y){
 // use init(n) before accessing fac / ifac / inv directly
 // end for polynomial/ntt-fast.cpp
 /////////////////////////
-// !!!!! Choose only one polynomial implementation; it already defines modular arithmetic. Check constant terms before inv/ln/exp and the transform size limit. !!!!
+// !!!!! Choose only one polynomial implementation; it already defines modular
+// arithmetic. Check constant terms before inv/ln/exp and the transform size
+// limit. !!!!

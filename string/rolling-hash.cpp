@@ -74,4 +74,5 @@ vector<Hash> Hash_of(const string &s) {
 }
 // end for string/rolling-hash.cpp
 /////////////////////////
-// !!!!! Call init_hash() first; hashing has collision risk; rnd may conflict with other templates. !!!!
+// !!!!! Call init_hash() first; hashing has collision risk; rnd may conflict
+// with other templates. !!!!

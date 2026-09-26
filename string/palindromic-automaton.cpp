@@ -51,4 +51,5 @@ vector<int> count()const{
 };
 // end for string/palindromic-automaton.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; nodes 0 and 1 are virtual roots. !!!!
+// !!!!! Leading space and lowercase letters; nodes 0 and 1 are virtual roots.
+// !!!!

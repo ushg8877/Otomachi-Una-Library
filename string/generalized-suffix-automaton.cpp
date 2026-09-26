@@ -79,4 +79,5 @@ ll distinct()const{
 };
 // end for string/generalized-suffix-automaton.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; insert every string before build(). !!!!
+// !!!!! Leading space and lowercase letters; insert every string before
+// build(). !!!!

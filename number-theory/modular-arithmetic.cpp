@@ -63,4 +63,5 @@ inline COE operator +(const COE &x)const{
 };
 // end for number-theory/modular-arithmetic.cpp
 /////////////////////////
-// !!!!! CRT results may use __int128; basic/fast-io.cpp provides decimal IO if needed. !!!!
+// !!!!! CRT results may use __int128; basic/fast-io.cpp provides decimal IO if
+// needed. !!!!

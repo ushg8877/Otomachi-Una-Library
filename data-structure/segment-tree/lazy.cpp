@@ -190,4 +190,5 @@ int find_last(ll x){
 #undef USE_COMPARE
 // end for data-structure/segment-tree/lazy.cpp
 /////////////////////////
-// !!!!! Edit info/lazy together for the problem; find_first/last require monotonicity; only paste one segt variant. !!!!
+// !!!!! Edit info/lazy together for the problem; find_first/last require
+// monotonicity; only paste one segt variant. !!!!

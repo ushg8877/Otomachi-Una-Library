@@ -22,4 +22,5 @@ __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 }
 // end for number-theory/floor-sum.cpp
 /////////////////////////
-// !!!!! Requires nonnegative l,r,a,b and positive c; result is __int128, basic/fast-io.cpp provides decimal IO. !!!!
+// !!!!! Requires nonnegative l,r,a,b and positive c; result is __int128,
+// basic/fast-io.cpp provides decimal IO. !!!!
