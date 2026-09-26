@@ -11,9 +11,12 @@
 //   auto e=vmap(a,[](int x){return 1ll*x*x;}); // vector<ll>
 //   auto f=vfilter(a,[](int x){return x&1;}); // keep odd elements
 //   auto g=vunique(b); // sort and remove duplicates
+//   a&b / a|b: set intersection / union; a&=b / a|=b modify a.
+//   vintersection(a,b); vunion(a,b); // sorted and unique results
 //   vsort(a); vreverse(a); vslice(a,1,3); // return new vectors
 //   Compound assignments and ++/-- modify a; other operations return copies.
 //   O(n), except vsort / vunique: O(n log n); vslice: O(r-l+1).
+//   Set intersection / union: O(n log n+m log m).
 //
 ////////////////////////////////////////////////////////////////
 template<typename T=int>
@@ -228,6 +231,41 @@ vector<T> vunique(vector<T> a){
 	a.erase(unique(a.begin(),a.end()),a.end());
 	return a;
 }
+// Set operations: input may be unsorted and contain duplicates.
+// O(n log n+m log m); the result is sorted and unique.
+template<typename T>
+vector<T> vintersection(vector<T> a,vector<T> b){
+	a=vunique(move(a));b=vunique(move(b));
+	vector<T> c;
+	c.reserve(min(a.size(),b.size()));
+	set_intersection(a.begin(),a.end(),b.begin(),b.end(),back_inserter(c));
+	return c;
+}
+template<typename T>
+vector<T> vunion(vector<T> a,vector<T> b){
+	a=vunique(move(a));b=vunique(move(b));
+	vector<T> c;
+	assert(b.size()<=c.max_size()-a.size());
+	c.reserve(a.size()+b.size());
+	set_union(a.begin(),a.end(),b.begin(),b.end(),back_inserter(c));
+	return c;
+}
+template<typename T>
+vector<T> operator&(const vector<T> &a,const vector<T> &b){
+	return vintersection(a,b);
+}
+template<typename T>
+vector<T> operator|(const vector<T> &a,const vector<T> &b){
+	return vunion(a,b);
+}
+template<typename T>
+vector<T>& operator&=(vector<T> &a,const vector<T> &b){
+	return a=vintersection(a,b);
+}
+template<typename T>
+vector<T>& operator|=(vector<T> &a,const vector<T> &b){
+	return a=vunion(a,b);
+}
 template<typename T>
 vector<T> vreverse(vector<T> a){
 	reverse(a.begin(),a.end());
@@ -241,7 +279,8 @@ vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 // end for basic/vector.cpp
 /////////////////////////
 // !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices.
-// vunique sorts first. Binary operators here take a scalar on the right.
+// vunique sorts first. Binary operators take a scalar on the right, except
+// vector & vector / vector | vector, which are set intersection / union.
 // Vector-vector comparisons keep the STL lexicographical / equality rules.
 // ^ is xor; !a is elementwise NOT. && / || do not short-circuit the operands.
 // Result types follow element expressions; compound assignments keep T.
