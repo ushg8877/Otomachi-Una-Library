@@ -4,7 +4,8 @@
 // usage:
 //   auto a=vrange(1,6); // {1,2,3,4,5}, [l,r)
 //   auto b=vcat(a,a); // concatenate
-//   auto c=vadd(a,2); auto d=vsub(a,1); // element + / - scalar
+//   auto c=a+2; auto d=a-1; auto h=a^3; // element + / - / bitwise xor
+//   vadd(a,2); vsub(a,1); // named versions
 //   auto e=vmap(a,[](int x){return 1ll*x*x;}); // vector<ll>
 //   auto f=vfilter(a,[](int x){return x&1;}); // keep odd elements
 //   auto g=vunique(b); // sort and remove duplicates
@@ -34,6 +35,18 @@ template<typename T,typename U> auto vadd(const vector<T> &a,const U &x){
 template<typename T,typename U> auto vsub(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y-x;});
 }
+template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
+auto operator+(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()+x)>>{
+	return vmap(a,[&](const T &y){return y+x;});
+}
+template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
+auto operator-(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()-x)>>{
+	return vmap(a,[&](const T &y){return y-x;});
+}
+template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
+auto operator^(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()^x)>>{
+	return vmap(a,[&](const T &y){return y^x;});
+}
 template<typename T,typename F> vector<T> vfilter(const vector<T> &a,F f){
 	vector<T> b;b.reserve(a.size());for(const T &x:a)if(f(x))b.push_back(x);return b;
 }
@@ -47,4 +60,4 @@ template<typename T> vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 }
 // end for basic/vector.cpp
 /////////////////////////
-// !!!!! GNU C++17; ranges are [l,r). vunique sorts first. vmap / vadd / vsub infer the result type from the expression; arithmetic must not overflow. !!!!
+// !!!!! GNU C++17; ranges are [l,r). vunique sorts first. Operators take a scalar on the right; ^ means bitwise xor. vmap / scalar operations infer the result type from the expression; arithmetic must not overflow. !!!!
