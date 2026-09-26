@@ -12,7 +12,7 @@
 \newcommand{\TemplNote}[1]{\textbf{使用边界}\par #1\par}
 \title{Otomachi Una C++ 模板库\\使用手册}
 \author{Junlin Ye}
-\date{2026-09-23}
+\date{2026-09-26}
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
@@ -1261,6 +1261,24 @@ assert(a.pow(4).x==81);
 \TemplNote{阶乘方案用于质数模数且 n<MOD；比较时可读 \texttt{.x}，此版未定义 mint 的 ==。输入运算符直接读 \texttt{.x}，读负数或未归一化数据时先读 long long 再构造 mint。避免 \texttt{pow(LLONG\_MIN)}。多项式文件已内置本类，不要重复粘贴。}
 \end{minipage}\par\vspace{1.2em}
 \noindent\begin{minipage}{\textwidth}
+\subsection{\texttt{math/rational.cpp}}
+\textbf{有理数}
+
+\TemplUsage{用 ll 分子 p、分母 q 表示精确有理数，适合需要精确比较和运算的斜率、比例等。构造和运算后自动约分，分母保持正数，零统一为 0/1。比较 O(1)，运算的约分需要一次辗转相除。}
+\TemplApi{\texttt{Rat a(p,q)}，默认值为 0，\texttt{Rat(p)} 表示整数；支持四则运算、复合赋值、取负、六种比较及 ostream 输出。可以和整数直接运算，输出始终为 p/q。读取成员 a.p、a.q 可取得最简形式，不要直接修改。}
+\textbf{最小示例（放入 main）：}
+\begin{lstlisting}
+Rat a(1,2),b(2,3);
+assert(a+b==Rat(7,6) && a*b==Rat(1,3));
+assert(a<b && 2*a==1);
+a+=b;
+ostringstream out; out<<a;
+assert(out.str()=="7/6");
+assert(Rat(2,-4)==Rat(-1,2));
+\end{lstlisting}
+\TemplNote{依赖公共底稿中的 ll。分母及除数不能为零；初始分子、分母和约分后的分子、正分母必须能存入 ll。中间交叉乘法及加减使用 \_\_int128，因此允许中间值超出 ll 后约分回来，但最终溢出会触发 assert。没有浮点转换，也不表示无穷大。}
+\end{minipage}\par\vspace{1.2em}
+\noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{math/xor-equations.cpp}}
 \textbf{XOR 方程组}
 
@@ -1375,6 +1393,36 @@ assert((f==vector<ull>{2,2,2,3,3,5}));
 assert(is_prime(1000000007ULL));
 \end{lstlisting}
 \TemplNote{factor 的输入要求 1<=n<2\textasciicircum{}62，不能传 0。不是完整 uint64 范围版本。判素函数与线性筛的 is\_prime 数组同名，不能原样同贴。}
+\end{minipage}\par\vspace{1.2em}
+\noindent\begin{minipage}{\textwidth}
+\subsection{\texttt{number-theory/stern-brocot.cpp}}
+\textbf{有理数二分}
+
+\TemplUsage{在 $0\le p\le M,\ 1\le q\le M$ 的最简分数中寻找目标或目标两侧相邻分数。先粘贴 math/rational.cpp。沿 Stern--Brocot 树倍增跳步，再二分跳步长度；询问次数 $O(\log^2(M+1))$，额外空间 O(1)。}
+\TemplApi{\begin{itemize}
+\item \texttt{SBT t; t.setM(M)} 清空并开始搜索，$1\le M\le\mathrm{LLONG\_MAX}$。
+\item 在 \texttt{!t.done()} 时调用 \texttt{Rat x=t.ask()} 获取分数，然后 \texttt{t.tell(res)}：-1 表示 x 偏小，0 表示恰好，1 表示 x 偏大。反复 ask 不推进搜索。
+\item \texttt{done()} 表示搜索结束。若 \texttt{found()} 为真，\texttt{l==r} 是答案；否则 l 是最大的偏小候选，r 是最小的偏大候选。
+\item l、r 为 \texttt{pair<ll,ll>}，分别保存分子、分母。\texttt{\{-1,0\}} 表示没有偏小候选，\texttt{\{1,0\}} 表示没有偏大候选；这两个哨兵不能构造 Rat。
+\end{itemize}}
+\textbf{最小示例（放入 main）：}
+\begin{lstlisting}
+SBT t; t.setM(100); Rat target(2,3);
+while(!t.done()){
+    Rat x=t.ask();
+    t.tell(x<target?-1:x>target?1:0);
+}
+assert(t.found() && t.l==make_pair(2ll,3ll));
+// Bracket sqrt(2), which is not a rational candidate.
+t.setM(10);
+while(!t.done()){
+    Rat x=t.ask();
+    t.tell((__int128)x.p*x.p<2*(__int128)x.q*x.q?-1:1);
+}
+assert(!t.found());
+assert(t.l==make_pair(7ll,5ll) && t.r==make_pair(10ll,7ll));
+\end{lstlisting}
+\TemplNote{反馈必须对应同一个目标或单调分界，符号描述的是当前询问值，不能反过来。目标可以不在候选集合，也可以小于零或大于 M。若只提供 -1 和 1，则搜索最终返回分界两侧候选，不会报告 found。没有有限上界时 r 为 1/0；目标小于零时 l 为 -1/0，r 为 0/1。}
 \end{minipage}\par\vspace{1.2em}
 \section{多项式 / polynomial}
 \noindent\begin{minipage}{\textwidth}

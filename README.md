@@ -95,6 +95,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [math/linear-basis/xor-prefix.cpp](math/linear-basis/xor-prefix.cpp)
 - [math/linear-basis/xor.cpp](math/linear-basis/xor.cpp)
 - [math/mod-int.cpp](math/mod-int.cpp)
+- [math/rational.cpp](math/rational.cpp)
 - [math/xor-equations.cpp](math/xor-equations.cpp)
 
 ### 数论
@@ -104,6 +105,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [number-theory/linear-sieve.cpp](number-theory/linear-sieve.cpp)
 - [number-theory/modular-arithmetic.cpp](number-theory/modular-arithmetic.cpp)
 - [number-theory/pollard-rho.cpp](number-theory/pollard-rho.cpp)
+- [number-theory/stern-brocot.cpp](number-theory/stern-brocot.cpp)
 
 ### 多项式
 
