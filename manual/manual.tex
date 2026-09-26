@@ -1214,10 +1214,11 @@ B.setN(2); assert(!B.contains({1,0}));
 \noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{math/linear-basis/xor-prefix.cpp}}
 \textbf{前缀异或线性基}
-\TemplApi{\texttt{Prefix\_Xor\_Basis B}；按加入顺序调用 \texttt{insert(x,id)}，id 必须为严格递增的正整数，可不连续。增秩返回 0，否则返回本次相关关系中最早且可删除的元素编号；零向量返回自身编号。\texttt{set()} 清空并重置编号。}
+
+\TemplApi{\texttt{Prefix\_Xor\_Basis B; B.setM(m)} 设置位数并清空，默认 64 位，允许 0 至 64 位。按加入顺序调用 \texttt{insert(x,id)}，id 必须为严格递增的正整数，可不连续。增秩返回 0，否则返回本次相关关系中最早且可删除的元素编号；零向量返回自身编号。\texttt{set()} 保留位数，清空并重置编号；\texttt{setM(m)} 同时重设位数和编号。}
 \textbf{最小示例（放入 main）：}
 \begin{lstlisting}
-Prefix_Xor_Basis B;
+Prefix_Xor_Basis B; B.setM(2); // bits 0..1
 assert(B.insert(1,1)==0 && B.insert(2,2)==0);
 assert(B.insert(2,3)==2); // removing id=1 would lower rank
 assert(B.insert(3,4)==1);
@@ -1225,21 +1226,22 @@ assert(B.get_rank(3)==2 && B.contains(1,3));
 assert(!B.contains(1,4) && B.ask(0,4)==3);
 assert(B.insert(0,5)==5);
 \end{lstlisting}
-\TemplNote{处理到右端点 r 后，\texttt{get\_rank(l)}、\texttt{contains(x,l)}、\texttt{ask(x,l)} 分别查询编号 [l,r] 的秩、可表示性和最大异或值。l 默认 1；l 大于 r 时视为空基。\texttt{rank} 是全部已插入元素的秩。pos 中的正编号是保留的原元素编号，a 是消元后的基。单次 O(64)，空间 O(64)；查询历史右端点须离线按 r 扫描或自己保存副本，没有持久化。}
+\TemplNote{处理到右端点 r 后，\texttt{get\_rank(l)}、\texttt{contains(x,l)}、\texttt{ask(x,l)} 分别查询编号 [l,r] 的秩、可表示性和最大异或值。l 默认 1；l 大于 r 时视为空基。\texttt{rank} 是全部已插入元素的秩。pos 中的正编号是保留的原元素编号，a 是消元后的基。插入值必须满足 $x<2^m$（m=64 时允许任意 ull）。单次 O(m)，空间 O(m)；查询历史右端点须离线按 r 扫描或自己保存副本，没有持久化。\texttt{contains(x,l)} 对超范围高位返回 false，\texttt{ask(x,l)} 保留 x 的高位。}
 \end{minipage}\par\vspace{1.2em}
 \noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{math/linear-basis/xor.cpp}}
 \textbf{异或线性基}
-\TemplApi{维护 64 位无符号整数的异或张成空间。\texttt{Xor\_Basis B} 默认空基；\texttt{set()} 清空，\texttt{insert(x)} 返回是否增秩，\texttt{rank} 为当前秩。\texttt{contains(x)} 判断能否异或得到 x；\texttt{ask(x=0)} 返回 x 与基中任意子集异或的最大值，允许空集。}
+
+\TemplApi{维护 m 位无符号整数的异或张成空间，默认 m=64；\texttt{setM(m)} 设置位数并清空，$0\le m\le64$，使用位 0..m-1。\texttt{Xor\_Basis B} 默认空基；\texttt{set()} 清空并保留位数，\texttt{insert(x)} 返回是否增秩，\texttt{rank} 为当前秩。\texttt{contains(x)} 判断能否异或得到 x；\texttt{ask(x=0)} 返回 x 与基中任意子集异或的最大值，允许空集。}
 \textbf{最小示例（放入 main）：}
 \begin{lstlisting}
-Xor_Basis B;
+Xor_Basis B; B.setM(3); // bits 0..2
 assert(B.insert(1) && B.insert(2));
 assert(!B.insert(3) && B.rank==2);
 assert(B.contains(3) && !B.contains(4));
 assert(B.ask()==3 && B.ask(4)==7);
 \end{lstlisting}
-\TemplNote{插入、查询均 O(64)，空间 O(64)。输入用 ull，不按有符号大小比较；第 63 位也可用。零向量不增秩。a 中存的是消元后的向量，不是原输入元素。}
+\TemplNote{插入、查询均 O(m)，空间 O(m)。插入值必须满足 $x<2^m$，m=64 时允许任意 ull。\texttt{contains(x)} 对带有超范围高位的 x 返回 false；\texttt{ask(x)} 允许这样的 x，高位保持不变。输入按无符号大小比较；m=64 时第 63 位可用，m=0 时只能插入零。零向量不增秩。a 中存的是消元后的向量，不是原输入元素。}
 \end{minipage}\par\vspace{1.2em}
 \noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{math/mod-int.cpp}}
