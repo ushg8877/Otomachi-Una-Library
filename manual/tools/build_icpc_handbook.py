@@ -44,6 +44,7 @@ TEMPLATES: list[tuple[str, str]] = [
     ('data-structure/fenwick/sum.cpp', 'data-structure'),
     ('data-structure/fhq-treap.cpp', 'data-structure'),
     ('data-structure/li-chao-tree.cpp', 'data-structure'),
+    ('data-structure/li-chao-tree-static.cpp', 'data-structure'),
     ('data-structure/linear-rmq.cpp', 'data-structure'),
     ('data-structure/ordered-disjoint-interval-tree-fast.cpp', 'data-structure'),
     ('data-structure/ordered-disjoint-interval-tree.cpp', 'data-structure'),

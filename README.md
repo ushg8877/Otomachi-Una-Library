@@ -33,6 +33,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [data-structure/fenwick/sum.cpp](data-structure/fenwick/sum.cpp)
 - [data-structure/fhq-treap.cpp](data-structure/fhq-treap.cpp)
 - [data-structure/li-chao-tree.cpp](data-structure/li-chao-tree.cpp)
+- [data-structure/li-chao-tree-static.cpp](data-structure/li-chao-tree-static.cpp)
 - [data-structure/linear-rmq.cpp](data-structure/linear-rmq.cpp)
 - [data-structure/ordered-disjoint-interval-tree-fast.cpp](data-structure/ordered-disjoint-interval-tree-fast.cpp)
 - [data-structure/ordered-disjoint-interval-tree.cpp](data-structure/ordered-disjoint-interval-tree.cpp)
