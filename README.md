@@ -25,6 +25,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 
 ### 数据结构
 
+- [data-structure/bitset.cpp](data-structure/bitset.cpp)
 - [data-structure/disjoint-set-rollback.cpp](data-structure/disjoint-set-rollback.cpp)
 - [data-structure/disjoint-set.cpp](data-structure/disjoint-set.cpp)
 - [data-structure/fast-set.cpp](data-structure/fast-set.cpp)

@@ -36,6 +36,7 @@ TEMPLATES: list[tuple[str, str]] = [
     ('basic/fast-io.cpp', 'basic'),
     ('basic/template.cpp', 'basic'),
     ('basic/vector.cpp', 'basic'),
+    ('data-structure/bitset.cpp', 'data-structure'),
     ('data-structure/disjoint-set-rollback.cpp', 'data-structure'),
     ('data-structure/disjoint-set.cpp', 'data-structure'),
     ('data-structure/fast-set.cpp', 'data-structure'),
