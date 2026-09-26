@@ -4,13 +4,15 @@
 // usage:
 //   auto a=vrange(1,6); // {1,2,3,4,5,6}, [l,r]
 //   auto b=vcat(a,a); // concatenate
-//   auto c=a+2; auto d=a-1; auto h=a^3; // element + / - / bitwise xor
+//   a+x, a-x, a*x, a/x, a%x; a&x, a|x, a^x, a<<x, a>>x
+//   a==x, a!=x, a<x, a<=x, a>x, a>=x, a&&x, a||x -> vector<bool>
+//   +a, -a, ~a, !a; a+=x, a-=x, ...; ++a, a++, --a, a--
 //   vadd(a,2); vsub(a,1); // named versions
 //   auto e=vmap(a,[](int x){return 1ll*x*x;}); // vector<ll>
 //   auto f=vfilter(a,[](int x){return x&1;}); // keep odd elements
 //   auto g=vunique(b); // sort and remove duplicates
 //   vsort(a); vreverse(a); vslice(a,1,3); // return new vectors
-//   All operations leave the input unchanged; assign the result if needed.
+//   Compound assignments and ++/-- modify a; other operations return copies.
 //   O(n), except vsort / vunique: O(n log n); vslice: O(r-l+1).
 //
 ////////////////////////////////////////////////////////////////
@@ -32,9 +34,9 @@ vector<T> vcat(vector<T> a,const vector<T> &b){
 	a.insert(a.end(),b.begin(),b.end());
 	return a;
 }
-template<typename T,typename F>
-auto vmap(const vector<T> &a,F f){
-	using U=decay_t<decltype(f(a[0]))>;
+template<typename T,typename F,typename Alloc>
+auto vmap(const vector<T,Alloc> &a,F f){
+	using U=decay_t<decltype(f((const T&)a[0]))>;
 	vector<U> b;
 	b.reserve(a.size());
 	for(const T &x:a)b.push_back(f(x));
@@ -57,8 +59,156 @@ auto operator-(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y-x;});
 }
 template<typename T,typename U>
+auto operator*(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y*x;});
+}
+template<typename T,typename U>
+auto operator/(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y/x;});
+}
+template<typename T,typename U>
+auto operator%(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y%x;});
+}
+template<typename T,typename U>
+auto operator&(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y&x;});
+}
+template<typename T,typename U>
+auto operator|(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y|x;});
+}
+template<typename T,typename U>
 auto operator^(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y^x;});
+}
+template<typename T,typename U>
+auto operator<<(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y<<x;});
+}
+template<typename T,typename U>
+auto operator>>(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y>>x;});
+}
+// Deducing Alloc preserves the STL vector-vector comparison overloads.
+template<typename T,typename U,typename Alloc>
+auto operator==(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y==x;});
+}
+template<typename T,typename U,typename Alloc>
+auto operator!=(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y!=x;});
+}
+template<typename T,typename U,typename Alloc>
+auto operator<(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y<x;});
+}
+template<typename T,typename U,typename Alloc>
+auto operator<=(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y<=x;});
+}
+template<typename T,typename U,typename Alloc>
+auto operator>(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y>x;});
+}
+template<typename T,typename U,typename Alloc>
+auto operator>=(const vector<T,Alloc> &a,const U &x){
+	return vmap(a,[&](const T &y){return y>=x;});
+}
+template<typename T,typename U>
+auto operator&&(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y&&x;});
+}
+template<typename T,typename U>
+auto operator||(const vector<T> &a,const U &x){
+	return vmap(a,[&](const T &y){return y||x;});
+}
+// Compound assignments modify a; copy x in case it refers to a[i].
+template<typename T,typename U>
+vector<T>& operator+=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y+=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator-=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y-=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator*=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y*=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator/=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y/=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator%=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y%=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator&=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y&=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator|=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y|=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator^=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y^=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator<<=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y<<=x;a[i]=y;}
+	return a;
+}
+template<typename T,typename U>
+vector<T>& operator>>=(vector<T> &a,U x){
+	for(size_t i=0;i<a.size();i++){T y=a[i];y>>=x;a[i]=y;}
+	return a;
+}
+template<typename T>
+auto operator+(const vector<T> &a){
+	return vmap(a,[](const T &x){return +x;});
+}
+template<typename T>
+auto operator-(const vector<T> &a){
+	return vmap(a,[](const T &x){return -x;});
+}
+template<typename T>
+auto operator~(const vector<T> &a){
+	return vmap(a,[](const T &x){return ~x;});
+}
+template<typename T>
+auto operator!(const vector<T> &a){
+	return vmap(a,[](const T &x){return !x;});
+}
+template<typename T>
+vector<T>& operator++(vector<T> &a){
+	for(T &x:a)++x;
+	return a;
+}
+template<typename T>
+vector<T> operator++(vector<T> &a,int){
+	vector<T> b=a;++a;
+	return b;
+}
+template<typename T>
+vector<T>& operator--(vector<T> &a){
+	for(T &x:a)--x;
+	return a;
+}
+template<typename T>
+vector<T> operator--(vector<T> &a,int){
+	vector<T> b=a;--a;
+	return b;
 }
 template<typename T,typename F>
 vector<T> vfilter(const vector<T> &a,F f){
@@ -90,7 +240,10 @@ vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 }
 // end for basic/vector.cpp
 /////////////////////////
-// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices. vunique sorts
-// first. Operators take a scalar on the right; ^ means bitwise xor. vmap /
-// scalar operations infer the result type from the expression. The right
-// operand must be a scalar; arithmetic must not overflow. !!!!
+// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices.
+// vunique sorts first. Binary operators here take a scalar on the right.
+// Vector-vector comparisons keep the STL lexicographical / equality rules.
+// ^ is xor; !a is elementwise NOT. && / || do not short-circuit the operands.
+// Result types follow element expressions; compound assignments keep T.
+// Elements must support the operation. Avoid overflow, zero divisors and
+// invalid shifts, just as with scalar arithmetic. !!!!
