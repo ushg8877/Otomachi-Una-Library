@@ -2,7 +2,7 @@
 //
 // template for vector operations
 // usage:
-//   auto a=vrange(1,6); // {1,2,3,4,5}, [l,r)
+//   auto a=vrange(1,6); // {1,2,3,4,5,6}, [l,r]
 //   auto b=vcat(a,a); // concatenate
 //   auto c=a+2; auto d=a-1; auto h=a^3; // element + / - / bitwise xor
 //   vadd(a,2); vsub(a,1); // named versions
@@ -11,14 +11,15 @@
 //   auto g=vunique(b); // sort and remove duplicates
 //   vsort(a); vreverse(a); vslice(a,1,3); // return new vectors
 //   All operations leave the input unchanged; assign the result if needed.
-//   O(n), except vsort / vunique: O(n log n); vslice: O(r-l).
+//   O(n), except vsort / vunique: O(n log n); vslice: O(r-l+1).
 //
 ////////////////////////////////////////////////////////////////
 template<typename T=int> vector<T> vrange(T l,T r){
 	static_assert(is_integral_v<T>&&sizeof(T)<=8&&!is_same_v<T,bool>);
-	assert(l<=r);__int128 n=(__int128)r-l;
+	assert(l<=r);__int128 n=(__int128)r-l+1;
 	assert(n<=vector<T>().max_size());
-	vector<T> a((size_t)n);iota(a.begin(),a.end(),l);return a;
+	vector<T> a((size_t)n);a[0]=l;
+	for(size_t i=1;i<a.size();i++)a[i]=a[i-1]+1;return a;
 }
 template<typename T> vector<T> vcat(vector<T> a,const vector<T> &b){
 	assert(b.size()<=a.max_size()-a.size());a.reserve(a.size()+b.size());
@@ -56,8 +57,8 @@ template<typename T> vector<T> vunique(vector<T> a){
 }
 template<typename T> vector<T> vreverse(vector<T> a){reverse(a.begin(),a.end());return a;}
 template<typename T> vector<T> vslice(const vector<T> &a,size_t l,size_t r){
-	assert(l<=r&&r<=a.size());return vector<T>(a.begin()+l,a.begin()+r);
+	assert(l<=r&&r<a.size());return vector<T>(a.begin()+l,a.begin()+r+1);
 }
 // end for basic/vector.cpp
 /////////////////////////
-// !!!!! GNU C++17; ranges are [l,r). vunique sorts first. Operators take a scalar on the right; ^ means bitwise xor. vmap / scalar operations infer the result type from the expression; arithmetic must not overflow. !!!!
+// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices. vunique sorts first. Operators take a scalar on the right; ^ means bitwise xor. vmap / scalar operations infer the result type from the expression; arithmetic must not overflow. !!!!
