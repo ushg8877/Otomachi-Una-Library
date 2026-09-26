@@ -1398,7 +1398,7 @@ assert(is_prime(1000000007ULL));
 \subsection{\texttt{number-theory/stern-brocot.cpp}}
 \textbf{有理数二分}
 
-\TemplUsage{在 $0\le p\le M,\ 1\le q\le M$ 的最简分数中寻找目标或目标两侧相邻分数。先粘贴 math/rational.cpp。沿 Stern--Brocot 树倍增跳步，再二分跳步长度；询问次数 $O(\log^2(M+1))$，额外空间 O(1)。}
+\TemplUsage{在 $0\le p\le M,\ 1\le q\le M$ 的最简分数中寻找目标或目标两侧相邻分数。先粘贴 math/rational.cpp。沿 Stern--Brocot 树倍增跳步，再二分跳步长度；询问次数及本地计算量均为 $O(\log(M+1))$，额外空间 O(1)，不计判定函数内部开销。}
 \TemplApi{\begin{itemize}
 \item \texttt{SBT t; t.setM(M)} 清空并开始搜索，$1\le M\le\mathrm{LLONG\_MAX}$。
 \item 在 \texttt{!t.done()} 时调用 \texttt{Rat x=t.ask()} 获取分数，然后 \texttt{t.tell(res)}：-1 表示 x 偏小，0 表示恰好，1 表示 x 偏大。反复 ask 不推进搜索。
@@ -1422,7 +1422,9 @@ while(!t.done()){
 assert(!t.found());
 assert(t.l==make_pair(7ll,5ll) && t.r==make_pair(10ll,7ll));
 \end{lstlisting}
-\TemplNote{反馈必须对应同一个目标或单调分界，符号描述的是当前询问值，不能反过来。目标可以不在候选集合，也可以小于零或大于 M。若只提供 -1 和 1，则搜索最终返回分界两侧候选，不会报告 found。没有有限上界时 r 为 1/0；目标小于零时 l 为 -1/0，r 为 0/1。}
+\textbf{为什么只有一个 log：}一段倍增加二分确定跳步长度 k，花费 $O(\log(k+1))$ 次询问。设两端的“分子加分母”为 u、v；完整一段后变为 $u+kv$、$u+(k+1)v$（或交换），乘积至少放大 k+1 倍。该乘积从 1 开始，始终不超过 $4M^2$，所以各段 $\log(k+1)$ 之和为 $O(\log M)$；最后提前终止的一段也只需 $O(\log M)$。查询分数天然最简，无需每次求 gcd。
+
+\TemplNote{反馈必须对应同一个目标或单调分界，符号描述的是当前询问值，不能反过来。目标可以不在候选集合，也可以小于零或大于 M。若只提供 -1 和 1，则搜索最终返回分界两侧候选，不会报告 found；对“< 与 >=”判定，l 是最大的 < 候选，r 是最小的 >= 候选，r 可以恰好等于目标。没有有限上界时 r 为 1/0；目标小于零时 l 为 -1/0，r 为 0/1。}
 \end{minipage}\par\vspace{1.2em}
 \section{多项式 / polynomial}
 \noindent\begin{minipage}{\textwidth}

@@ -8,7 +8,7 @@
 //   Search 0<=p<=M, 1<=q<=M; feedback must be monotone.
 //   found(): l==r is the answer; otherwise l,r bracket the target.
 //   l,r are {p,q}; {-1,0} / {1,0} mean no lower / upper candidate.
-//   O(log^2(M+1)) queries, O(1) space; setM also clears the search.
+//   O(log(M+1)) queries / local time, O(1) space; setM clears the search.
 //
 ////////////////////////////////////////////////////////////////
 struct SBT{
@@ -23,10 +23,11 @@ pair<ll,ll> at(ll v)const{
 	return {a.first+v*b.first,a.second+v*b.second};
 }
 void next(){
+	// The bounds have determinant 1, so every query is already reduced.
 	if(phase==0){
 		if(l.first>M-r.first||l.second>M-r.second){stop=true;return;}
-		cur=Rat(l.first+r.first,l.second+r.second);
-	}else{auto [p,q]=at(k);cur=Rat(p,q);}
+		cur.p=l.first+r.first;cur.q=l.second+r.second;
+	}else{auto [p,q]=at(k);cur.p=p;cur.q=q;}
 }
 void split(){
 	if(hi-lo>1){k=lo+(hi-lo)/2;next();return;}
