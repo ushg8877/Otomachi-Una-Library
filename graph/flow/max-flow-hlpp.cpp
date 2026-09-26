@@ -23,7 +23,9 @@ vector<__int128> ex;
 int hi=0;
 ll work=0;
 void add(int u,int v,ll w){
-	assert(m<INT_MAX-1);e.push_back({v,lst[u],w});lst[u]=++m;
+	assert(m<INT_MAX-1);
+	e.push_back({v,lst[u],w});
+	lst[u]=++m;
 }
 void active(int u){
 	if(u==S||u==T||!ex[u])return;
@@ -34,11 +36,15 @@ void rebuild(){
 	for(auto &v:bucket)v.clear();
 	fill(cnt.begin(),cnt.end(),0);hi=0;
 	for(int u=1;u<=n;u++){
-		++cnt[level[u]];cur[u]=pos[u];active(u);
+		++cnt[level[u]];
+		cur[u]=pos[u];
+		active(u);
 	}
 }
 void global(){
-	fill(level.begin(),level.end(),2*n);level[T]=0;level[S]=n;
+	fill(level.begin(),level.end(),2*n);
+	level[T]=0;
+	level[S]=n;
 	int l=0,r=0;q[r++]=T;
 	while(l<r){
 		int u=q[l++];
@@ -62,8 +68,12 @@ void global(){
 }
 void push(int u,int id){
 	int v=e[id].v;ll f=(ll)min(ex[u],(__int128)e[id].w);
-	bool zero=!ex[v];e[id].w-=f;e[id^1].w+=f;
-	ex[u]-=f;ex[v]+=f;if(zero&&f)active(v);
+	bool zero=!ex[v];
+	e[id].w-=f;
+	e[id^1].w+=f;
+	ex[u]-=f;
+	ex[v]+=f;
+	if(zero&&f)active(v);
 }
 void discharge(int u){
 	while(ex[u]){
@@ -80,23 +90,43 @@ void discharge(int u){
 			int id=adj[j];++work;
 			if(e[id].w)d=min(d,level[e[id].v]+1);
 		}
-		assert(d<2*n);level[u]=d;cur[u]=pos[u];++cnt[d];
+		assert(d<2*n);
+		level[u]=d;
+		cur[u]=pos[u];
+		++cnt[d];
 		if(--cnt[old]==0&&old<n){
 			for(int v=1;v<=n;v++)if(old<level[v]&&level[v]<n)level[v]=n+1;
-			rebuild();return;
+			rebuild();
+			return;
 		}
-		active(u);return;
+		active(u);
+		return;
 	}
 }
 public:
 void set(){
-	n=S=T=0;m=1;ans=0;is_flowed=false;e.assign(2,{0,0,0});
-	lst.assign(1,0);level.assign(1,0);cur.assign(1,0);
-	pos.clear();adj.clear();cnt.clear();q.clear();bucket.clear();ex.clear();
+	n=S=T=0;
+	m=1;
+	ans=0;
+	is_flowed=false;
+	e.assign(2,{0,0,0});
+	lst.assign(1,0);
+	level.assign(1,0);
+	cur.assign(1,0);
+	pos.clear();
+	adj.clear();
+	cnt.clear();
+	q.clear();
+	bucket.clear();
+	ex.clear();
 }
 void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX/2);set();n=_n;
-	lst.assign(n+1,0);level.assign(n+1,0);cur.assign(n+1,0);
+	assert(0<=_n&&_n<INT_MAX/2);
+	set();
+	n=_n;
+	lst.assign(n+1,0);
+	level.assign(n+1,0);
+	cur.assign(n+1,0);
 }
 void setST(int _S,int _T){
 	assert(1<=min(_S,_T)&&max(_S,_T)<INT_MAX/2&&_S!=_T);
@@ -104,12 +134,22 @@ void setST(int _S,int _T){
 		for(int i=2;i<=m;i+=2)e[i].w+=e[i^1].w,e[i^1].w=0;
 		ans=0;
 	}
-	S=_S;T=_T;n=max({n,S,T});
-	lst.resize(n+1);level.resize(n+1);cur.resize(n+1);is_flowed=false;
+	S=_S;
+	T=_T;
+	n=max({n,S,T});
+	lst.resize(n+1);
+	level.resize(n+1);
+	cur.resize(n+1);
+	is_flowed=false;
 }
 int new_node(){
-	assert(n<INT_MAX/2-1);++n;lst.push_back(0);level.push_back(0);cur.push_back(0);
-	is_flowed=false;return n;
+	assert(n<INT_MAX/2-1);
+	++n;
+	lst.push_back(0);
+	level.push_back(0);
+	cur.push_back(0);
+	is_flowed=false;
+	return n;
 }
 ll edge_flow(int id){
 	assert(2<=id&&id<=m&&id%2==0);
@@ -119,7 +159,10 @@ int add_edge(int u,int v,ll w){
 	// return forward edge id
 	assert(1<=min(u,v)&&max(u,v)<=n&&0<=w);
 	assert(m&1);
-	is_flowed=false;add(u,v,w);add(v,u,0);return m-1;
+	is_flowed=false;
+	add(u,v,w);
+	add(v,u,0);
+	return m-1;
 }
 ll max_flow(){
 	assert(1<=min(S,T)&&max(S,T)<=n&&S!=T);
@@ -129,10 +172,17 @@ ll max_flow(){
 		pos[u+1]=pos[u];
 		for(int id=lst[u];id;id=e[id].nxt)adj[pos[u+1]++]=id;
 	}
-	ex.assign(n+1,0);cnt.resize(2*n+1);q.resize(n+1);bucket.resize(2*n+1);
+	ex.assign(n+1,0);
+	cnt.resize(2*n+1);
+	q.resize(n+1);
+	bucket.resize(2*n+1);
 	for(int i=pos[S];i<pos[S+1];i++){
 		int id=adj[i],v=e[id].v;if(v==S)continue;
-		ll f=e[id].w;e[id].w=0;e[id^1].w+=f;ex[S]-=f;ex[v]+=f;
+		ll f=e[id].w;
+		e[id].w=0;
+		e[id^1].w+=f;
+		ex[S]-=f;
+		ex[v]+=f;
 	}
 	global();
 	while(true){
@@ -142,7 +192,9 @@ ll max_flow(){
 		discharge(u);
 		if(work>4LL*((ll)n+m))global();
 	}
-	assert(ex[T]<=LLONG_MAX-ans);ans+=(ll)ex[T];is_flowed=true;
+	assert(ex[T]<=LLONG_MAX-ans);
+	ans+=(ll)ex[T];
+	is_flowed=true;
 	return ans;
 }
 };

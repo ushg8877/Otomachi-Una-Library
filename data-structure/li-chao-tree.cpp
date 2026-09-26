@@ -22,11 +22,16 @@ vector<line> L{{0,inf}};
 // if you don't use range add, this can up to n
 inline ll gv(const int &id,const ll &v){return L[id].f(v);}
 void set(){
-	ls.assign(1,0);rs.assign(1,0);p.assign(1,0);
+	ls.assign(1,0);
+	rs.assign(1,0);
+	p.assign(1,0);
 	L.assign(1,{0,inf});tot=cnt=rt=0;
 }
 int new_node(){
-	assert(tot<INT_MAX-1);ls.push_back(0);rs.push_back(0);p.push_back(0);
+	assert(tot<INT_MAX-1);
+	ls.push_back(0);
+	rs.push_back(0);
+	p.push_back(0);
 	return ++tot;
 }
 int add(int x,int id,int l,int r){
@@ -47,7 +52,9 @@ int upd(int x,int ql,int qr,int id,int l,int r){
 	if(ql<=l&&r<=qr)return add(x,id,l,r);
 	int mid=l+((ll)r-l)/2;
 	int a=upd(x,ql,qr,ls[id],l,mid),b=upd(x,ql,qr,rs[id],mid+1,r);
-	ls[id]=a;rs[id]=b;return id;
+	ls[id]=a;
+	rs[id]=b;
+	return id;
 }
 ll ask(int x,int id,int l,int r){
 	if(!id) return inf;
@@ -66,7 +73,9 @@ void add(line x,int l=-V,int r=V){
 	assert(-V<=x.k&&x.k<=V);
 	assert((__int128)x.k*l+x.b>=-inf&&(__int128)x.k*l+x.b<=inf);
 	assert((__int128)x.k*r+x.b>=-inf&&(__int128)x.k*r+x.b<=inf);
-	assert(cnt<INT_MAX-1);L.push_back(x);++cnt;
+	assert(cnt<INT_MAX-1);
+	L.push_back(x);
+	++cnt;
 	rt=upd(cnt,l,r,rt,-V,V);
 }
 ll ask(int x){

@@ -45,7 +45,9 @@ bool is_prime(ull n){
 		}
 		return res;
 	};
-	ull d=n-1;int z=__builtin_ctzll(d);d>>=z;
+	ull d=n-1;
+	int z=__builtin_ctzll(d);
+	d>>=z;
 	auto miller_rabin=[&](ull b){
 		if(b==0)return true;
 		ull y=pow(b,d);
@@ -59,7 +61,8 @@ bool is_prime(ull n){
 	if(n<4759123141ull){
 		for(auto b:{2,7,61})if(!miller_rabin(b%n))return false;
 	}else{
-		for(auto b:{2,325,9375,28178,450775,9780504,1795265022})if(!miller_rabin(b%n))return false;
+		for(auto b:{2,325,9375,28178,450775,9780504,1795265022})
+			if(!miller_rabin(b%n))return false;
 	}
 	return true;
 }

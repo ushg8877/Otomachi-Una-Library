@@ -63,7 +63,9 @@ public:
 void set(){vl=1;vr=0;tr.clear();}
 void set(int l,int r){
 	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=l;vr=r;tr.assign(4*n,node());
+	vl=l;
+	vr=r;
+	tr.assign(4*n,node());
 }
 void setN(int n){set(1,n);}
 void upd(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,true,1,vl,vr);}
@@ -72,11 +74,20 @@ void add(int l,int r,ll v){
 	assert(vl<=l&&(ll)l<=1ll+r&&r<=vr);
 	if(l<=r)modify(l,r,v,1,vl,vr);
 }
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return query(l,r,1,vl,vr,0);}
+ll ask(int l,int r)const{
+	assert(vl<=l&&l<=r&&r<=vr);
+	return query(l,r,1,vl,vr,0);
+}
 ll ask(int x)const{return ask(x,x);}
 // all leaf values must be non-negative
-int find_first(ll x)const{assert(!tr.empty()&&0<x&&x<=tr[1].s);return find(x,false);}
-int find_last(ll x)const{assert(!tr.empty()&&0<x&&x<=tr[1].s);return find(x,true);}
+int find_first(ll x)const{
+	assert(!tr.empty()&&0<x&&x<=tr[1].s);
+	return find(x,false);
+}
+int find_last(ll x)const{
+	assert(!tr.empty()&&0<x&&x<=tr[1].s);
+	return find(x,true);
+}
 };
 // end for data-structure/segment-tree/range-add-sum.cpp
 /////////////////////////

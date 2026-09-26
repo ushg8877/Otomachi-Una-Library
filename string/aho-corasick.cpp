@@ -14,12 +14,19 @@ vector<array<int,26>> ch;
 vector<int> fail,q;
 AC(){set();}
 void set(int m=0){
-	assert(0<=m&&m<INT_MAX-1);tot=0;built=false;
-	ch.assign(1,{});fail.assign(1,0);q.clear();
+	assert(0<=m&&m<INT_MAX-1);
+	tot=0;
+	built=false;
+	ch.assign(1,{});
+	fail.assign(1,0);
+	q.clear();
 	ch.reserve(m+1);fail.reserve(m+1);
 }
 int new_node(){
-	assert(tot<INT_MAX-1);ch.push_back({});fail.push_back(0);return ++tot;
+	assert(tot<INT_MAX-1);
+	ch.push_back({});
+	fail.push_back(0);
+	return ++tot;
 }
 int insert(const string &s){
 	assert(!built&&!s.empty()&&s[0]==' '&&s.size()<INT_MAX);
@@ -33,7 +40,9 @@ int insert(const string &s){
 }
 void build(){
 	if(built)return;
-	q.clear();q.reserve(tot+1);q.push_back(0);
+	q.clear();
+	q.reserve(tot+1);
+	q.push_back(0);
 	for(int i=0;i<(int)q.size();i++){
 		int u=q[i];
 		for(int c=0;c<26;c++){
@@ -46,9 +55,13 @@ void build(){
 }
 vector<ll> count(const string &s)const{
 	assert(built&&!s.empty()&&s[0]==' '&&s.size()<INT_MAX);
-	vector<ll> cnt(tot+1);cnt[0]=1;int u=0;
+	vector<ll> cnt(tot+1);
+	cnt[0]=1;
+	int u=0;
 	for(int i=1;i<(int)s.size();i++){
-		assert('a'<=s[i]&&s[i]<='z');u=ch[u][s[i]-'a'];cnt[u]++;
+		assert('a'<=s[i]&&s[i]<='z');
+		u=ch[u][s[i]-'a'];
+		cnt[u]++;
 	}
 	for(int i=(int)q.size()-1;i;i--)cnt[fail[q[i]]]+=cnt[q[i]];
 	return cnt;

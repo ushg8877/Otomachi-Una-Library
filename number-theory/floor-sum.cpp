@@ -16,7 +16,9 @@ __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 		A%=C;B%=C;
 		__int128 y=A*n+B;
 		if(y<C)break;
-		n=y/C;B=y%C;swap(A,C);
+		n=y/C;
+		B=y%C;
+		swap(A,C);
 	}
 	return ans;
 }

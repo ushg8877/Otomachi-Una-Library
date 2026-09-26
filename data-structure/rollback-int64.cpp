@@ -13,7 +13,11 @@ vector<pair<ll*,ll>> buf1;
 int saved_ele=0;
 vector<char> R=vector<char>(1);
 void set(){saved_ele=0;buf.clear();buf1.clear();R.assign(1,false);}
-void save(int &x){buf.push_back(make_pair(&x,x));R.push_back(false);++saved_ele;}
+void save(int &x){
+	buf.push_back(make_pair(&x,x));
+	R.push_back(false);
+	++saved_ele;
+}
 void save(ll &x){buf1.push_back(make_pair(&x,x));R.push_back(true);++saved_ele;}
 int version(){return saved_ele;}
 void roll_back(int t){

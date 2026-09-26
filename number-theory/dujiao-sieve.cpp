@@ -17,7 +17,9 @@ unordered_map<ll,__int128> mem_phi;
 void init_mu(int m){
 	assert(m>=1&&m<INT_MAX);
 	vector<int> prime;vector<bool> vis(m+1,false);
-	mu.assign(m+1,0);mem_mu.clear();mu[1]=1;
+	mu.assign(m+1,0);
+	mem_mu.clear();
+	mu[1]=1;
 	for(int i=2;i<=m;i++){
 		if(!vis[i])prime.push_back(i),mu[i]=-1;
 		for(int p:prime){
@@ -32,7 +34,9 @@ void init_mu(int m){
 void init_phi(int m){
 	assert(m>=1&&m<INT_MAX);
 	vector<int> prime;vector<bool> vis(m+1,false);
-	phi.assign(m+1,0);mem_phi.clear();phi[1]=1;
+	phi.assign(m+1,0);
+	mem_phi.clear();
+	phi[1]=1;
 	for(int i=2;i<=m;i++){
 		if(!vis[i])prime.push_back(i),phi[i]=i-1;
 		for(int p:prime){

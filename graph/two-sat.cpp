@@ -16,19 +16,28 @@ void set(){setN(0);}
 void setN(int _n){
 	// 1-index, 2i-1 true 2i false
 	assert(0<=_n&&_n<(INT_MAX-2)/2);n=_n;
-	low.assign(2*n+2,0);dfn.assign(2*n+2,0);stk.assign(2*n+2,0);
-	bel.assign(2*n+2,0);inq.assign(2*n+2,0);edg.assign(2*n+2,{});
+	low.assign(2*n+2,0);
+	dfn.assign(2*n+2,0);
+	stk.assign(2*n+2,0);
+	bel.assign(2*n+2,0);
+	inq.assign(2*n+2,0);
+	edg.assign(2*n+2,{});
 	tot=scnt=top=0;
 }
 void tarjan(int u){
 	vector<pair<int,int>> q{{u,0}};
-	low[u]=dfn[u]=++tot;stk[++top]=u;inq[u]=true;
+	low[u]=dfn[u]=++tot;
+	stk[++top]=u;
+	inq[u]=true;
 	while(!q.empty()){
 		auto &[x,i]=q.back();
 		if(i<(int)edg[x].size()){
 			int v=edg[x][i++];
 			if(!dfn[v]){
-				low[v]=dfn[v]=++tot;stk[++top]=v;inq[v]=true;q.push_back({v,0});
+				low[v]=dfn[v]=++tot;
+				stk[++top]=v;
+				inq[v]=true;
+				q.push_back({v,0});
 			}else if(inq[v])low[x]=min(low[x],dfn[v]);
 		}else{
 			int v=x;q.pop_back();

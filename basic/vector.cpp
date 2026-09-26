@@ -14,54 +14,83 @@
 //   O(n), except vsort / vunique: O(n log n); vslice: O(r-l+1).
 //
 ////////////////////////////////////////////////////////////////
-template<typename T=int> vector<T> vrange(T l,T r){
+template<typename T=int>
+vector<T> vrange(T l,T r){
 	static_assert(is_integral_v<T>&&sizeof(T)<=8&&!is_same_v<T,bool>);
-	assert(l<=r);__int128 n=(__int128)r-l+1;
+	assert(l<=r);
+	__int128 n=(__int128)r-l+1;
 	assert(n<=vector<T>().max_size());
-	vector<T> a((size_t)n);a[0]=l;
-	for(size_t i=1;i<a.size();i++)a[i]=a[i-1]+1;return a;
+	vector<T> a((size_t)n);
+	a[0]=l;
+	for(size_t i=1;i<a.size();i++)a[i]=a[i-1]+1;
+	return a;
 }
-template<typename T> vector<T> vcat(vector<T> a,const vector<T> &b){
-	assert(b.size()<=a.max_size()-a.size());a.reserve(a.size()+b.size());
-	a.insert(a.end(),b.begin(),b.end());return a;
+template<typename T>
+vector<T> vcat(vector<T> a,const vector<T> &b){
+	assert(b.size()<=a.max_size()-a.size());
+	a.reserve(a.size()+b.size());
+	a.insert(a.end(),b.begin(),b.end());
+	return a;
 }
-template<typename T,typename F> auto vmap(const vector<T> &a,F f){
-	using U=decay_t<invoke_result_t<F&,const T&>>;
-	vector<U> b;b.reserve(a.size());
-	for(const T &x:a)b.push_back(f(x));return b;
+template<typename T,typename F>
+auto vmap(const vector<T> &a,F f){
+	using U=decay_t<decltype(f(a[0]))>;
+	vector<U> b;
+	b.reserve(a.size());
+	for(const T &x:a)b.push_back(f(x));
+	return b;
 }
-template<typename T,typename U> auto vadd(const vector<T> &a,const U &x){
+template<typename T,typename U>
+auto vadd(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y+x;});
 }
-template<typename T,typename U> auto vsub(const vector<T> &a,const U &x){
+template<typename T,typename U>
+auto vsub(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y-x;});
 }
-template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
-auto operator+(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()+x)>>{
+template<typename T,typename U>
+auto operator+(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y+x;});
 }
-template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
-auto operator-(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()-x)>>{
+template<typename T,typename U>
+auto operator-(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y-x;});
 }
-template<typename T,typename U,enable_if_t<is_arithmetic_v<U>,int> =0>
-auto operator^(const vector<T> &a,const U &x)->vector<decay_t<decltype(declval<const T&>()^x)>>{
+template<typename T,typename U>
+auto operator^(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y^x;});
 }
-template<typename T,typename F> vector<T> vfilter(const vector<T> &a,F f){
-	vector<T> b;b.reserve(a.size());for(const T &x:a)if(f(x))b.push_back(x);return b;
+template<typename T,typename F>
+vector<T> vfilter(const vector<T> &a,F f){
+	vector<T> b;
+	b.reserve(a.size());
+	for(const T &x:a)if(f(x))b.push_back(x);
+	return b;
 }
-template<typename T> vector<T> vsort(vector<T> a){sort(a.begin(),a.end());return a;}
-template<typename T> vector<T> vunique(vector<T> a){
-	sort(a.begin(),a.end());a.erase(unique(a.begin(),a.end()),a.end());return a;
+template<typename T>
+vector<T> vsort(vector<T> a){
+	sort(a.begin(),a.end());
+	return a;
 }
-template<typename T> vector<T> vreverse(vector<T> a){reverse(a.begin(),a.end());return a;}
-template<typename T> vector<T> vslice(const vector<T> &a,size_t l,size_t r){
-	assert(l<=r&&r<a.size());return vector<T>(a.begin()+l,a.begin()+r+1);
+template<typename T>
+vector<T> vunique(vector<T> a){
+	sort(a.begin(),a.end());
+	a.erase(unique(a.begin(),a.end()),a.end());
+	return a;
+}
+template<typename T>
+vector<T> vreverse(vector<T> a){
+	reverse(a.begin(),a.end());
+	return a;
+}
+template<typename T>
+vector<T> vslice(const vector<T> &a,size_t l,size_t r){
+	assert(l<=r&&r<a.size());
+	return vector<T>(a.begin()+l,a.begin()+r+1);
 }
 // end for basic/vector.cpp
 /////////////////////////
 // !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices. vunique sorts
 // first. Operators take a scalar on the right; ^ means bitwise xor. vmap /
-// scalar operations infer the result type from the expression; arithmetic must
-// not overflow. !!!!
+// scalar operations infer the result type from the expression. The right
+// operand must be a scalar; arithmetic must not overflow. !!!!

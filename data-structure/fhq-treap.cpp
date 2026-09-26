@@ -29,14 +29,24 @@ inline void pushdown(const int &id){
 void set(){setN(0);}
 void setN(int _n){
 	assert(0<=_n&&_n<INT_MAX);tot=_n;
-	ls.assign(tot+1,0);rs.assign(tot+1,0);tag.assign(tot+1,0);
-	key.assign(tot+1,0);siz.assign(tot+1,1);siz[0]=0;val.resize(tot+1);
+	ls.assign(tot+1,0);
+	rs.assign(tot+1,0);
+	tag.assign(tot+1,0);
+	key.assign(tot+1,0);
+	siz.assign(tot+1,1);
+	siz[0]=0;
+	val.resize(tot+1);
 	for(int i=1;i<=tot;i++)val[i]=rnd();
 }
 inline int newnode(int x){
 	assert(tot<INT_MAX-1);++tot;
-	ls.push_back(0);rs.push_back(0);tag.push_back(0);siz.push_back(1);
-	key.push_back(x);val.push_back(rnd());return tot;
+	ls.push_back(0);
+	rs.push_back(0);
+	tag.push_back(0);
+	siz.push_back(1);
+	key.push_back(x);
+	val.push_back(rnd());
+	return tot;
 }
 int leftmost(int x){
 	while(ls[x]) pushdown(x),x=ls[x];

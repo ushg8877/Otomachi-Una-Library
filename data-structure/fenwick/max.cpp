@@ -15,7 +15,10 @@ public:
 void set(){vl=1;vr=n=0;a.clear();}
 void setRange(int l,int r){
 	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,LLONG_MIN);
+	vl=l;
+	vr=r;
+	n=m;
+	a.assign(n+2,LLONG_MIN);
 }
 void setN(int n){setRange(1,n);}
 void upd(ll x,ll v){

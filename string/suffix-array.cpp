@@ -14,7 +14,13 @@ vector<int> lms,cnt,sa,rk;
 vector<unsigned char> s;
 vector<char> typ;
 void set(){
-	n=m=0;lms.clear();cnt.clear();sa.clear();rk.clear();s.clear();typ.clear();
+	n=m=0;
+	lms.clear();
+	cnt.clear();
+	sa.clear();
+	rk.clear();
+	s.clear();
+	typ.clear();
 }
 
 template<typename T>
@@ -55,16 +61,24 @@ void sais(int n,int m,T s[],char typ[],int lms[],int cnt[]){
 }
 void output(){
 	// this allow you to see S, sa, rk
-	cerr<<"string: ";for(int i=1;i<=n;i++) cerr<<s[i-1];cerr<<'\n';
-	cerr<<"sa: ";for(int i=1;i<=n;i++) cerr<<sa[i]<<" \n"[i==n];
-	cerr<<"rk: ";for(int i=1;i<=n;i++) cerr<<rk[i]<<" \n"[i==n];
+	cerr<<"string: ";
+	for(int i=1;i<=n;i++) cerr<<s[i-1];
+	cerr<<'\n';
+	cerr<<"sa: ";
+	for(int i=1;i<=n;i++) cerr<<sa[i]<<" \n"[i==n];
+	cerr<<"rk: ";
+	for(int i=1;i<=n;i++) cerr<<rk[i]<<" \n"[i==n];
 }
 void build(string S,int M=128){
 	// M for the size of alphabet; 0 is reserved for the sentinel
 	assert(!S.empty()&&S[0]==' '&&1<=M&&M<=256&&S.size()<(INT_MAX-1024)/2);
 	n=(int)S.size()-1;m=M;
-	lms.assign(2*n+2,0);cnt.assign(2*(n+m)+4,0);sa.assign(2*n+2,0);
-	rk.assign(n+1,0);s.assign(n+1,0);typ.assign(2*n+2,0);
+	lms.assign(2*n+2,0);
+	cnt.assign(2*(n+m)+4,0);
+	sa.assign(2*n+2,0);
+	rk.assign(n+1,0);
+	s.assign(n+1,0);
+	typ.assign(2*n+2,0);
 	for(int i=0;i<n;i++){
 		s[i]=(unsigned char)S[i+1];assert(0<s[i]&&s[i]<m);
 	}
@@ -85,7 +99,10 @@ int n=0;
 vector<int> rk,height;
 Linear_RMQ<int> st;
 void build(const SA &S){
-	n=S.n;rk=S.rk;height.assign(n+1,0);st.set();
+	n=S.n;
+	rk=S.rk;
+	height.assign(n+1,0);
+	st.set();
 	assert((int)S.sa.size()==n+1&&(int)rk.size()==n+1);
 	for(int i=1,k=0;i<=n;i++){
 		int r=rk[i];
@@ -100,7 +117,9 @@ void build(const string &s,int M=128){SA S;S.build(s,M);build(S);}
 int lcp(int i,int j)const{
 	assert(1<=min(i,j)&&max(i,j)<=n);
 	if(i==j)return n-i+1;
-	int l=rk[i],r=rk[j];if(l>r)swap(l,r);l++;
+	int l=rk[i],r=rk[j];
+	if(l>r)swap(l,r);
+	l++;
 	return st.ask(l,r);
 }
 int ask(int i,int j)const{return lcp(i,j);}

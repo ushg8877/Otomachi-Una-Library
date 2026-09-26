@@ -14,7 +14,9 @@ vector<int> d1,d2;
 void set(){n=0;d1.clear();d2.clear();}
 void build(const string &s){
 	assert(!s.empty()&&s[0]==' '&&s.size()<INT_MAX/2);
-	n=(int)s.size()-1;d1.assign(n+1,0);d2.assign(n+1,0);
+	n=(int)s.size()-1;
+	d1.assign(n+1,0);
+	d2.assign(n+1,0);
 	for(int i=1,l=1,r=0;i<=n;i++){
 		int k=i>r?1:min(d1[l+r-i],r-i+1);
 		while(i-k>=1&&i+k<=n&&s[i-k]==s[i+k])k++;

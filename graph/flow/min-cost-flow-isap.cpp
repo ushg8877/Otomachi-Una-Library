@@ -25,7 +25,9 @@ vector<char> ok;
 vector<ll> lim,rem;
 vector<__int128> h{0},dis{0};
 void add(int u,int v,ll w,ll c){
-	assert(m<INT_MAX-1);e.push_back({v,lst[u],w,c});lst[u]=++m;
+	assert(m<INT_MAX-1);
+	e.push_back({v,lst[u],w,c});
+	lst[u]=++m;
 }
 void SPFA(){
 	fill(h.begin(),h.end(),0);
@@ -33,9 +35,12 @@ void SPFA(){
 	for(int i=2;i<=m;i++)if(e[i].w&&e[i].c<0){neg=true;break;}
 	if(!neg)return;
 	vector<int> cnt(n+1);vector<char> inq(n+1,true);
-	queue<int> q;for(int i=1;i<=n;i++)q.push(i);
+	queue<int> q;
+	for(int i=1;i<=n;i++)q.push(i);
 	while(!q.empty()){
-		int u=q.front();q.pop();inq[u]=false;
+		int u=q.front();
+		q.pop();
+		inq[u]=false;
 		for(int i=pos[u];i<pos[u+1];i++){
 			int id=adj[i];if(!e[id].w)continue;
 			int v=e[id].v;
@@ -48,7 +53,8 @@ void SPFA(){
 }
 bool Dijkstra(){
 	fill(dis.begin(),dis.end(),inf);dis[S]=0;
-	priority_queue<pair<__int128,int>,vector<pair<__int128,int>>,greater<pair<__int128,int>>> q;
+	priority_queue<pair<__int128,int>,vector<pair<__int128,int>>,
+		greater<pair<__int128,int>>> q;
 	q.push({0,S});
 	while(!q.empty()){
 		auto [d,u]=q.top();q.pop();
@@ -90,7 +96,9 @@ ll augment(){
 	if(dep[S]==n)return 0;
 	fill(cnt.begin(),cnt.end(),0);
 	for(int u=1;u<=n;u++)++cnt[dep[u]];
-	cur=pos;int u=S;bool stop=false;
+	cur=pos;
+	int u=S;
+	bool stop=false;
 	lim[u]=rem[u]=LLONG_MAX;
 	while(true){
 		if(u==T)rem[u]=0;
@@ -109,62 +117,112 @@ ll augment(){
 				if(e[id].w&&ok[id])d=min(d,dep[e[id].v]+1);
 			}
 			stop=(--cnt[dep[u]]==0);
-			dep[u]=d;++cnt[d];cur[u]=pos[u];
+			dep[u]=d;
+			++cnt[d];
+			cur[u]=pos[u];
 			if(u==S){if(d==n)stop=true;if(!stop)continue;}
 		}else if(!stop&&rem[u]){
 			int id=adj[i],v=e[id].v;pre[v]=id;
-			lim[v]=rem[v]=min(rem[u],e[id].w);u=v;continue;
+			lim[v]=rem[v]=min(rem[u],e[id].w);
+			u=v;
+			continue;
 		}
 		// Unwind partial pushes as well when gap terminates the search.
 		ll f=lim[u]-rem[u];
 		if(u==S)return f;
 		int id=pre[u];u=e[id^1].v;
-		e[id].w-=f;e[id^1].w+=f;rem[u]-=f;
+		e[id].w-=f;
+		e[id^1].w+=f;
+		rem[u]-=f;
 		if(rem[u])++cur[u];
 	}
 }
 public:
 void set(){
-	n=S=T=0;m=1;ans=cost=0;is_flowed=false;e.assign(2,{0,0,0,0});
-	dep.clear();cur.clear();q.clear();cnt.clear();pos.clear();adj.clear();ok.clear();
+	n=S=T=0;
+	m=1;
+	ans=cost=0;
+	is_flowed=false;
+	e.assign(2,{0,0,0,0});
+	dep.clear();
+	cur.clear();
+	q.clear();
+	cnt.clear();
+	pos.clear();
+	adj.clear();
+	ok.clear();
 	lim.clear();rem.clear();
-	lst.assign(1,0);pre.assign(1,0);h.assign(1,0);dis.assign(1,0);
+	lst.assign(1,0);
+	pre.assign(1,0);
+	h.assign(1,0);
+	dis.assign(1,0);
 }
 void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX);set();n=_n;
-	lst.assign(n+1,0);pre.assign(n+1,0);h.assign(n+1,0);dis.assign(n+1,0);
+	assert(0<=_n&&_n<INT_MAX);
+	set();
+	n=_n;
+	lst.assign(n+1,0);
+	pre.assign(n+1,0);
+	h.assign(n+1,0);
+	dis.assign(n+1,0);
 }
 void setST(int _S,int _T){
 	assert(1<=min(_S,_T)&&max(_S,_T)<INT_MAX&&_S!=_T);
-	S=_S;T=_T;n=max({n,S,T});
-	lst.resize(n+1);pre.resize(n+1);h.resize(n+1);dis.resize(n+1);is_flowed=false;
+	S=_S;
+	T=_T;
+	n=max({n,S,T});
+	lst.resize(n+1);
+	pre.resize(n+1);
+	h.resize(n+1);
+	dis.resize(n+1);
+	is_flowed=false;
 }
 int new_node(){
-	assert(n<INT_MAX-1);++n;lst.push_back(0);pre.push_back(0);h.push_back(0);dis.push_back(0);
-	is_flowed=false;return n;
+	assert(n<INT_MAX-1);
+	++n;
+	lst.push_back(0);
+	pre.push_back(0);
+	h.push_back(0);
+	dis.push_back(0);
+	is_flowed=false;
+	return n;
 }
 ll edge_flow(int id){
-	assert(2<=id&&id<=m&&id%2==0);return e[id^1].w;
+	assert(2<=id&&id<=m&&id%2==0);
+	return e[id^1].w;
 }
 int add_edge(int u,int v,ll w,ll c){
 	assert(1<=min(u,v)&&max(u,v)<=n&&w>=0&&c!=LLONG_MIN);
-	assert(m&1);is_flowed=false;add(u,v,w,c);add(v,u,0,-c);return m-1;
+	assert(m&1);
+	is_flowed=false;
+	add(u,v,w,c);
+	add(v,u,0,-c);
+	return m-1;
 }
 pair<ll,ll> min_cost_flow(){
 	assert(1<=min(S,T)&&max(S,T)<=n&&S!=T);
 	if(is_flowed)return {ans,cost};
 	for(int i=2;i<=m;i+=2)e[i].w+=e[i^1].w,e[i^1].w=0;
-	ans=cost=0;build();SPFA();
-	dep.resize(n+1);cur.resize(n+1);q.resize(n+1);
-	lim.resize(n+1);rem.resize(n+1);cnt.resize(n+1);ok.resize(m+1);
+	ans=cost=0;
+	build();
+	SPFA();
+	dep.resize(n+1);
+	cur.resize(n+1);
+	q.resize(n+1);
+	lim.resize(n+1);
+	rem.resize(n+1);
+	cnt.resize(n+1);
+	ok.resize(m+1);
 	while(Dijkstra()){
 		ll f=augment();assert(f>0);
 		__int128 c=h[T]-h[S];
 		assert(ans<=LLONG_MAX-f);
-		assert(c>=((__int128)LLONG_MIN-cost)/f&&c<=((__int128)LLONG_MAX-cost)/f);
+		assert(c>=((__int128)LLONG_MIN-cost)/f&&
+			c<=((__int128)LLONG_MAX-cost)/f);
 		ans+=f;cost=(ll)(cost+c*f);
 	}
-	is_flowed=true;return {ans,cost};
+	is_flowed=true;
+	return {ans,cost};
 }
 };
 // end for graph/flow/min-cost-flow-isap.cpp

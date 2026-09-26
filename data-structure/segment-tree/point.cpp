@@ -59,7 +59,8 @@ void build(int id,int l,int r){
 void update(int x,const info &v,int id,int l,int r){
 	if(l==r){
 		assert(x==l);
-		val[id]=v;return;
+		val[id]=v;
+		return;
 	}
 	int mid=l+((ll)r-l)/2;
 	if(x<=mid) update(x,v,id<<1,l,mid);
@@ -69,7 +70,8 @@ void update(int x,const info &v,int id,int l,int r){
 void modify(int x,const info &v,int id,int l,int r){
 	if(l==r){
 		assert(x==l);
-		val[id]+=v;return;
+		val[id]+=v;
+		return;
 	}
 	int mid=l+((ll)r-l)/2;
 	if(x<=mid) modify(x,v,id<<1,l,mid);
@@ -88,13 +90,15 @@ int find_first(info x,int id,int l,int r){
 	// if no compare betweeen infos, delete this
 	if(l==r) return l;
 	int mid=l+((ll)r-l)/2;
-	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],id<<1|1,mid+1,r);
+	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],
+		id<<1|1,mid+1,r);
 }
 int find_last(info x,int id,int l,int r){
 	// if no compare betweeen infos, delete this
 	if(l==r) return l;
 	int mid=l+((ll)r-l)/2;
-	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):find_last(x-val[id<<1|1],id<<1,l,mid);
+	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):
+		find_last(x-val[id<<1|1],id<<1,l,mid);
 }
 #endif
 /////////////////////////////////////////////////////////////
@@ -104,7 +108,9 @@ public:
 void set(){vl=1;vr=0;val.clear();}
 void set(int _l,int _r){
 	ll n=(ll)_r-_l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=_l;vr=_r;val.assign(4*n,info());
+	vl=_l;
+	vr=_r;
+	val.assign(4*n,info());
 	build(1,vl,vr);
 }
 void setN(int _n){

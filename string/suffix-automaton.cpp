@@ -18,13 +18,24 @@ vector<vector<int>> son;
 SAM(){set();}
 void set(int m=0){
 	assert(0<=m&&m<(INT_MAX-1)/2);n=tot=lst=0;
-	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);siz.assign(1,0);son.assign(1,{});
-	ch.reserve(2*m+1);fail.reserve(2*m+1);len.reserve(2*m+1);
+	ch.assign(1,{});
+	fail.assign(1,-1);
+	len.assign(1,0);
+	siz.assign(1,0);
+	son.assign(1,{});
+	ch.reserve(2*m+1);
+	fail.reserve(2*m+1);
+	len.reserve(2*m+1);
 	siz.reserve(2*m+1);son.reserve(2*m+1);
 }
 int new_node(){
-	assert(tot<INT_MAX-1);ch.push_back({});fail.push_back(0);
-	len.push_back(0);siz.push_back(0);son.emplace_back();return ++tot;
+	assert(tot<INT_MAX-1);
+	ch.push_back({});
+	fail.push_back(0);
+	len.push_back(0);
+	siz.push_back(0);
+	son.emplace_back();
+	return ++tot;
 }
 inline int clone(int x){
 	new_node();ch[tot]=ch[x];
@@ -32,7 +43,9 @@ inline int clone(int x){
 	return tot;
 }
 void extend(char c){
-	assert('a'<=c&&c<='z');c-='a'; // attention the alphabet
+	assert('a'<=c&&c<='z');
+	c-='a';
+	// attention the alphabet
 	int cur=new_node();len[cur]=len[lst]+1;
 	while(~lst&&!ch[lst][c]) ch[lst][c]=tot,lst=fail[lst];
 	if(lst==-1) fail[cur]=0;
@@ -52,10 +65,13 @@ void output(){
 	// output fail, ed, len etc.
 	cerr<<"string:"<<s<<endl;
 	cerr<<"# node = "<<tot<<endl;
-	cerr<<"fail: ";for(int i=0;i<=tot;i++) cerr<<fail[i]<<" \n"[i==tot];
-	cerr<<"len: ";for(int i=0;i<=tot;i++) cerr<<len[i]<<" \n"[i==tot];
+	cerr<<"fail: ";
+	for(int i=0;i<=tot;i++) cerr<<fail[i]<<" \n"[i==tot];
+	cerr<<"len: ";
+	for(int i=0;i<=tot;i++) cerr<<len[i]<<" \n"[i==tot];
 	// other else?
-	cerr<<"siz: ";for(int i=0;i<=tot;i++) cerr<<siz[i]<<" \n"[i==tot];
+	cerr<<"siz: ";
+	for(int i=0;i<=tot;i++) cerr<<siz[i]<<" \n"[i==tot];
 }
 void dfs(int u){
 	vector<int> q{u};
@@ -64,7 +80,9 @@ void dfs(int u){
 }
 void build(string S){
 	assert(!S.empty()&&S[0]==' '&&S.size()<(INT_MAX-1)/2);
-	set((int)S.size()-1);s=move(S);n=(int)s.size()-1;
+	set((int)S.size()-1);
+	s=move(S);
+	n=(int)s.size()-1;
 	for(int i=1;i<=n;i++){
 		extend(s[i]);
 		// something record here

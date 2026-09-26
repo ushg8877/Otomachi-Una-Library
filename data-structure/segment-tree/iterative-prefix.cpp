@@ -50,7 +50,9 @@ info query(int l,int r){
 // please transfer (int,int) to info here
 public:
 void setN(int _n){
-	assert(1<=_n&&_n<(1<<29));n=_n;B=1;
+	assert(1<=_n&&_n<(1<<29));
+	n=_n;
+	B=1;
 	while(B<n+2)B*=2;
 	a.assign(2*B,info());
 }

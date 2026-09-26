@@ -12,14 +12,19 @@
 struct FastSet{
 vector<vector<ull>> a;int V=0,B=0;
 void setN(int _V){
-	assert(0<=_V&&_V<INT_MAX);V=_V+1;a.clear();
+	assert(0<=_V&&_V<INT_MAX);
+	V=_V+1;
+	a.clear();
 	for(int n=V;;){
 		n=(n-1)/64+1;a.emplace_back(n,0);
 		if(n==1)break;
 	}
 	B=(int)a.size()-1;
 }
-inline bool operator [](int x)const{assert(0<=x&&x<V);return a[0][x>>6]>>(x&63)&1;}
+inline bool operator [](int x)const{
+	assert(0<=x&&x<V);
+	return a[0][x>>6]>>(x&63)&1;
+}
 vector<int> to_vector()const{
 	vector<int> I;
 	if(a.empty())return I;

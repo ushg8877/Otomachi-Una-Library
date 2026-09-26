@@ -8,7 +8,8 @@
 //   The root is the first minimum; empty input returns two empty vectors.
 //
 ////////////////////////////////////////////////////////////////
-template<typename T> pair<vector<int>,vector<int>> cartesian(const vector<T> &a){
+template<typename T>
+pair<vector<int>,vector<int>> cartesian(const vector<T> &a){
 	assert(a.size()<(size_t)INT_MAX);int n=a.size();
 	vector<int> ls(n,-1),rs(n,-1),st;st.reserve(n);
 	for(int i=0;i<n;i++){

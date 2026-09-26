@@ -12,8 +12,13 @@ int n=0,top=0,tot=0,scnt=0;
 vector<vector<int>> edg;
 vector<int> low,dfn,stk,bel;
 void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX);n=_n;edg.assign(n+1,{});
-	low.assign(n+1,0);dfn.assign(n+1,0);stk.assign(n+1,0);bel.assign(n+1,0);
+	assert(0<=_n&&_n<INT_MAX);
+	n=_n;
+	edg.assign(n+1,{});
+	low.assign(n+1,0);
+	dfn.assign(n+1,0);
+	stk.assign(n+1,0);
+	bel.assign(n+1,0);
 	top=tot=scnt=0;
 }
 void add_edge(int u,int v){
@@ -31,13 +36,19 @@ vector<array<int,2>> build(){
 			if(i<(int)edg[x].size()){
 				int v=edg[x][i++];
 				if(v==p&&!skip){skip=1;continue;}
-				if(!dfn[v]){low[v]=dfn[v]=++tot;stk[++top]=v;q.push_back({v,x,0,0});}
+				if(!dfn[v]){
+					low[v]=dfn[v]=++tot;
+					stk[++top]=v;
+					q.push_back({v,x,0,0});
+				}
 				else low[x]=min(low[x],dfn[v]);
 			}else{
 				int v=x,parent=p;q.pop_back();
 				if(parent)low[parent]=min(low[parent],low[v]);
 				if(low[v]==dfn[v]){
-					scnt++;int y;do{y=stk[top--];bel[y]=scnt;}while(y!=v);
+					scnt++;
+					int y;
+					do{y=stk[top--];bel[y]=scnt;}while(y!=v);
 				}
 			}
 		}

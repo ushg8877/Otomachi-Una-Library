@@ -12,7 +12,10 @@ const ld pi=acos(-1),dx=1e-9;
 struct Point{
 	ll x,y;
 	friend istream& operator >>(istream &i,Point &P){i>>P.x>>P.y;return i;}
-	friend ostream& operator <<(ostream &o,const Point &P){o<<P.x<<' '<<P.y;return o;}
+	friend ostream& operator <<(ostream &o,const Point &P){
+		o<<P.x<<' '<<P.y;
+		return o;
+	}
 	// void read(){cin>>x>>y;}
 	// void output(){cout<<x<<' '<<y<<'\n';}
 	void output(string s=""){cerr<<"Point "<<s<<": ("<<x<<","<<y<<")"<<endl;}
@@ -20,12 +23,22 @@ struct Point{
 	Point (ll _x=0,ll _y=0){x=_x,y=_y;}
 };
 
-inline bool operator ==(const Point &x,const Point &y){return x.x==y.x&&x.y==y.y;}
-inline bool operator !=(const Point &x,const Point &y){return x.x!=y.x||x.y!=y.y;}
+inline bool operator ==(const Point &x,const Point &y){
+	return x.x==y.x&&x.y==y.y;
+}
+inline bool operator !=(const Point &x,const Point &y){
+	return x.x!=y.x||x.y!=y.y;
+}
 
-inline bool operator <(const Point &x,const Point &y){return (x.x!=y.x?x.x<y.x:x.y<y.y);}
-inline Point operator -(const Point &x,const Point &y){return Point(x.x-y.x,x.y-y.y);}
-inline Point operator +(const Point &x,const Point &y){return Point(x.x+y.x,x.y+y.y);}
+inline bool operator <(const Point &x,const Point &y){
+	return (x.x!=y.x?x.x<y.x:x.y<y.y);
+}
+inline Point operator -(const Point &x,const Point &y){
+	return Point(x.x-y.x,x.y-y.y);
+}
+inline Point operator +(const Point &x,const Point &y){
+	return Point(x.x+y.x,x.y+y.y);
+}
 inline void operator -=(Point &x,const Point &y){x=x-y;}
 inline void operator +=(Point &x,const Point &y){x=x+y;}
 inline Point operator *(const Point &x,ll y){return Point(x.x*y,x.y*y);}
@@ -105,7 +118,9 @@ inline bool nonstrict_intersect(const Point &A,const Point &B,
 inline bool parallel(Point A,Point B,
 	Point C,Point D){
 	// check if AB // CD
-	B-=A,D-=C;A-=C;C=-1*D;
+	B-=A,D-=C;
+	A-=C;
+	C=-1*D;
 	return sgn(B*C)==0&&sgn(A*B)!=0;
 }
 inline bool ray_intersect(Point A,Point B,Point C,Point D){
@@ -121,10 +136,12 @@ inline bool in_triangle(const Point &P,const Point &A,
 	const Point &B,const Point &C){
 	// check if P in triangle ABC
 	// P may lie on bound
-	if(!area(A,B,C))return on_segment(P,A,B)||on_segment(P,B,C)||on_segment(P,C,A);
+	if(!area(A,B,C))return on_segment(P,A,B)||on_segment(P,B,C)||on_segment(P,C,
+		A);
 	return area(A,B,C)==area(P,A,B)+area(P,B,C)+area(P,C,A);
 }
-template<typename F> int convex_min(int n,F val){
+template<typename F>
+int convex_min(int n,F val){
 	assert(n>0);
 	auto low=[&](int i){return val(i)<=val((i+n-1)%n)&&val(i)<=val((i+1)%n);};
 	if(low(0))return 0;

@@ -28,7 +28,9 @@ ll solve(vector<int> s)const{
 	sort(s.begin(),s.end());s.erase(unique(s.begin(),s.end()),s.end());
 	if(s.size()<=1)return 0;
 	// Fix one terminal as the root, saving half of the subset states.
-	int rt=s.back();s.pop_back();assert(s.size()<31);
+	int rt=s.back();
+	s.pop_back();
+	assert(s.size()<31);
 	int k=s.size(),N=1<<k;size_t len=(size_t)n+1;
 	vector<ll> f;assert((size_t)N<=f.max_size()/len);
 	f.assign((size_t)N*len,inf);
@@ -45,11 +47,15 @@ ll solve(vector<int> s)const{
 		for(int u=1;u<=n;u++)if(d[u]!=inf)q.push_back({d[u],u});
 		make_heap(q.begin(),q.end(),cmp);
 		while(!q.empty()){
-			auto [dd,u]=q.front();pop_heap(q.begin(),q.end(),cmp);q.pop_back();
+			auto [dd,u]=q.front();
+			pop_heap(q.begin(),q.end(),cmp);
+			q.pop_back();
 			if(dd!=d[u])continue;
 			if(mask==N-1&&u==rt)return dd;
 			for(auto [v,w]:edg[u])if(w<d[v]-dd){
-				d[v]=dd+w;q.push_back({d[v],v});push_heap(q.begin(),q.end(),cmp);
+				d[v]=dd+w;
+				q.push_back({d[v],v});
+				push_heap(q.begin(),q.end(),cmp);
 			}
 		}
 	}

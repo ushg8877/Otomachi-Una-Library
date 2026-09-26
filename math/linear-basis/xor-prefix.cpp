@@ -12,7 +12,13 @@ struct Prefix_Xor_Basis{
 int m=64,rank=0,last=0;
 vector<ull> a=vector<ull>(64);
 vector<int> pos=vector<int>(64);
-void setM(int _m){assert(0<=_m&&_m<=64);m=_m;rank=last=0;a.assign(m,0);pos.assign(m,0);}
+void setM(int _m){
+	assert(0<=_m&&_m<=64);
+	m=_m;
+	rank=last=0;
+	a.assign(m,0);
+	pos.assign(m,0);
+}
 void set(){rank=last=0;fill(a.begin(),a.end(),0);fill(pos.begin(),pos.end(),0);}
 int insert(ull x,int id){
 	assert(m==64||!(x>>m));

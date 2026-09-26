@@ -15,8 +15,12 @@ vector<char> inq,vis,flower;
 void setN(int _n){
 	assert(0<=_n&&_n<INT_MAX);n=_n;
 	edg.assign(n+1,{});match.assign(n+1,0);
-	pre.resize(n+1);bel.resize(n+1);q.resize(n+1);
-	inq.resize(n+1);vis.resize(n+1);flower.resize(n+1);
+	pre.resize(n+1);
+	bel.resize(n+1);
+	q.resize(n+1);
+	inq.resize(n+1);
+	vis.resize(n+1);
+	flower.resize(n+1);
 }
 void add_edge(int u,int v){
 	assert(1<=min(u,v)&&max(u,v)<=n);
@@ -36,14 +40,18 @@ int lca(int u,int v){
 void shrink(int u,int v,int w){
 	while(bel[u]!=w){
 		flower[bel[u]]=flower[bel[match[u]]]=true;
-		pre[u]=v;v=match[u];u=pre[v];
+		pre[u]=v;
+		v=match[u];
+		u=pre[v];
 	}
 }
 bool BFS(int s){
 	fill(inq.begin(),inq.end(),false);
 	fill(pre.begin(),pre.end(),0);
 	iota(bel.begin(),bel.end(),0);
-	int h=0,t=0;q[t++]=s;inq[s]=true;
+	int h=0,t=0;
+	q[t++]=s;
+	inq[s]=true;
 	while(h<t){
 		int u=q[h++];
 		for(int v:edg[u]){
@@ -61,11 +69,15 @@ bool BFS(int s){
 				if(!match[v]){
 					while(v){
 						int x=pre[v],y=match[x];
-						match[v]=x;match[x]=v;v=y;
+						match[v]=x;
+						match[x]=v;
+						v=y;
 					}
 					return true;
 				}
-				int x=match[v];inq[x]=true;q[t++]=x;
+				int x=match[v];
+				inq[x]=true;
+				q[t++]=x;
 			}
 		}
 	}

@@ -23,11 +23,15 @@ inline ull gcd(ull x,ull y){
 }
 inline ull lcm(ull x,ull y){
 	if(!x||!y)return 0;
-	x/=gcd(x,y);assert(x<=ULLONG_MAX/y);return x*y;
+	x/=gcd(x,y);
+	assert(x<=ULLONG_MAX/y);
+	return x*y;
 }
 inline ll inv(ll x,ll M){
 	// return x^{-1} mod M
-	assert(M>0);x%=M;if(x<0)x+=M;
+	assert(M>0);
+	x%=M;
+	if(x<0)x+=M;
 	ull a=M,b=x;__int128 y=0,z=1;
 	while(b){
 		const ull q=a/b,c=a-q*b;
@@ -45,7 +49,11 @@ ll r,M;
 COE():r(0),M(1){}
 COE(ll _r,ll _M):r(_r),M(_M){assert(M>0);r%=M;if(r<0)r+=M;}
 inline bool empty()const{return M==-1;}
-inline bool accept(ll x)const{if(empty())return false;x%=M;return (x<0?x+M:x)==r;}
+inline bool accept(ll x)const{
+	if(empty())return false;
+	x%=M;
+	return (x<0?x+M:x)==r;
+}
 inline COE& operator +=(const COE &x){
 	if(empty()||x.empty()){M=-1;return *this;}
 	ll g=gcd(M,x.M);

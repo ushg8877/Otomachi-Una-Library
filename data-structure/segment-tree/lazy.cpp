@@ -71,7 +71,8 @@ inline void push(int id,const lazt &x){
 	laz[id]+=x;val[id]+=x;
 }
 inline void pushdown(int id){
-	if(!laz[id].empty()) push(id<<1,laz[id]),push(id<<1|1,laz[id]),laz[id].set();
+	if(!laz[id].empty()) push(id<<1,laz[id]),push(id<<1|1,laz[id]),laz[id].set()
+		;
 }
 inline void pushup(int id){
 	val[id]=val[id<<1]+val[id<<1|1];
@@ -89,7 +90,9 @@ void build(int id,int l,int r){
 void update(int x,const info &v,int id,int l,int r){
 	if(l==r){
 		assert(x==l);
-		val[id]=v;laz[id].set();return;
+		val[id]=v;
+		laz[id].set();
+		return;
 	}
 	int mid=l+((ll)r-l)/2;
 	pushdown(id);
@@ -100,7 +103,8 @@ void update(int x,const info &v,int id,int l,int r){
 void modify(int x,const info &v,int id,int l,int r){
 	if(l==r){
 		assert(x==l);
-		val[id]+=v;return;
+		val[id]+=v;
+		return;
 	}
 	int mid=l+((ll)r-l)/2;
 	pushdown(id);
@@ -130,14 +134,16 @@ int find_first(info x,int id,int l,int r){
 	if(l==r) return l;
 	int mid=l+((ll)r-l)/2;
 	pushdown(id);
-	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],id<<1|1,mid+1,r);
+	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],
+		id<<1|1,mid+1,r);
 }
 int find_last(info x,int id,int l,int r){
 	// if no compare betweeen infos, delete this
 	if(l==r) return l;
 	int mid=l+((ll)r-l)/2;
 	pushdown(id);
-	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):find_last(x-val[id<<1|1],id<<1,l,mid);
+	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):
+		find_last(x-val[id<<1|1],id<<1,l,mid);
 }
 #endif
 /////////////////////////////////////////////////////////////
@@ -147,7 +153,9 @@ public:
 void set(){vl=1;vr=0;val.clear();laz.clear();}
 void set(int _l,int _r){
 	ll n=(ll)_r-_l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=_l;vr=_r;val.assign(4*n,info());
+	vl=_l;
+	vr=_r;
+	val.assign(4*n,info());
 	laz.assign(4*n,lazt());
 	build(1,vl,vr);
 }

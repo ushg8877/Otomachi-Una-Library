@@ -19,13 +19,18 @@ struct info{
 };
 int vl=1,vr=0,n=0;vector<info> a;
 info query(int x)const{
-	info ans;for(;x;x-=x&-x)ans+=a[x];return ans;
+	info ans;
+	for(;x;x-=x&-x)ans+=a[x];
+	return ans;
 }
 public:
 void set(){vl=1;vr=n=0;a.clear();}
 void setRange(int l,int r){
 	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,info());
+	vl=l;
+	vr=r;
+	n=m;
+	a.assign(n+2,info());
 }
 void setN(int n){setRange(1,n);}
 void add(ll x,ll v){
@@ -47,7 +52,10 @@ void add(int l,int r,ll x){
 	T1.add(l,a*x);T1.add((ll)r+1,-b*x);
 }
 ll query(ll x)const{return (x-vl+2)*T0.ask(x)-T1.ask(x);}
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return query(r)-query((ll)l-1);}
+ll ask(int l,int r)const{
+	assert(vl<=l&&l<=r&&r<=vr);
+	return query(r)-query((ll)l-1);
+}
 }T;
 // end for data-structure/fenwick/fenwick.cpp
 /////////////////////////

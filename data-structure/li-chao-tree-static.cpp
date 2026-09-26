@@ -15,7 +15,8 @@
 //   O(n) space; add / ask O(log n), interval add O(log^2 n).
 //
 ////////////////////////////////////////////////////////////////
-template<typename F,bool COMPRESS=true,bool MINIMIZE=true> struct LiChao{
+template<typename F,bool COMPRESS=true,bool MINIMIZE=true>
+struct LiChao{
 using T=typename F::value_type;
 int n=0,sz=1;
 ll lo=0,hi=0;
@@ -24,11 +25,17 @@ vector<F> a;
 void set(const vector<ll> &x,const F &f){
 	static_assert(COMPRESS);X=x;
 	sort(X.begin(),X.end());X.erase(unique(X.begin(),X.end()),X.end());
-	assert(!X.empty()&&X.size()<=(1<<29));n=X.size();build(f);
+	assert(!X.empty()&&X.size()<=(1<<29));
+	n=X.size();
+	build(f);
 }
 void setRange(ll l,ll r,const F &f){
 	static_assert(!COMPRESS);
-	assert(l<r&&(__int128)r-l<=(1<<29));lo=l;hi=r;n=r-l;build(f);
+	assert(l<r&&(__int128)r-l<=(1<<29));
+	lo=l;
+	hi=r;
+	n=r-l;
+	build(f);
 }
 void set(){assert(n);fill(a.begin()+1,a.end(),a[0]);}
 void add(F f){assert(n);add(1,move(f));}
@@ -54,7 +61,10 @@ pair<T,F> ask(ll x)const{
 }
 private:
 void build(const F &f){sz=1;while(sz<n)sz<<=1;a.assign(sz*2,f);}
-static bool better(const T &x,const T &y){if constexpr(MINIMIZE)return x<y;else return y<x;}
+static bool better(const T &x,const T &y){
+	if constexpr(MINIMIZE)return x<y;
+	else return y<x;
+}
 int idx(ll x)const{
 	if constexpr(COMPRESS)return lower_bound(X.begin(),X.end(),x)-X.begin();
 	else{assert(lo<=x&&x<=hi);return x-lo;}

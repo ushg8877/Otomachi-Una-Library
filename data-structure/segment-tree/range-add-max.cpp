@@ -50,7 +50,9 @@ public:
 void set(){vl=1;vr=0;tr.clear();}
 void set(int l,int r){
 	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=l;vr=r;tr.assign(4*n,node());
+	vl=l;
+	vr=r;
+	tr.assign(4*n,node());
 }
 void setN(int n){set(1,n);}
 void upd(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,true,1,vl,vr);}

@@ -25,7 +25,9 @@ bool solve(){
 		for(int v:edg[u])if(vis[v]!=u)vis[v]=u,edg[u][k++]=v;
 		edg[u].resize(k);bucket[0].push_back(u);
 	}
-	peo.resize(n);rk.assign(n+1,0);int mx=0;
+	peo.resize(n);
+	rk.assign(n+1,0);
+	int mx=0;
 	for(int i=n;i>=1;i--){
 		while(true){
 			while(bucket[mx].empty())mx--;
@@ -47,7 +49,9 @@ bool solve(){
 	for(int p=1;p<=n;p++){
 		for(int v:edg[p])vis[v]=p;
 		for(int u:son[p])for(int v:edg[u])if(v!=p&&rk[v]>rk[u]&&vis[v]!=p){
-			peo.clear();rk.clear();return false;
+			peo.clear();
+			rk.clear();
+			return false;
 		}
 	}
 	return true;

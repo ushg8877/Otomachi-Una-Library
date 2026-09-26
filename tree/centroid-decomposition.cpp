@@ -16,7 +16,10 @@ vector<int> in,out,siz,ff,dep,dfn,hson,top,ed,msiz,csiz;
 vector<char> vis;int tsiz=0,cen=0;
 ////////////////////////////////// self variable
 void setN(int _n){
-	assert(1<=_n&&_n<INT_MAX-1);n=_n;tot=0;rt=1;
+	assert(1<=_n&&_n<INT_MAX-1);
+	n=_n;
+	tot=0;
+	rt=1;
 	edg.assign(n+1,{});st.resize(__lg(n)+1);
 	for(int i=0;i<(int)st.size();i++)st[i].assign(n-(1<<i)+2,0);
 	in.assign(n+1,0);
@@ -38,11 +41,18 @@ void add_edge(int u,int v){
 	edg[v].push_back(u);
 }
 void HLD(int u,int fa){
-	vector<int> q{u};assert(!siz[u]);siz[u]=1;ff[u]=fa;
+	vector<int> q{u};
+	assert(!siz[u]);
+	siz[u]=1;
+	ff[u]=fa;
 	for(int i=0;i<(int)q.size();i++){
 		int x=q[i];
 		for(int v:edg[x])if(v!=ff[x]){
-			assert(!siz[v]);siz[v]=1;ff[v]=x;dep[v]=dep[x]+1;q.push_back(v);
+			assert(!siz[v]);
+			siz[v]=1;
+			ff[v]=x;
+			dep[v]=dep[x]+1;
+			q.push_back(v);
 		}
 	}
 	for(int i=(int)q.size()-1;i>0;i--){
@@ -51,9 +61,15 @@ void HLD(int u,int fa){
 	}
 } 
 void HLD1(int u,int fa){
-	int start=tot;vector<int> q{u};ff[u]=fa;
+	int start=tot;
+	vector<int> q{u};
+	ff[u]=fa;
 	while(!q.empty()){
-		int x=q.back();q.pop_back();in[x]=++tot;dfn[tot]=x;st[0][tot]=ff[x];
+		int x=q.back();
+		q.pop_back();
+		in[x]=++tot;
+		dfn[tot]=x;
+		st[0][tot]=ff[x];
 		for(int i=(int)edg[x].size()-1;i>=0;i--){
 			int v=edg[x][i];if(v==ff[x]||v==hson[x])continue;
 			top[v]=v;q.push_back(v);
@@ -68,7 +84,11 @@ void HLD_build(){
 	// build all basic information in O(nlogn) (without lca O(n))
 	assert(1<=rt&&rt<=n);tot=0;
 	fill(hson.begin(),hson.end(),0);fill(siz.begin(),siz.end(),0);
-	dep[rt]=1;top[rt]=rt;HLD(rt,0);HLD1(rt,0);assert(tot==n);
+	dep[rt]=1;
+	top[rt]=rt;
+	HLD(rt,0);
+	HLD1(rt,0);
+	assert(tot==n);
 	for(int i=1;i<(int)st.size();i++) for(int j=1;j<=n-(1<<i)+1;j++)
 		st[i][j]=higher(st[i-1][j],st[i-1][j+(1<<(i-1))]);
 }
@@ -97,7 +117,9 @@ inline int kth_anc(int u,int k){
 void get_size(int u,int fa){
 	vector<array<int,2>> q{{u,fa}};
 	for(int i=0;i<(int)q.size();i++){
-		auto [x,p]=q[i];csiz[x]=1;msiz[x]=0;
+		auto [x,p]=q[i];
+		csiz[x]=1;
+		msiz[x]=0;
 		for(int v:edg[x])if(v!=p&&!vis[v])q.push_back({v,x});
 	}
 	for(int i=(int)q.size()-1;i>=0;i--){
@@ -123,13 +145,19 @@ void DC(int u){
 	// solve whole
 	for(int v:edg[u]) if(!vis[v]){
 		tsiz=csiz[v];cen=0;
-		get_size(v,0);get_size(cen,0);DC(cen);
+		get_size(v,0);
+		get_size(cen,0);
+		DC(cen);
 	}
 	// cerr<<"finish"<<endl;
 }
 void DC_build(){
 	assert(1<=rt&&rt<=n);fill(vis.begin(),vis.end(),0);
-	tsiz=n;msiz[cen=0]=1e9;get_size(rt,0);get_size(cen,0);DC(cen);
+	tsiz=n;
+	msiz[cen=0]=1e9;
+	get_size(rt,0);
+	get_size(cen,0);
+	DC(cen);
 }
 void output(){
 	cerr<<"***********************************\n";
@@ -149,7 +177,9 @@ void solve(){
 	// do not forget setN
 	// use add_edge(u,v) to add a edge
 	// do not forget HLD_build()
-	int N;cin>>N;setN(N);
+	int N;
+	cin>>N;
+	setN(N);
 	for(int i=1,f;i<=n;i++){
 		cin>>f;
 		if(f) add_edge(i,f);

@@ -9,7 +9,8 @@
 //   G.det(a); // square matrix; floating point uses G.eps
 //
 ////////////////////////////////////////////////////////////////
-template<typename T> struct Gauss{
+template<typename T>
+struct Gauss{
 static_assert(!is_integral_v<T>,"use a field type");
 long double eps=1e-12L;
 int rank=0;
@@ -22,22 +23,29 @@ bool zero(const T &v)const{
 int pivot(const vector<vector<T>> &a,int r,int c)const{
 	int p=-1;
 	for(int i=r;i<(int)a.size();i++)if(!zero(a[i][c])){
-		if constexpr(is_floating_point_v<T>){if(p==-1||abs(a[i][c])>abs(a[p][c]))p=i;}
+		if constexpr(is_floating_point_v<T>){
+			if(p==-1||abs(a[i][c])>abs(a[p][c]))p=i;
+		}
 		else return i;
 	}
 	return p;
 }
 int solve(vector<vector<T>> a,int m){
 	assert(m>=0&&m<INT_MAX&&a.size()<INT_MAX&&eps>=0);
-	int n=a.size();for(auto &v:a)assert(v.size()==(size_t)m+1);
-	rank=0;where.assign(m,-1);x.assign(m,T(0));
+	int n=a.size();
+	for(auto &v:a)assert(v.size()==(size_t)m+1);
+	rank=0;
+	where.assign(m,-1);
+	x.assign(m,T(0));
 	for(int c=0;c<m&&rank<n;c++){
 		int p=pivot(a,rank,c);if(p==-1)continue;
 		swap(a[p],a[rank]);where[c]=rank;
 		T z=T(1)/a[rank][c];a[rank][c]=T(1);
 		for(int j=c+1;j<=m;j++)a[rank][j]*=z;
 		for(int i=rank+1;i<n;i++){
-			T v=a[i][c];a[i][c]=T(0);if(zero(v))continue;
+			T v=a[i][c];
+			a[i][c]=T(0);
+			if(zero(v))continue;
 			for(int j=c+1;j<=m;j++)a[i][j]-=v*a[rank][j];
 		}
 		rank++;
@@ -58,7 +66,10 @@ T det(vector<vector<T>> a)const{
 		if(p!=c){swap(a[p],a[c]);ans=-ans;}
 		ans*=a[c][c];T z=T(1)/a[c][c];
 		for(int i=c+1;i<n;i++){
-			T v=a[i][c];a[i][c]=T(0);if(zero(v))continue;v*=z;
+			T v=a[i][c];
+			a[i][c]=T(0);
+			if(zero(v))continue;
+			v*=z;
 			for(int j=c+1;j<n;j++)a[i][j]-=v*a[c][j];
 		}
 	}

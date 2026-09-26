@@ -7,9 +7,10 @@
 //   init(n); C(n,k); // setM clears fac / ifac / inv
 //
 ////////////////////////////////////////////////////////////////
-template <unsigned _M> struct ModInt{
+template<unsigned _M>
+struct ModInt{
 static_assert(_M==0||(1<_M&&_M<=INT_MAX));
-static inline conditional_t<_M==0,unsigned,const unsigned> MOD=_M?_M:1000000007;
+static inline conditional_t<_M==0,unsigned,const unsigned>MOD=_M?_M:1000000007;
 static inline unsigned long long NEG_INV_M=-1ULL/MOD;
 static void setM(unsigned m);
 unsigned x;
@@ -18,9 +19,9 @@ constexpr ModInt(unsigned y):x(y%MOD){}
 constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
 constexpr ModInt(unsigned long long y):x(y%MOD){}
 constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){
+ModInt &operator+=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
+ModInt &operator-=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
+ModInt &operator*=(const ModInt &a){
 	unsigned long long v=(unsigned long long)x*a.x;
 	if constexpr(_M)x=v%MOD;
 	else{
@@ -29,12 +30,12 @@ ModInt& operator *=(const ModInt &a){
 	}
 	return *this;
 }
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-bool operator ==(const ModInt &a)const{return x==a.x;}
-bool operator !=(const ModInt &a)const{return x!=a.x;}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
+ModInt &operator/=(const ModInt &a){return (*this)*=a.inv();}
+bool operator==(const ModInt &a)const{return x==a.x;}
+bool operator!=(const ModInt &a)const{return x!=a.x;}
+explicit operator bool()const{return x!=0;}
+bool operator!()const{return x==0;}
+ModInt inv()const{
 	unsigned a=MOD,b=x;ll y=0,z=1;
 	while(b){
 		const unsigned q=a/b,c=a-q*b;
@@ -42,30 +43,39 @@ ModInt inv() const {
 		const ll w=y-(ll)q*z;
 		y=z,z=w;
 	}
-	assert(a==1);return ModInt(y);
+	assert(a==1);
+	return ModInt(y);
 }
-ModInt pow(long long k) const {
+ModInt pow(long long k)const{
 	unsigned long long e=k;
 	ModInt a=*this,b=1;
 	if(k<0){a=a.inv();e=0-e;}
 	for(;e;e>>=1){if(e&1)b*=a;a*=a;}
 	return b;
 }
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
+ModInt &operator++(){*this+=1;return *this;}
+ModInt &operator--(){*this-=1;return *this;}
+ModInt operator+()const{return *this;}
+ModInt operator-()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
+ModInt operator+(const ModInt &a)const{return ModInt(*this)+=a;}
+ModInt operator-(const ModInt &a)const{return ModInt(*this)-=a;}
+ModInt operator*(const ModInt &a)const{return ModInt(*this)*=a;}
+ModInt operator/(const ModInt &a)const{return ModInt(*this)/=a;}
 
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){ll y;if(i>>y)x=ModInt(y);return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
+template<typename T>
+ModInt friend operator+(T a,const ModInt &b){return ModInt(a)+=b;}
+template<typename T>
+ModInt friend operator-(T a,const ModInt &b){return ModInt(a)-=b;}
+template<typename T>
+ModInt friend operator*(T a,const ModInt &b){return ModInt(a)*=b;}
+template<typename T>
+ModInt friend operator/(T a,const ModInt &b){return ModInt(a)/=b;}
+friend istream&operator>>(istream&i,ModInt &x){
+	ll y;
+	if(i>>y)x=ModInt(y);
+	return i;
+}
+friend ostream&operator<<(ostream&o,const ModInt &x){o<<x.x;return o;}
 };
 ////////////////////////////////////////////////////////////////////
 // Basic function, fac, ifac, binom
@@ -74,16 +84,23 @@ using mint=ModInt<0>;
 const unsigned &MOD=mint::MOD;
 using poly=vector<mint>;
 using Poly=poly;
-vector<mint> fac{1},ifac{1},inv{0,1};
-template<unsigned _M> void ModInt<_M>::setM(unsigned m){
+vector<mint>fac{1},ifac{1},inv{0,1};
+template<unsigned _M>
+void ModInt<_M>::setM(unsigned m){
 	static_assert(_M==0,"only the target modulus can change");
-	assert(1<m&&m<=INT_MAX);MOD=m;NEG_INV_M=-1ULL/m;
-	fac.assign(1,1);ifac.assign(1,1);::inv={0,1};
+	assert(1<m&&m<=INT_MAX);
+	MOD=m;
+	NEG_INV_M=-1ULL/m;
+	fac.assign(1,1);
+	ifac.assign(1,1);
+	::inv={0,1};
 }
 void init(int n=0){
 	assert(0<=n&&(unsigned)n<MOD);
 	int m=fac.size();if(n<m)return;
-	fac.resize(n+1);ifac.resize(n+1);inv.resize(max(n+1,2));
+	fac.resize(n+1);
+	ifac.resize(n+1);
+	inv.resize(max(n+1,2));
 	for(int i=m;i<=n;i++)fac[i]=fac[i-1]*i;
 	ifac[n]=fac[n].inv();
 	for(int i=n;i>=m;i--){ifac[i-1]=ifac[i]*i;inv[i]=ifac[i]*fac[i-1];}
@@ -91,7 +108,8 @@ void init(int n=0){
 inline mint C(int x,int y){
 	// choose x from y
 	if(x<0||y<x)return 0;
-	init(y);return fac[y]*ifac[x]*ifac[y-x];
+	init(y);
+	return fac[y]*ifac[x]*ifac[y-x];
 }
 inline mint binom(int y,int x){return C(x,y);}
 
@@ -108,15 +126,18 @@ inline mint binom(int y,int x){return C(x,y);}
 //
 ////////////////////////////////////////////////////////////////
 const int FFT_MAX=23;
-template<unsigned MO> struct MTT_NTT{
+template<unsigned MO>
+struct MTT_NTT{
 using num=ModInt<MO>;
 static constexpr unsigned MO2=MO*2;
-vector<num> FFT_RATIOS,INV_FFT_RATIOS;
+vector<num>FFT_RATIOS,INV_FFT_RATIOS;
 MTT_NTT():FFT_RATIOS(FFT_MAX,1),INV_FFT_RATIOS(FFT_MAX,1){
 	static_assert(MO<(1u<<30)&&((MO-1)%(1<<FFT_MAX)==0));
-	vector<num> root(FFT_MAX+1),iroot(FFT_MAX+1);
-	root[FFT_MAX]=num(3).pow((MO-1)>>FFT_MAX);iroot[FFT_MAX]=root[FFT_MAX].inv();
-	for(int i=FFT_MAX;i;i--)root[i-1]=root[i]*root[i],iroot[i-1]=iroot[i]*iroot[i];
+	vector<num>root(FFT_MAX+1),iroot(FFT_MAX+1);
+	root[FFT_MAX]=num(3).pow((MO-1)>>FFT_MAX);
+	iroot[FFT_MAX]=root[FFT_MAX].inv();
+	for(int i=FFT_MAX;i;i--)root[i-1]=root[i]*root[i],
+		iroot[i-1]=iroot[i]*iroot[i];
 	num x=1,y=1;
 	for(int i=0;i<FFT_MAX-1;i++){
 		FFT_RATIOS[i]=root[i+2]*x;INV_FFT_RATIOS[i]=iroot[i+2]*y;
@@ -124,129 +145,139 @@ MTT_NTT():FFT_RATIOS(FFT_MAX,1),INV_FFT_RATIOS(FFT_MAX,1){
 	}
 }
 // as[rev(i)] <- \sum_j \zeta^(ij) as[j]
-void fft(num *as, int n)const{
-	assert(!(n & (n - 1))); assert(1 <= n); assert(n <= 1 << FFT_MAX);
-	int m = n;
-	if (m >>= 1) {
-		for (int i = 0; i < m; ++i) {
-			const unsigned x = as[i + m].x;
-			as[i + m].x = as[i].x + MO - x;
-			as[i].x += x;
+void fft(num *as,int n)const{
+	assert(!(n&(n-1)));
+	assert(1<=n);
+	assert(n<=1<<FFT_MAX);
+	int m=n;
+	if(m>>=1){
+		for(int i=0;i<m;++i){
+			const unsigned x=as[i+m].x;
+			as[i+m].x=as[i].x+MO-x;
+			as[i].x+=x;
 		}
 	}
-	if (m >>= 1) {
-		num prod = 1U;
-		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
-			for (int i = i0; i < i0 + m; ++i) {
-				const unsigned x = (prod * as[i + m]).x;
-				as[i + m].x = as[i].x + MO - x;
-				as[i].x += x;
+	if(m>>=1){
+		num prod=1U;
+		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
+			for(int i=i0;i<i0+m;++i){
+				const unsigned x=(prod*as[i+m]).x;
+				as[i+m].x=as[i].x+MO-x;
+				as[i].x+=x;
 			}
-			prod *= FFT_RATIOS[__builtin_ctz(++h)];
+			prod*=FFT_RATIOS[__builtin_ctz(++h)];
 		}
 	}
-	for (; m; ) {
-		if (m >>= 1) {
-			num prod = 1U;
-			for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
-				for (int i = i0; i < i0 + m; ++i) {
-					const unsigned x = (prod * as[i + m]).x;
-					as[i + m].x = as[i].x + MO - x;
-					as[i].x += x;
+	for(;m;){
+		if(m>>=1){
+			num prod=1U;
+			for(int h=0,i0=0;i0<n;i0+=(m<<1)){
+				for(int i=i0;i<i0+m;++i){
+					const unsigned x=(prod*as[i+m]).x;
+					as[i+m].x=as[i].x+MO-x;
+					as[i].x+=x;
 				}
-				prod *= FFT_RATIOS[__builtin_ctz(++h)];
+				prod*=FFT_RATIOS[__builtin_ctz(++h)];
 			}
 		}
-		if (m >>= 1) {
-			num prod = 1U;
-			for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
-				for (int i = i0; i < i0 + m; ++i) {
-					const unsigned x = (prod * as[i + m]).x;
-					as[i].x = (as[i].x >= MO2) ? (as[i].x - MO2) : as[i].x;
-					as[i + m].x = as[i].x + MO - x;
-					as[i].x += x;
+		if(m>>=1){
+			num prod=1U;
+			for(int h=0,i0=0;i0<n;i0+=(m<<1)){
+				for(int i=i0;i<i0+m;++i){
+					const unsigned x=(prod*as[i+m]).x;
+					as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
+					as[i+m].x=as[i].x+MO-x;
+					as[i].x+=x;
 				}
-				prod *= FFT_RATIOS[__builtin_ctz(++h)];
+				prod*=FFT_RATIOS[__builtin_ctz(++h)];
 			}
 		}
 	}
-	for (int i = 0; i < n; ++i) {
-		as[i].x = (as[i].x >= MO2) ? (as[i].x - MO2) : as[i].x;
-		as[i].x = (as[i].x >= MO) ? (as[i].x - MO) : as[i].x;
+	for(int i=0;i<n;++i){
+		as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
+		as[i].x=(as[i].x>=MO)?(as[i].x-MO):as[i].x;
 	}
 }
 
 // as[i] <- (1/n) \sum_j \zeta^(-ij) as[rev(j)]
-void invFft(num *as, int n)const{
-	assert(!(n & (n - 1))); assert(1 <= n); assert(n <= 1 << FFT_MAX);
-	int m = 1;
-	if (m < n >> 1) {
-		num prod = 1U;
-		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
-			for (int i = i0; i < i0 + m; ++i) {
-				const unsigned long long y = as[i].x + MO - as[i + m].x;
-				as[i].x += as[i + m].x;
-				as[i + m].x = (prod.x * y) % MO;
+void invFft(num *as,int n)const{
+	assert(!(n&(n-1)));
+	assert(1<=n);
+	assert(n<=1<<FFT_MAX);
+	int m=1;
+	if(m<n>>1){
+		num prod=1U;
+		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
+			for(int i=i0;i<i0+m;++i){
+				const unsigned long long y=as[i].x+MO-as[i+m].x;
+				as[i].x+=as[i+m].x;
+				as[i+m].x=(prod.x*y)%MO;
 			}
-			prod *= INV_FFT_RATIOS[__builtin_ctz(++h)];
+			prod*=INV_FFT_RATIOS[__builtin_ctz(++h)];
 		}
-		m <<= 1;
+		m<<=1;
 	}
-	for (; m < n >> 1; m <<= 1) {
-		num prod = 1U;
-		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
-			for (int i = i0; i < i0 + (m >> 1); ++i) {
-				const unsigned long long y = as[i].x + MO2 - as[i + m].x;
-				as[i].x += as[i + m].x;
-				as[i].x = (as[i].x >= MO2) ? (as[i].x - MO2) : as[i].x;
-				as[i + m].x = (prod.x * y) % MO;
+	for(;m<n>>1;m<<=1){
+		num prod=1U;
+		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
+			for(int i=i0;i<i0+(m>>1);++i){
+				const unsigned long long y=as[i].x+MO2-as[i+m].x;
+				as[i].x+=as[i+m].x;
+				as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
+				as[i+m].x=(prod.x*y)%MO;
 			}
-			for (int i = i0 + (m >> 1); i < i0 + m; ++i) {
-				const unsigned long long y = as[i].x + MO - as[i + m].x;
-				as[i].x += as[i + m].x;
-				as[i + m].x = (prod.x * y) % MO;
+			for(int i=i0+(m>>1);i<i0+m;++i){
+				const unsigned long long y=as[i].x+MO-as[i+m].x;
+				as[i].x+=as[i+m].x;
+				as[i+m].x=(prod.x*y)%MO;
 			}
-			prod *= INV_FFT_RATIOS[__builtin_ctz(++h)];
-		}
-	}
-	if (m < n) {
-		for (int i = 0; i < m; ++i) {
-			const unsigned y = as[i].x + MO2 - as[i + m].x;
-			as[i].x += as[i + m].x;
-			as[i + m].x = y;
+			prod*=INV_FFT_RATIOS[__builtin_ctz(++h)];
 		}
 	}
-	const num invN = num(n).inv();
-	for (int i = 0; i < n; ++i) {
-		as[i] *= invN;
+	if(m<n){
+		for(int i=0;i<m;++i){
+			const unsigned y=as[i].x+MO2-as[i+m].x;
+			as[i].x+=as[i+m].x;
+			as[i+m].x=y;
+		}
+	}
+	const num invN=num(n).inv();
+	for(int i=0;i<n;++i){
+		as[i]*=invN;
 	}
 }
 };
 
-template<unsigned MO> vector<ModInt<MO>> convolution(const poly &f,const poly &g,int n){
-	static const MTT_NTT<MO> ntt;
-	vector<ModInt<MO>> a(n),b(n);
+template<unsigned MO>
+vector<ModInt<MO>>convolution(const poly &f,const poly &g,int n){
+	static const MTT_NTT<MO>ntt;
+	vector<ModInt<MO>>a(n),b(n);
 	for(int i=0;i<(int)f.size();i++)a[i]=f[i].x;
 	for(int i=0;i<(int)g.size();i++)b[i]=g[i].x;
 	ntt.fft(a.data(),n);ntt.fft(b.data(),n);
 	for(int i=0;i<n;i++)a[i]*=b[i];
-	ntt.invFft(a.data(),n);a.resize(f.size()+g.size()-1);return a;
+	ntt.invFft(a.data(),n);
+	a.resize(f.size()+g.size()-1);
+	return a;
 }
-poly operator *(const poly &f,const poly &g){
-	if(f.empty()||g.empty())return {};
+poly operator*(const poly &f,const poly &g){
+	if(f.empty()||g.empty())return{};
 	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
 	int m=f.size()+g.size()-1;
 	poly h(m);
 	if(min(f.size(),g.size())<=32){
-		for(int i=0;i<(int)f.size();i++)for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
+		for(int i=0;i<(int)f.size();i++)for(int j=0;j<(int)g.size();j++)
+			h[i+j]+=f[i]*g[j];
 		return h;
 	}
 	constexpr unsigned mod1=998244353,mod2=167772161,mod3=469762049;
 	constexpr unsigned long long mod12=1ull*mod1*mod2;
 	static const unsigned inv1=ModInt<mod2>(mod1).inv().x;
 	static const unsigned inv2=ModInt<mod3>(mod12).inv().x;
-	assert((__int128)min(f.size(),g.size())*(MOD-1)*(MOD-1)<(__int128)mod12*mod3);
-	int n=1;while(n<m)n<<=1;
+	assert((__int128)min(f.size(),
+		g.size())*(MOD-1)*(MOD-1)<(__int128)mod12*mod3);
+	int n=1;
+	while(n<m)n<<=1;
 	auto a=convolution<mod1>(f,g,n);
 	auto b=convolution<mod2>(f,g,n);
 	auto c=convolution<mod3>(f,g,n);
@@ -259,25 +290,29 @@ poly operator *(const poly &f,const poly &g){
 	return h;
 }
 // Transposed multiplication: (f/g)[i] = sum_j f[i+j]*g[j].
-poly operator /(const poly &f,poly g){
+poly operator/(const poly &f,poly g){
 	if(f.empty()||g.empty())return poly(f.size());
-	int m=g.size();reverse(g.begin(),g.end());g=f*g;
+	int m=g.size();
+	reverse(g.begin(),g.end());
+	g=f*g;
 	return poly(g.begin()+m-1,g.end());
 }
-void operator +=(poly &f,const poly &g){
+void operator+=(poly &f,const poly &g){
 	if(f.size()<g.size())f.resize(g.size());
 	for(int i=0;i<(int)g.size();i++)f[i]+=g[i];
 }
-poly operator +(poly f,const poly &g){f+=g;return f;}
-void operator -=(poly &f,const poly &g){
+poly operator+(poly f,const poly &g){f+=g;return f;}
+void operator-=(poly &f,const poly &g){
 	if(f.size()<g.size())f.resize(g.size());
 	for(int i=0;i<(int)g.size();i++)f[i]-=g[i];
 }
-poly operator -(poly f,const poly &g){f-=g;return f;}
-poly operator *(poly f,mint x){for(auto &y:f)y*=x;return f;}
-poly operator *(mint x,poly f){for(auto &y:f)y*=x;return f;}
+poly operator-(poly f,const poly &g){f-=g;return f;}
+poly operator*(poly f,mint x){for(auto&y:f)y*=x;return f;}
+poly operator*(mint x,poly f){for(auto&y:f)y*=x;return f;}
 mint value(const poly &f,mint x){
-	mint ans=0;for(int i=(int)f.size()-1;i>=0;i--)ans=ans*x+f[i];return ans;
+	mint ans=0;
+	for(int i=(int)f.size()-1;i>=0;i--)ans=ans*x+f[i];
+	return ans;
 }
 poly Inv(const poly &f){
 	assert(!f.empty()&&f[0]&&f.size()<=(1<<(FFT_MAX-1)));
@@ -285,54 +320,71 @@ poly Inv(const poly &f){
 	while((int)g.size()<n){
 		int m=min(n,(int)g.size()*2);
 		poly h=poly(f.begin(),f.begin()+m)*g;h.resize(m);
-		for(auto &x:h)x=-x;
-		h[0]+=2;g=g*h;g.resize(m);
+		for(auto&x:h)x=-x;
+		h[0]+=2;
+		g=g*h;
+		g.resize(m);
 	}
 	return g;
 }
 poly diff(poly f){
-	if(f.empty())return {};
+	if(f.empty())return{};
 	for(int i=1;i<(int)f.size();i++)f[i-1]=f[i]*i;
-	f.pop_back();return f;
+	f.pop_back();
+	return f;
 }
 poly integ(poly f){
-	int n=f.size();init(n);f.resize(n+1);
+	int n=f.size();
+	init(n);
+	f.resize(n+1);
 	for(int i=n;i;i--)f[i]=f[i-1]*inv[i];
-	f[0]=0;return f;
+	f[0]=0;
+	return f;
 }
 poly Ln(const poly &f){
-	assert(!f.empty()&&f[0].x==1&&f.size()<(size_t)MOD&&f.size()<=(1<<(FFT_MAX-1)));
-	poly g=diff(f)*Inv(f);g.resize(f.size()-1);return integ(move(g));
+	assert(!f.empty()&&f[0].x==1&&f.size()<(size_t)MOD&&
+		f.size()<=(1<<(FFT_MAX-1)));
+	poly g=diff(f)*Inv(f);
+	g.resize(f.size()-1);
+	return integ(move(g));
 }
 poly Exp(const poly &f){
 	assert(!f.empty()&&!f[0]&&f.size()<(size_t)MOD&&f.size()<=(1<<(FFT_MAX-1)));
 	int n=f.size();poly g{1};
 	while((int)g.size()<n){
-		int m=min(n,(int)g.size()*2);poly h=g;h.resize(m);h=Ln(h);
+		int m=min(n,(int)g.size()*2);
+		poly h=g;
+		h.resize(m);
+		h=Ln(h);
 		for(int i=0;i<m;i++)h[i]=f[i]-h[i];
-		h[0]+=1;g=g*h;g.resize(m);
+		h[0]+=1;
+		g=g*h;
+		g.resize(m);
 	}
 	return g;
 }
-poly BM(poly a) {
-	poly C{1}, B{1};
-	int L = 0, m = 1;
-	mint b = 1;
-	for (int n = 0; n < (int)a.size(); n++) {
-		mint d = 0;
-		for (int i = 0; i <= L; i++) d += C[i] * a[n - i];
-		if (!d) {
+poly BM(poly a){
+	poly C{1},B{1};
+	int L=0,m=1;
+	mint b=1;
+	for(int n=0;n<(int)a.size();n++){
+		mint d=0;
+		for(int i=0;i<=L;i++)d+=C[i]*a[n-i];
+		if(!d){
 			m++;
-		} else {
-			poly T = C;
-			mint coef = d * b.inv();
-			poly xmB(m, 0);
-			for (mint val : B) xmB.push_back(val);
-			if (C.size() < xmB.size()) C.resize(xmB.size(), 0);
-			for (int i = 0; i < (int)xmB.size(); i++) C[i] -= coef * xmB[i];
-			if (2 * L <= n) {
-				L = n + 1 - L; B = T; b = d; m = 1;
-			} else {
+		}else{
+			poly T=C;
+			mint coef=d*b.inv();
+			poly xmB(m,0);
+			for(mint val:B)xmB.push_back(val);
+			if(C.size()<xmB.size())C.resize(xmB.size(),0);
+			for(int i=0;i<(int)xmB.size();i++)C[i]-=coef*xmB[i];
+			if(2*L<=n){
+				L=n+1-L;
+				B=T;
+				b=d;
+				m=1;
+			}else{
 				m++;
 			}
 		}
@@ -340,36 +392,36 @@ poly BM(poly a) {
 	return C;
 }
 
-mint FSPE(poly F, poly G, ll t) {
+mint FSPE(poly F,poly G,ll t){
 	// find [x^t] F/G
 	assert(t>=0&&!G.empty()&&G[0]);
 	if(F.empty())return 0;
-	while (t) {
-		poly G1 = G;
-		for (int i = 1; i < (int)G1.size(); i += 2) G1[i] = -G1[i];
-		F = F * G1; G = G * G1;
-		poly f, g;
-		for (int i = t & 1; i < (int)F.size(); i += 2) f.push_back(F[i]);
-		for (int i = 0; i < (int)G.size(); i += 2) g.push_back(G[i]);
-		t >>= 1;
-		F = f; G = g;
+	while(t){
+		poly G1=G;
+		for(int i=1;i<(int)G1.size();i+=2)G1[i]=-G1[i];
+		F=F*G1;G=G*G1;
+		poly f,g;
+		for(int i=t&1;i<(int)F.size();i+=2)f.push_back(F[i]);
+		for(int i=0;i<(int)G.size();i+=2)g.push_back(G[i]);
+		t>>=1;
+		F=f;G=g;
 		if(F.empty())return 0;
 	}
-	return F[0] / G[0];
+	return F[0]/G[0];
 }
 
-mint RSPE(poly f, ll x) {
+mint RSPE(poly f,ll x){
 	// find f[x] in O(n^2), note that f must be recursion
-	poly g = BM(f);
+	poly g=BM(f);
 	poly s(g.size()-1);
-	for (int i = 0; i < (int)s.size(); i++)
-		for (int j = 0; j <= i && j < (int)f.size(); j++)
-			s[i] += f[j] * g[i - j];
-	return FSPE(s, g, x);
+	for(int i=0;i<(int)s.size();i++)
+		for(int j=0;j<=i&&j<(int)f.size();j++)
+			s[i]+=f[j]*g[i-j];
+	return FSPE(s,g,x);
 }
 
 
-poly lagrange(const vector<mint> &x,const vector<mint> &y){
+poly lagrange(const vector<mint>&x,const vector<mint>&y){
 	int n=x.size();assert(y.size()==x.size());
 	poly g(n+1),f(n),q(n);g[0]=1;
 	for(int i=0;i<n;i++){

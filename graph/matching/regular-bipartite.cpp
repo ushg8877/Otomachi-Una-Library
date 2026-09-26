@@ -35,9 +35,13 @@ vector<char> split(const vector<int> &a)const{
 	for(int s=1;s<=2*n;s++){
 		int u=s,c=0;
 		while(head[u]!=-1){
-			int x=head[u];head[u]=nxt[x];int i=x/2;
+			int x=head[u];
+			head[u]=nxt[x];
+			int i=x/2;
 			if(vis[i])continue;
-			vis[i]=true;col[i]=c;c^=1;
+			vis[i]=true;
+			col[i]=c;
+			c^=1;
 			int id=a[i];u=x&1?(id>0?e[id].u:-id):(id>0?e[id].v:-id)+n;
 		}
 		assert(u==s&&!c);
@@ -45,7 +49,8 @@ vector<char> split(const vector<int> &a)const{
 	return col;
 }
 vector<int> perfect(const vector<int> &ids,int d)const{
-	ll q=1;while(q<(ll)ids.size())q*=2;
+	ll q=1;
+	while(q<(ll)ids.size())q*=2;
 	vector<pair<int,ll>> a; a.reserve(ids.size()+n);
 	for(int id:ids)a.emplace_back(id,q/d);
 	if(q%d)for(int u=1;u<=n;u++)a.emplace_back(-u,q%d);
@@ -63,24 +68,32 @@ vector<int> perfect(const vector<int> &ids,int d)const{
 	}
 	vector<int> ans(n);
 	for(auto [id,w]:a){assert(id>0&&w==1);ans[e[id].u-1]=id;}
-	assert((int)a.size()==n);return ans;
+	assert((int)a.size()==n);
+	return ans;
 }
 void divide(vector<int> a,int d,vector<vector<int>> &ans)const{
 	if(!d)return;
 	if(d==1){
-		vector<int> b(n);for(int id:a)b[e[id].u-1]=id;
-		ans.push_back(move(b));return;
+		vector<int> b(n);
+		for(int id:a)b[e[id].u-1]=id;
+		ans.push_back(move(b));
+		return;
 	}
 	if(d&1){
 		ans.push_back(perfect(a,d));const auto &b=ans.back();
-		a.erase(remove_if(a.begin(),a.end(),[&](int id){return b[e[id].u-1]==id;}),a.end());
+		a.erase(remove_if(a.begin(),a.end(),
+			[&](int id){return b[e[id].u-1]==id;}),a.end());
 		d--;
 	}
-	auto col=split(a);vector<int> l,r;l.reserve(a.size()/2);r.reserve(a.size()/2);
+	auto col=split(a);
+	vector<int> l,r;
+	l.reserve(a.size()/2);
+	r.reserve(a.size()/2);
 	for(int i=0;i<(int)a.size();i++)(col[i]?r:l).push_back(a[i]);
 	divide(move(l),d/2,ans);
 	// Borrow some completed matchings, so the other degree is a power of two.
-	int k=1;while(k<=((d-1)/2))k*=2;
+	int k=1;
+	while(k<=((d-1)/2))k*=2;
 	for(int i=0;i<k-d/2;i++){
 		r.insert(r.end(),ans.back().begin(),ans.back().end());ans.pop_back();
 	}
@@ -91,10 +104,14 @@ vector<vector<int>> solve()const{
 	if(!n)return {};
 	vector<int> l(n+1),r(n+1),ids(e.size()-1);
 	for(int id=1;id<(int)e.size();id++)l[e[id].u]++,r[e[id].v]++,ids[id-1]=id;
-	int d=l[1];for(int u=1;u<=n;u++)assert(l[u]==d&&r[u]==d);
-	vector<vector<int>> ans;ans.reserve(d);divide(move(ids),d,ans);
+	int d=l[1];
+	for(int u=1;u<=n;u++)assert(l[u]==d&&r[u]==d);
+	vector<vector<int>> ans;
+	ans.reserve(d);
+	divide(move(ids),d,ans);
 	for(auto &a:ans){
-		vector<int> b(n+1);for(int u=1;u<=n;u++)b[u]=e[a[u-1]].v;
+		vector<int> b(n+1);
+		for(int u=1;u<=n;u++)b[u]=e[a[u-1]].v;
 		a=move(b);
 	}
 	return ans;

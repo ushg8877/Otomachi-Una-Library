@@ -27,7 +27,10 @@ void next(){
 	if(phase==0){
 		if(l.first>M-r.first||l.second>M-r.second){stop=true;return;}
 		cur.p=l.first+r.first;cur.q=l.second+r.second;
-	}else{auto [p,q]=at(k);cur.p=p;cur.q=q;}
+	}else{auto [p,q]=at(k);
+	cur.p=p;
+	cur.q=q;
+	}
 }
 void split(){
 	if(hi-lo>1){k=lo+(hi-lo)/2;next();return;}
@@ -37,7 +40,13 @@ void split(){
 }
 public:
 void setM(ll m){
-	assert(m>=1);M=m;l={0,1};r={1,0};phase=-1;stop=false;cur=Rat();
+	assert(m>=1);
+	M=m;
+	l={0,1};
+	r={1,0};
+	phase=-1;
+	stop=false;
+	cur=Rat();
 }
 bool done()const{return stop;}
 bool found()const{return stop&&M&&l==r;}
@@ -47,10 +56,14 @@ void tell(int res){
 	if(!res){l=r={cur.p,cur.q};stop=true;return;}
 	if(phase==-1){
 		if(res>0){l={-1,0};r={0,1};stop=true;return;}
-		phase=0;next();return;
+		phase=0;
+		next();
+		return;
 	}
 	if(phase==0){
-		dir=res;auto a=dir<0?l:r,b=dir<0?r:l;cap=M;
+		dir=res;
+		auto a=dir<0?l:r,b=dir<0?r:l;
+		cap=M;
 		if(b.first)cap=min(cap,(M-a.first)/b.first);
 		if(b.second)cap=min(cap,(M-a.second)/b.second);
 		lo=k=1;phase=1;

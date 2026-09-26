@@ -16,12 +16,23 @@ static Rat make(__int128 a,__int128 b){
 	while(y){__int128 t=x%y;x=y;y=t;}
 	a/=x;b/=x;
 	assert(LLONG_MIN<=a&&a<=LLONG_MAX&&b<=LLONG_MAX);
-	Rat r;r.p=a;r.q=b;return r;
+	Rat r;
+	r.p=a;
+	r.q=b;
+	return r;
 }
-friend Rat operator+(Rat a,Rat b){return make((__int128)a.p*b.q+(__int128)b.p*a.q,(__int128)a.q*b.q);}
-friend Rat operator-(Rat a,Rat b){return make((__int128)a.p*b.q-(__int128)b.p*a.q,(__int128)a.q*b.q);}
-friend Rat operator*(Rat a,Rat b){return make((__int128)a.p*b.p,(__int128)a.q*b.q);}
-friend Rat operator/(Rat a,Rat b){return make((__int128)a.p*b.q,(__int128)a.q*b.p);}
+friend Rat operator+(Rat a,Rat b){
+	return make((__int128)a.p*b.q+(__int128)b.p*a.q,(__int128)a.q*b.q);
+}
+friend Rat operator-(Rat a,Rat b){
+	return make((__int128)a.p*b.q-(__int128)b.p*a.q,(__int128)a.q*b.q);
+}
+friend Rat operator*(Rat a,Rat b){
+	return make((__int128)a.p*b.p,(__int128)a.q*b.q);
+}
+friend Rat operator/(Rat a,Rat b){
+	return make((__int128)a.p*b.q,(__int128)a.q*b.p);
+}
 Rat operator-()const{return make(-(__int128)p,q);}
 Rat& operator+=(Rat b){return *this=*this+b;}
 Rat& operator-=(Rat b){return *this=*this-b;}

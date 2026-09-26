@@ -17,7 +17,10 @@ vector<edge> e;
 vector<int> matchL,matchR;
 void set(){n=m=0;e.clear();matchL.clear();matchR.clear();}
 void setN(int _n,int _m){
-	assert(0<=_n&&_n<INT_MAX-1&&0<=_m&&_m<INT_MAX);set();n=_n;m=_m;
+	assert(0<=_n&&_n<INT_MAX-1&&0<=_m&&_m<INT_MAX);
+	set();
+	n=_n;
+	m=_m;
 	matchL.assign(n+1,0);matchR.assign(m+1,0);
 }
 void add_edge(int u,int v){
@@ -33,12 +36,18 @@ vector<pair<int,int>> solve(){
 	for(auto [u,v]:e)to[rt[u]++]=v;
 	q.reserve(n);
 	for(int u=1;u<=n;u++)for(int i=head[u];i<head[u+1];i++)if(!matchR[to[i]]){
-		matchL[u]=to[i];matchR[to[i]]=u;break;
+		matchL[u]=to[i];
+		matchR[to[i]]=u;
+		break;
 	}
 	while(true){
-		fill(rt.begin(),rt.end(),0);q.clear();bool found=false;
+		fill(rt.begin(),rt.end(),0);
+		q.clear();
+		bool found=false;
 		for(int u=1;u<=n;u++)if(!matchL[u]&&head[u]!=head[u+1]){
-			rt[u]=u;pre[u]=0;q.push_back(u);
+			rt[u]=u;
+			pre[u]=0;
+			q.push_back(u);
 		}
 		for(int h=0;h<(int)q.size();h++){
 			int u=q[h];if(matchL[rt[u]])continue;
@@ -47,7 +56,10 @@ vector<pair<int,int>> solve(){
 				if(!w){
 					found=true;
 					for(int x=u;v;x=pre[x]){
-						int t=matchL[x];matchL[x]=v;matchR[v]=x;v=t;
+						int t=matchL[x];
+						matchL[x]=v;
+						matchR[v]=x;
+						v=t;
 					}
 					break;
 				}

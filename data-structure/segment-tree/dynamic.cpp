@@ -44,7 +44,8 @@ int add(int p,info v,int id,int l,int r){
 		if(p<tr[id].p)swap(tr[id].p,p),swap(tr[id].self,v);
 		int x=add(p,v,tr[id].rs,mid+1,r);tr[id].rs=x;
 	}
-	pushup(id);return id;
+	pushup(id);
+	return id;
 }
 void query(int ql,int qr,int id,int l,int r,info &X){
 	if(max(ql,l)>min(r,qr)||!id) return;
@@ -55,7 +56,12 @@ void query(int ql,int qr,int id,int l,int r,info &X){
 	query(ql,qr,tr[id].rs,mid+1,r,X);
 }
 public:
-void set(int m=0){assert(m>=0);tot=rt=0;tr.assign(1,node());tr.reserve((size_t)m+1);}
+void set(int m=0){
+	assert(m>=0);
+	tot=rt=0;
+	tr.assign(1,node());
+	tr.reserve((size_t)m+1);
+}
 void add(int p,ll s){
 	assert(L<=p&&p<=R);
 	rt=add(p,info(s),rt,L,R);

@@ -12,7 +12,9 @@ template<typename T>
 struct pq2stack{
 private:
 struct info{
-	T e;int w;bool tag;
+	T e;
+	int w;
+	bool tag;
 	inline bool operator < (const info &x)const{return w<x.w;}
 };
 int n=0,r=0,d=0;

@@ -56,7 +56,8 @@ ostream& operator <<(ostream &o,const vector<T> &I){
 #define DEBUG_7(x,y,z,w,a,b,c) DEBUG_6(x,y,z,w,a,b)<<", "<<DEBUG_1(c)
 #define DEBUG_8(x,y,z,w,a,b,c,d) DEBUG_7(x,y,z,w,a,b,c)<<", "<<DEBUG_1(d)
 #define DEBUG_9(x,y,z,w,a,b,c,d,e) DEBUG_8(x,y,z,w,a,b,c,d)<<", "<<DEBUG_1(e)
-#define DEBUG_10(x,y,z,w,a,b,c,d,e,f) DEBUG_9(x,y,z,w,a,b,c,d,e)<<", "<<DEBUG_1(f)
+#define DEBUG_10(x,y,z,w,a,b,c,d,e,f) \
+	DEBUG_9(x,y,z,w,a,b,c,d,e)<<", "<<DEBUG_1(f)
 #define GET_MACRO(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,NAME,...) NAME
 #ifdef DEBUG
 #define debug(...) do { \
@@ -80,8 +81,10 @@ ostream& operator <<(ostream &o,const vector<T> &I){
 inline int last_bit(ull x){assert(x);return 63-__builtin_clzll(x);}
 inline int first_bit(ull x){assert(x);return __builtin_ctzll(x);}
 inline int popc(ull x){return __builtin_popcountll(x);}
-template<typename A,typename B> inline bool chkmax(A &x,const B &y){if(x<y){x=y;return true;}return false;}
-template<typename A,typename B> inline bool chkmin(A &x,const B &y){if(x>y){x=y;return true;}return false;}
+template<typename A,typename B>
+inline bool chkmax(A &x,const B &y){if(x<y){x=y;return true;}return false;}
+template<typename A,typename B>
+inline bool chkmin(A &x,const B &y){if(x>y){x=y;return true;}return false;}
 //////////////////////////////////////////////////////////////////
 int main(){
 	#ifdef LOCAL

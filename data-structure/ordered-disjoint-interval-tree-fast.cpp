@@ -19,7 +19,14 @@ void cut(int y){
 	S.insert(y);
 }
 public:
-void setN(int _n){assert(1<=_n&&_n<INT_MAX);n=_n;a.assign(n+1,0);S.setN(n);S.insert(n);a[n]=-1;}
+void setN(int _n){
+	assert(1<=_n&&_n<INT_MAX);
+	n=_n;
+	a.assign(n+1,0);
+	S.setN(n);
+	S.insert(n);
+	a[n]=-1;
+}
 
 vector<array<int,3>> extract(int l,int r){
 	// extract segments from [l,r]

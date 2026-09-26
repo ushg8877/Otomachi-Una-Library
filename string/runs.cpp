@@ -16,7 +16,10 @@ vector<array<int,3>> build(const string &s)const{
 	int n=(int)s.size()-1;
 	for(int i=1;i<=n;i++)assert((unsigned char)s[i]>0);
 	vector<array<int,3>> ans;if(n<2)return ans;
-	SA_LCP a;SA_LCS b;a.build(s,256);b.build(s,256);
+	SA_LCP a;
+	SA_LCS b;
+	a.build(s,256);
+	b.build(s,256);
 	vector<int> st;st.reserve(n);
 	for(int op=0;op<2;op++){
 		st.clear();
@@ -37,7 +40,8 @@ vector<array<int,3>> build(const string &s)const{
 			st.push_back(i);
 		}
 	}
-	sort(ans.begin(),ans.end());ans.erase(unique(ans.begin(),ans.end()),ans.end());
+	sort(ans.begin(),ans.end());
+	ans.erase(unique(ans.begin(),ans.end()),ans.end());
 	return ans;
 }
 };
