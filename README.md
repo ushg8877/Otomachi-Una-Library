@@ -21,6 +21,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [basic/coordinate-compression.cpp](basic/coordinate-compression.cpp)
 - [basic/fast-io.cpp](basic/fast-io.cpp)
 - [basic/template.cpp](basic/template.cpp)
+- [basic/vector.cpp](basic/vector.cpp)
 
 ### 数据结构
 
