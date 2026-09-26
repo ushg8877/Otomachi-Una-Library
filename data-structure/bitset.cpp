@@ -5,13 +5,16 @@
 //   Bitset a(n),b(n); a.set(i); a.set(i,false); a.flip(i); a[i];
 //   a.setN(n); // resize and clear; set() clears, fill(true) sets all bits
 //   a&b; a|b; a^b; ~a; a<<k; a>>k; // compound assignments supported
-//   a.count(); a.any(); a.none(); a.all();
+//   a.count(); a.count(l,r); // count 1s in [l,r], inclusive
+//   auto v=a.positions(); // increasing indices of all 1s
+//   a.any(); a.none(); a.all();
 //   a.first(); a.next(i); // first / strictly next 1; n if absent
 //   a.last(); a.prev(i); // last / strictly previous 1; -1 if absent
 //   a.window_xor(l,r,b,to); // b[to+i] ^= a[l+i], 0<=i<=r-l
 //   window_and / window_or are similar; overlapping self updates are safe.
 //   String / vector constructors: input[i] is bit i; str() uses this order.
 //   Point operations O(1); bitwise / count / find O(ceil(n/64)) worst case.
+//   count(l,r): O((r-l+1)/64+1); positions(): O(ceil(n/64)+count()).
 //   String / vector conversions O(n).
 //   Window operations O((r-l+1)/64+1), O(1) extra space.
 //
@@ -50,6 +53,22 @@ bool operator[](int i)const{return get(i);}
 int count()const{
 	int ans=0;for(ull x:a)ans+=__builtin_popcountll(x);
 	return ans;
+}
+int count(int l,int r)const{
+	assert(0<=l&&l<=r&&r<n);
+	int L=l>>6,R=r>>6;
+	ull x=~0ull<<(l&63),y=mask((r&63)+1);
+	if(L==R)return __builtin_popcountll(a[L]&x&y);
+	int ans=__builtin_popcountll(a[L]&x)+__builtin_popcountll(a[R]&y);
+	for(int i=L+1;i<R;i++)ans+=__builtin_popcountll(a[i]);
+	return ans;
+}
+vector<int> positions()const{
+	vector<int> v;v.reserve(count());
+	for(int i=0;i<(int)a.size();i++){
+		for(ull x=a[i];x;x&=x-1)v.push_back(i*64+__builtin_ctzll(x));
+	}
+	return v;
 }
 bool any()const{for(ull x:a)if(x)return true;return false;}
 bool none()const{return !any();}
