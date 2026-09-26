@@ -7,7 +7,7 @@
 //   recurrence(a,c,i); // a[n]=sum c[j]*a[n-1-j], a.size()==c.size()
 //   RSPE(a,i); // infer from samples; at least 2*d terms for order d
 //   Indices start at 0; the true returned coefficients / term must fit ll.
-//   Three-prime NTT / CRT; convolution O(n log n), length <= 2^23.
+//   Fast NTT core from ntt-fast.cpp; three-prime CRT; convolution O(n log n), length <= 2^23.
 //   Recurrence O(d log(d+1) log(i+1)); RSPE also needs O(a.size()*d).
 //
 ////////////////////////////////////////////////////////////////
@@ -22,25 +22,120 @@ static unsigned power(unsigned x,unsigned k){
 static V read(const poly &f){
 	V a(f.size());for(int i=0;i<(int)f.size();i++){ll x=f[i]%MOD;a[i]=x<0?x+MOD:x;}return a;
 }
-static void ntt(V &a,bool inv){
-	int n=a.size();
-	for(int i=1,j=0;i<n;i++){
-		int k=n>>1;for(;j&k;k>>=1)j^=k;j^=k;
-		if(i<j)swap(a[i],a[j]);
+struct NTT{
+static constexpr int FFT_MAX=23;
+static constexpr unsigned MOD2=MOD*2;
+V FFT_RATIOS,INV_FFT_RATIOS;
+NTT():FFT_RATIOS(FFT_MAX,1),INV_FFT_RATIOS(FFT_MAX,1){
+	static_assert(MOD<(1u<<30)&&((MOD-1)%(1<<FFT_MAX)==0));
+	V root(FFT_MAX+1),iroot(FFT_MAX+1);
+	root[FFT_MAX]=power(3,(MOD-1)>>FFT_MAX);iroot[FFT_MAX]=power(root[FFT_MAX],MOD-2);
+	for(int i=FFT_MAX;i;i--)root[i-1]=1ull*root[i]*root[i]%MOD,iroot[i-1]=1ull*iroot[i]*iroot[i]%MOD;
+	unsigned x=1,y=1;
+	for(int i=0;i<FFT_MAX-1;i++){
+		FFT_RATIOS[i]=1ull*root[i+2]*x%MOD;INV_FFT_RATIOS[i]=1ull*iroot[i+2]*y%MOD;
+		x=1ull*x*iroot[i+2]%MOD;y=1ull*y*root[i+2]%MOD;
 	}
-	for(int len=2;len<=n;len<<=1){
-		unsigned w=power(3,(MOD-1)/len);if(inv)w=power(w,MOD-2);
-		for(int l=0;l<n;l+=len){
-			unsigned t=1;
-			for(int j=0;j<len/2;j++,t=(ll)t*w%MOD){
-				unsigned x=a[l+j],y=(ll)t*a[l+j+len/2]%MOD;
-				a[l+j]=x+y>=MOD?x+y-MOD:x+y;
-				a[l+j+len/2]=x>=y?x-y:x+MOD-y;
+}
+// as[rev(i)] <- \sum_j \zeta^(ij) as[j]
+void fft(unsigned *as, int n)const{
+	assert(!(n & (n - 1))); assert(1 <= n); assert(n <= 1 << FFT_MAX);
+	int m = n;
+	if (m >>= 1) {
+		for (int i = 0; i < m; ++i) {
+			const unsigned x = as[i + m];
+			as[i + m] = as[i] + MOD - x;
+			as[i] += x;
+		}
+	}
+	if (m >>= 1) {
+		unsigned prod = 1U;
+		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
+			for (int i = i0; i < i0 + m; ++i) {
+				const unsigned x = (1ull*prod*as[i + m])%MOD;
+				as[i + m] = as[i] + MOD - x;
+				as[i] += x;
+			}
+			prod=1ull*prod*FFT_RATIOS[__builtin_ctz(++h)]%MOD;
+		}
+	}
+	for (; m; ) {
+		if (m >>= 1) {
+			unsigned prod = 1U;
+			for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
+				for (int i = i0; i < i0 + m; ++i) {
+					const unsigned x = (1ull*prod*as[i + m])%MOD;
+					as[i + m] = as[i] + MOD - x;
+					as[i] += x;
+				}
+				prod=1ull*prod*FFT_RATIOS[__builtin_ctz(++h)]%MOD;
+			}
+		}
+		if (m >>= 1) {
+			unsigned prod = 1U;
+			for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
+				for (int i = i0; i < i0 + m; ++i) {
+					const unsigned x = (1ull*prod*as[i + m])%MOD;
+					as[i] = (as[i] >= MOD2) ? (as[i] - MOD2) : as[i];
+					as[i + m] = as[i] + MOD - x;
+					as[i] += x;
+				}
+				prod=1ull*prod*FFT_RATIOS[__builtin_ctz(++h)]%MOD;
 			}
 		}
 	}
-	if(inv){unsigned v=power(n,MOD-2);for(auto &x:a)x=(ll)x*v%MOD;}
+	for (int i = 0; i < n; ++i) {
+		as[i] = (as[i] >= MOD2) ? (as[i] - MOD2) : as[i];
+		as[i] = (as[i] >= MOD) ? (as[i] - MOD) : as[i];
+	}
 }
+
+// as[i] <- (1/n) \sum_j \zeta^(-ij) as[rev(j)]
+void invFft(unsigned *as, int n)const{
+	assert(!(n & (n - 1))); assert(1 <= n); assert(n <= 1 << FFT_MAX);
+	int m = 1;
+	if (m < n >> 1) {
+		unsigned prod = 1U;
+		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
+			for (int i = i0; i < i0 + m; ++i) {
+				const unsigned long long y = as[i] + MOD - as[i + m];
+				as[i] += as[i + m];
+				as[i + m] = (prod * y) % MOD;
+			}
+			prod=1ull*prod*INV_FFT_RATIOS[__builtin_ctz(++h)]%MOD;
+		}
+		m <<= 1;
+	}
+	for (; m < n >> 1; m <<= 1) {
+		unsigned prod = 1U;
+		for (int h = 0, i0 = 0; i0 < n; i0 += (m << 1)) {
+			for (int i = i0; i < i0 + (m >> 1); ++i) {
+				const unsigned long long y = as[i] + MOD2 - as[i + m];
+				as[i] += as[i + m];
+				as[i] = (as[i] >= MOD2) ? (as[i] - MOD2) : as[i];
+				as[i + m] = (prod * y) % MOD;
+			}
+			for (int i = i0 + (m >> 1); i < i0 + m; ++i) {
+				const unsigned long long y = as[i] + MOD - as[i + m];
+				as[i] += as[i + m];
+				as[i + m] = (prod * y) % MOD;
+			}
+			prod=1ull*prod*INV_FFT_RATIOS[__builtin_ctz(++h)]%MOD;
+		}
+	}
+	if (m < n) {
+		for (int i = 0; i < m; ++i) {
+			const unsigned y = as[i] + MOD2 - as[i + m];
+			as[i] += as[i + m];
+			as[i + m] = y;
+		}
+	}
+	const unsigned invN=power(n,MOD-2);
+	for (int i = 0; i < n; ++i) {
+		as[i]=1ull*as[i]*invN%MOD;
+	}
+}
+};
 static V mul(V a,V b){
 	if(a.empty()||b.empty())return {};
 	assert(a.size()+b.size()-1<=(1<<23));int m=a.size()+b.size()-1;
@@ -50,8 +145,9 @@ static V mul(V a,V b){
 		return c;
 	}
 	int n=1;while(n<m)n<<=1;a.resize(n);b.resize(n);
-	ntt(a,false);ntt(b,false);for(int i=0;i<n;i++)a[i]=(ll)a[i]*b[i]%MOD;
-	ntt(a,true);a.resize(m);return a;
+	static const NTT ntt;
+	ntt.fft(a.data(),n);ntt.fft(b.data(),n);for(int i=0;i<n;i++)a[i]=(ll)a[i]*b[i]%MOD;
+	ntt.invFft(a.data(),n);a.resize(m);return a;
 }
 static V bm(const V &a){
 	V c{1},b{1};int len=0,m=1;unsigned last=1;
