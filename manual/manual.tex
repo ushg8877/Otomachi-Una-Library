@@ -1452,6 +1452,32 @@ c=convolution_xor(a,b); assert((c==vector<int>{11,10}));
 \TemplNote{下标从 0 开始。int/ll 表示普通整数运算，不会自动取模，正变换和逐点乘法的中间值也必须不溢出。整数 XOR 逆变换逐层除以 2，要求每步可整除，不能把任意整数数组当成合法频域数据。XOR 模运算要求 2 可逆，通常使用奇数模数；AND/OR 无此限制。不需要归一化第二次。}
 \end{minipage}\par\vspace{1.2em}
 \noindent\begin{minipage}{\textwidth}
+\subsection{\texttt{polynomial/integer.cpp}}
+\textbf{整数卷积与递推第 i 项}
+
+\TemplUsage{需要精确 long long 答案时使用。内部在三个质数下计算并通过 CRT 恢复有符号整数，不设置目标模数，也不使用浮点 FFT。递推仅要求返回项能存入 ll，中间生成函数的整数系数可以超过 ll。}
+\TemplApi{\begin{itemize}
+\item \texttt{poly} / \texttt{Poly} 为 \texttt{vector<ll>}。\texttt{f*g} 返回普通整数卷积，支持负数；任一输入为空则返回空向量。
+\item \texttt{recurrence(a,c,i)}：已知 d 个初值和 d 个系数，$a_n=\sum_{j=0}^{d-1}c_j a_{n-1-j}$，返回第 i 项。两个向量等长，i 从 0 开始；空向量表示零数列。
+\item \texttt{FSPE(F,G,i)} 返回生成函数 F/G 的第 i 项，要求 G 非空且 G[0] 为 1 或 -1，F 可以为空。
+\item \texttt{RSPE(a,i)} 从样本推断递推再求第 i 项。必须已知数列满足 d 阶整数系数齐次线性递推，提供至少 2d 个连续初始项；空样本约定为零数列。i 在样本范围内直接返回该项。
+\end{itemize}}
+\textbf{最小示例（放入 main）：}
+\begin{lstlisting}
+poly f{1,-2,3},g{4,5};
+assert((f*g==poly{4,-3,2,15}));
+assert(recurrence({0,1},{1,1},10)==55);
+assert(FSPE({0,1},{1,-1,-1},10)==55);
+assert(RSPE({0,1,1,2,3,5,8,13},92)==7540113804746346429LL);
+// Large intermediate coefficients, constant answer.
+assert(recurrence({1,1},{LLONG_MAX,1-LLONG_MAX},
+                  1000000000000000000LL)==1);
+// A genuinely signed 64-bit result.
+assert((poly{LLONG_MIN}*poly{1}==poly{LLONG_MIN}));
+\end{lstlisting}
+\TemplNote{真实卷积的每个系数、递推的返回项必须在 ll 范围内。CRT 可在这个范围内唯一恢复答案；断言能发现部分越界，但不能作为任意大结果的溢出检测器。单次卷积结果长度不超过 $2^{23}$；递推阶数 $d<2^{22}$，其他生成函数查询也须满足每次内部卷积的长度限制。卷积 O(n log n)，已知递推的查询 $O(d\log(d+1)\log(i+1))$，RSPE 的推断另需 O(sd)，s 为样本数。有限样本不能证明某个递推对所有后续项成立，不要用于任意数列外推。本文件自带全部实现，不依赖 mint，也不要与其他定义 poly 的文件同时粘贴。}
+\end{minipage}\par\vspace{1.2em}
+\noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{polynomial/mtt.cpp}}
 \textbf{非 NTT 模数下的多项式}
 
