@@ -2,8 +2,7 @@
 //
 // template for big-int
 //
-// usage:
-//   BigInt a,b; cin>>a>>b; cout<<a+b; // also -, *, /, %
+// usage: BigInt a,b; cin>>a>>b; cout<<a+b; // also -, *, /, %
 //
 ////////////////////////////////////////////////////////////////
 struct BigInt{
@@ -132,6 +131,7 @@ struct BigInt{
 		r.trim();
 		return {q,r};
 	}
+	// Division truncates toward zero; divisor must be nonzero.
 	BigInt operator /(const BigInt &b)const{return divmod(b).first;}
 	BigInt operator %(const BigInt &b)const{return divmod(b).second;}
 	BigInt& operator +=(const BigInt &b){return *this=*this+b;}
@@ -172,4 +172,3 @@ struct BigInt{
 };
 // end for math/big-int.cpp
 /////////////////////////
-// !!!!! Division truncates toward zero; the divisor must be nonzero. !!!!

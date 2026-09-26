@@ -2,13 +2,11 @@
 //
 // template for buffered IO / __int128 IO
 //
-// usage:
-//   input.set(stdin); output.set(stdout); // after freopen
+// usage: input.set(stdin); output.set(stdout); // after freopen
 //   input >> x; output << x << '\n'; output.flush();
-//   read(x) / operator bool() checks EOF; integer, char, string supported.
-//   cin / cout also support lll and __uint128_t.
 //
 ////////////////////////////////////////////////////////////////
+// cin/cout overloads also support signed / unsigned __int128.
 using lll=__int128;
 struct Reader{
 FILE *f=stdin;
@@ -28,6 +26,7 @@ int get(){
 	return (unsigned char)buf[p++];
 }
 int next(){int c;do{c=get();}while(c!=EOF&&c<=32);return c;}
+// Integer input must fit T; false / operator bool() reports EOF.
 template<typename T>
 bool read(T &x){
 	int c=next();if(c==EOF)return ok=false;
@@ -58,6 +57,7 @@ size_t p=0;
 Writer(){buf.resize(1<<16);}
 Writer(const Writer&)=delete;
 Writer& operator=(const Writer&)=delete;
+// Flush output and fflush(stdout) before an interactive read.
 void flush(){if(p){fwrite(buf.data(),1,p,f);p=0;}}
 void set(FILE *_f=stdout,size_t sz=1<<16){
 	assert(_f&&sz);
@@ -116,6 +116,4 @@ ostream& operator<<(ostream &o,lll x){
 }
 // end for basic/fast-io.cpp
 /////////////////////////
-// !!!!! GNU C++17; integer input must fit T. Do not mix input/output with
-// cin/cout on the same stream; call output.flush() and fflush(stdout) before
-// interactive reads. !!!!
+// !!!!! Do not mix input/output with cin/cout on the same stream. !!!!

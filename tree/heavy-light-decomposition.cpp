@@ -3,8 +3,7 @@
 // template for Heavy-Light Decomposition, prepared by Otomachi Una
 // version 1.0 (Last Update Jun 13th, 2026)
 //
-// usage:
-//   Tree tr; tr.setN(n); tr.add_edge(u,v); tr.build();
+// usage: Tree tr; tr.setN(n); tr.add_edge(u,v); tr.build();
 //   tr.lca(u,v); tr.index_of_path(u,v);
 //
 ////////////////////////////////////////////////////////////////
@@ -77,6 +76,7 @@ void HLD1(int u,int fa){
 	for(int i=tot;i>start;i--){int x=dfn[i];ed[x]=hson[x]?ed[hson[x]]:x;}
 }
 inline int higher(int x,int y){return dep[x]<dep[y]?x:y;}
+// Call setN and add edges before build; queries require build first.
 void build(){
 	// build all basic information in O(nlogn) (without lca O(n))
 	assert(1<=rt&&rt<=n);tot=0;
@@ -139,5 +139,3 @@ void output(){
 };
 // end for tree/heavy-light-decomposition.cpp
 /////////////////////////
-// !!!!! Call setN() and build() before queries; do not paste with the other
-// Tree definition. !!!!

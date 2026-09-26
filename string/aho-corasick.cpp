@@ -1,10 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Aho-Corasick
-// usage:
-//   AC ac; int id=ac.insert(" aba"); ac.build();
+// usage: AC ac; int id=ac.insert(" aba"); ac.build();
 //   auto cnt=ac.count(" ababa"); cnt[id];
-//   leading space, lowercase; insert before build
 //
 ////////////////////////////////////////////////////////////////
 struct AC{
@@ -28,6 +26,7 @@ int new_node(){
 	fail.push_back(0);
 	return ++tot;
 }
+// Pattern has a leading space and lowercase letters; save the returned id.
 int insert(const string &s){
 	assert(!built&&!s.empty()&&s[0]==' '&&s.size()<INT_MAX);
 	int u=0;
@@ -69,5 +68,4 @@ vector<ll> count(const string &s)const{
 };
 // end for string/aho-corasick.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; insert every pattern before
-// build(). !!!!
+// !!!!! Insert every pattern before build(). !!!!

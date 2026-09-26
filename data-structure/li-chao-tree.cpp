@@ -3,8 +3,7 @@
 // template for lichao segment tree
 // version 1.2 (Last Update Jun 13th, 2026)
 //
-// usage:
-//   lichao lc; lc.set(); lc.add({k,b}); lc.add({k,b}, l, r);
+// usage: lichao lc; lc.set(); lc.add({k,b}); lc.add({k,b}, l, r);
 //   ll y = lc.ask(x);  // min y=kx+b, INF if empty
 //
 ////////////////////////////////////////////////////////////////

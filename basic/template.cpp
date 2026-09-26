@@ -3,6 +3,7 @@ using namespace std;
 using ll=long long;
 using ull=unsigned long long;
 // head file
+// DEBUG enables cerr/debug; LOCAL redirects Otomachi_Una.in/out.
 #ifndef DEBUG
 	#define cerr for(;false;) cerr
 #endif
@@ -78,6 +79,7 @@ ostream& operator <<(ostream &o,const vector<T> &I){
 #define debug(...) ((void)0)
 #define debugl(...) ((void)0)
 #endif
+// first_bit / last_bit require nonzero arguments.
 inline int last_bit(ull x){assert(x);return 63-__builtin_clzll(x);}
 inline int first_bit(ull x){assert(x);return __builtin_ctzll(x);}
 inline int popc(ull x){return __builtin_popcountll(x);}
@@ -96,5 +98,3 @@ int main(){
 }
 // end for basic/template.cpp
 /////////////////////////
-// !!!!! LOCAL enables Otomachi_Una.in/out; DEBUG enables cerr/debug.
-// first_bit/last_bit require nonzero arguments. !!!!

@@ -3,8 +3,7 @@
 // template for Coordinate Compression
 // version 2.0 (Last Update Jul 3rd, 2026)
 //
-// usage:
-//   compress<int> cc; cc.set(); cc.pb(x); cc.build();
+// usage: compress<int> cc; cc.set(); cc.pb(x); cc.build();
 //   cc.id(x); cc[i]; cc.range(l,r);  // call set() each problem
 //
 ////////////////////////////////////////////////////////////////
@@ -21,6 +20,7 @@ int id(T x)const{
 	assert(it!=I.end()&&*it==x);
 	return it-I.begin()+1;
 }
+// Inserting new values and rebuilding may change every compressed id.
 void build(){
 	sort(I.begin(),I.end());
 	I.erase(unique(I.begin(),I.end()),I.end());
@@ -42,5 +42,3 @@ T operator [](int x)const{
 };
 // end for basic/coordinate-compression.cpp
 /////////////////////////
-// !!!!! Call set() before reuse; build() after inserting new values renumbers
-// the coordinates. !!!!

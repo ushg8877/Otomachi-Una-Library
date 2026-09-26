@@ -3,8 +3,7 @@
 // template for Segment Tree
 // version 1.1 (Last Update Jun 27th, 2026)
 //
-// usage:
-//   segt st; st.setN(n);  // or set(l,r), 1-indexed
+// usage: segt st; st.setN(n);  // or set(l,r), 1-indexed
 //   upd/add point; ask(l,r); find_first/last
 //
 ////////////////////////////////////////////////////////////////
@@ -14,6 +13,7 @@ struct segt{
 private:
 //////////////////////////////////////////////////////////////
 // basic operation
+// Edit info for the problem; find_first/last require monotonicity.
 struct info{
 	// modify here
 	ll s,len;
@@ -148,5 +148,3 @@ int find_last(ll x){
 #undef USE_COMPARE
 // end for data-structure/segment-tree/point.cpp
 /////////////////////////
-// !!!!! Edit info for the problem; find_first/last require monotonicity; only
-// paste one segt variant. !!!!

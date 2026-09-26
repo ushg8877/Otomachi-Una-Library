@@ -2,12 +2,12 @@
 //
 // template for Cartesian Tree (min heap)
 //
-// usage:
-//   auto [ls,rs]=cartesian(a); // 0-indexed, absent child = -1
+// usage: auto [ls,rs]=cartesian(a); // 0-indexed, absent child = -1
 //   O(n); equal values keep the earlier index above the later one.
-//   The root is the first minimum; empty input returns two empty vectors.
 //
 ////////////////////////////////////////////////////////////////
+// O(n); 0-based child indices, -1 if absent. Equal values keep the earlier
+// index above the later one; root is the first minimum. Empty input is valid.
 template<typename T>
 pair<vector<int>,vector<int>> cartesian(const vector<T> &a){
 	assert(a.size()<(size_t)INT_MAX);int n=a.size();

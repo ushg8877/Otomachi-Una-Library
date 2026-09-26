@@ -3,8 +3,7 @@
 // template for ModInt (Mod isn't assign)
 // version 1.0 (Last Update Jun 16th, 2026)
 //
-// usage:
-//   mint::setM(mod); init_fact(n); mint x; cin >> x;
+// usage: mint::setM(mod); init_fact(n); mint x; cin >> x;
 //
 ////////////////////////////////////////////////////////////////
 struct mint{
@@ -112,5 +111,5 @@ inline mint C(int x,int y){
 inline mint binom(int y,int x){return C(x,y);}
 // end for math/dynamic-mod-int.cpp
 /////////////////////////
-// !!!!! Call mint::setM first; changing the modulus invalidates old values and
-// factorial tables; choose only one mint definition. !!!!
+// !!!!! Call mint::setM before creating values; changing M invalidates
+// them. !!!!

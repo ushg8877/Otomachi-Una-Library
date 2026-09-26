@@ -3,9 +3,7 @@
 // template for 2D geometry
 // version 1.0 (Last Update Jun 16th, 2026)
 //
-// usage:
-//   Point A,B; convex(hull); convec_area(hull);
-//   needs bits/stdc++.h, typedef ll/ld
+// usage: Point A,B; convex(hull); convec_area(hull);
 //
 ////////////////////////////////////////////////////////////////
 const ld pi=acos(-1),dx=1e-9;
@@ -167,5 +165,4 @@ inline ld min_cross(const vector<Point> &I,ld x,ld y){
 }
 // end for geometry/geometry-2d.cpp
 /////////////////////////
-// !!!!! Requires ll and using ld=long double; choose eps and numeric range for
-// the problem. !!!!
+// !!!!! Requires ll and using ld=long double. !!!!

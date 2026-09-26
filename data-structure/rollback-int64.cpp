@@ -2,10 +2,8 @@
 //
 // template for roll back saver
 //
-// usage:
-//   ::set(); save(x); save(y); roll_back(t);
+// usage: ::set(); int t=version(); save(x); x=1; roll_back(t);
 //   supports int and ll; do not paste with (int) saver
-//   saved elements must stay at the same address until rollback
 //
 ////////////////////////////////////////////////////////////////
 vector<pair<int*,int>> buf;
@@ -13,6 +11,7 @@ vector<pair<ll*,ll>> buf1;
 int saved_ele=0;
 vector<char> R=vector<char>(1);
 void set(){saved_ele=0;buf.clear();buf1.clear();R.assign(1,false);}
+// Supports int and ll; choose only one rollback implementation.
 void save(int &x){
 	buf.push_back(make_pair(&x,x));
 	R.push_back(false);
@@ -35,5 +34,4 @@ void roll_back(int t){
 }
 // end for data-structure/rollback-int64.cpp
 /////////////////////////
-// !!!!! Do not paste both rollback variants; saved elements must keep their
-// addresses until roll_back(). !!!!
+// !!!!! Saved elements must keep their addresses until roll_back(). !!!!

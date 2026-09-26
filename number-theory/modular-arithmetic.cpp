@@ -3,8 +3,7 @@
 // template for inv, CRT, etc.
 // version 1.0 (Last Update Jun 23rd, 2026)
 //
-// usage:
-//    inv(x,M); COE a(r,M); COE c=a+b;
+// usage: inv(x,M); COE a(r,M); COE c=a+b;
 //   c.empty() if no solution
 //
 ////////////////////////////////////////////////////////////////
@@ -71,5 +70,3 @@ inline COE operator +(const COE &x)const{
 };
 // end for number-theory/modular-arithmetic.cpp
 /////////////////////////
-// !!!!! CRT results may use __int128; basic/fast-io.cpp provides decimal IO if
-// needed. !!!!

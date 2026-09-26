@@ -1,15 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for integer polynomial / linear recurrence
-// usage:
-//   poly h=f*g; // exact signed ll coefficients, no target modulus
-//   FSPE(F,G,i); // [x^i] F/G, G[0] must be 1 or -1
-//   recurrence(a,c,i); // a[n]=sum c[j]*a[n-1-j], a.size()==c.size()
-//   RSPE(a,i); // infer from samples; at least 2*d terms for order d
-//   Indices start at 0; the true returned coefficients / term must fit ll.
-//   Fast NTT core from ntt-fast.cpp; three-prime CRT; convolution O(n log n),
-//   length <= 2^23.
-//   Recurrence O(d log(d+1) log(i+1)); RSPE also needs O(a.size()*d).
+// usage: poly h=f*g; ll x=recurrence(a,c,k);
+//   FSPE(f,g,k); RSPE(a,k);
 //
 ////////////////////////////////////////////////////////////////
 using poly=vector<ll>;
@@ -236,6 +229,8 @@ ll int_crt(unsigned a,unsigned b,unsigned c){
 	assert(LLONG_MIN<=ans&&ans<=LLONG_MAX);
 	return ans;
 }
+// Exact signed ll convolution; three-prime fast NTT / CRT.
+// O(n log n), result length <=2^23; negative coefficients allowed.
 poly operator*(const poly &f,const poly &g){
 	if(f.empty()||g.empty())return{};
 	assert(f.size()+g.size()-1<=(1<<23));
@@ -249,6 +244,7 @@ poly operator*(const poly &f,const poly &g){
 	for(int i=0;i<(int)h.size();i++)h[i]=int_crt(a[i],b[i],c[i]);
 	return h;
 }
+// Coefficient [x^k] f/g, k>=0; g[0] must be 1 or -1.
 ll FSPE(const poly &f,const poly &g,ll k){
 	assert(k>=0&&!g.empty()&&(g[0]==1||g[0]==-1));
 	if(f.empty())return 0;
@@ -256,6 +252,9 @@ ll FSPE(const poly &f,const poly &g,ll k){
 		Int_Poly<167772161>::fspe(f,g,k),
 		Int_Poly<469762049>::fspe(f,g,k));
 }
+// 0-based k; a holds d initial terms, c holds d recurrence coefficients.
+// a[n]=sum c[j]*a[n-1-j]. O(d log(d+1) log(k+1)).
+// Only the true returned result must fit ll, not intermediate polynomials.
 ll recurrence(const poly &a,const poly &c,ll k){
 	assert(k>=0&&a.size()==c.size());if(k<(ll)a.size())return a[k];
 	if(a.empty())return 0;
@@ -263,6 +262,8 @@ ll recurrence(const poly &a,const poly &c,ll k){
 		Int_Poly<167772161>::recurrence(a,c,k),
 		Int_Poly<469762049>::recurrence(a,c,k));
 }
+// Infer an integer-coefficient order-d recurrence from >=2*d initial terms.
+// Return its 0-based k-th term; inference adds O(a.size()*d) work.
 ll RSPE(const poly &a,ll k){
 	assert(k>=0);if(k<(ll)a.size())return a[k];
 	if(a.empty())return 0;
@@ -272,7 +273,5 @@ ll RSPE(const poly &a,ll k){
 }
 // end for polynomial/integer.cpp
 /////////////////////////
-// !!!!! Choose one poly implementation. True returned values must fit ll; CRT
-// assertions cannot detect every overflow. RSPE needs enough samples of an
-// integer-coefficient linear recurrence; internal intermediates need not fit
-// ll. !!!!
+// !!!!! True results must fit ll; CRT assertions cannot detect every
+// overflow. !!!!

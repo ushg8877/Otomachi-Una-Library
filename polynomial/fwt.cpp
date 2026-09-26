@@ -2,15 +2,12 @@
 //
 // template for FWT and bitwise convolution
 //
-// usage:
-//   auto c=convolution_and(a,b); // convolution_or / convolution_xor
+// usage: auto c=convolution_and(a,b); // convolution_or / convolution_xor
 //   fwt_and(a); fwt_and(a,true); // forward / inverse; also or / xor
-//   vector<int>, vector<ll> or vector<mint>; 0-indexed
-//   convolution pads to a power of 2; empty input returns {}
-//   transform size must be a positive power of 2
-//   integer intermediates must fit the type; mint XOR needs inverse of 2
 //
 //////////////////////////////////////////////////////////////////
+// Forward transform by default, inverse when true; positive power-of-2 size.
+// Supports int, ll or mint; all integer intermediates must fit T.
 template<typename T>
 void fwt_and(vector<T>&a,bool inverse=false){
 	assert(!a.empty()&&a.size()<=INT_MAX&&!(a.size()&(a.size()-1)));
@@ -22,6 +19,8 @@ void fwt_and(vector<T>&a,bool inverse=false){
 				else a[i+j]+=a[i+j+k];
 			}
 }
+// Forward transform by default, inverse when true; positive power-of-2 size.
+// Supports int, ll or mint; all integer intermediates must fit T.
 template<typename T>
 void fwt_or(vector<T>&a,bool inverse=false){
 	assert(!a.empty()&&a.size()<=INT_MAX&&!(a.size()&(a.size()-1)));
@@ -33,6 +32,8 @@ void fwt_or(vector<T>&a,bool inverse=false){
 				else a[i+j+k]+=a[i+j];
 			}
 }
+// Forward transform by default, inverse when true; positive power-of-2 size.
+// Supports int, ll or mint; all integer intermediates must fit T.
 template<typename T>
 void fwt_xor(vector<T>&a,bool inverse=false){
 	assert(!a.empty()&&a.size()<=INT_MAX&&!(a.size()&(a.size()-1)));
@@ -58,6 +59,7 @@ void fwt_xor(vector<T>&a,bool inverse=false){
 			}
 }
 
+// Pad to the next power of 2; empty input returns an empty vector.
 template<typename T>
 vector<T>convolution_and(vector<T>a,vector<T>b){
 	if(a.empty()||b.empty())return{};
@@ -71,6 +73,7 @@ vector<T>convolution_and(vector<T>a,vector<T>b){
 	return a;
 }
 
+// Pad to the next power of 2; empty input returns an empty vector.
 template<typename T>
 vector<T>convolution_or(vector<T>a,vector<T>b){
 	if(a.empty()||b.empty())return{};
@@ -84,6 +87,7 @@ vector<T>convolution_or(vector<T>a,vector<T>b){
 	return a;
 }
 
+// Pad to the next power of 2; empty input returns an empty vector.
 template<typename T>
 vector<T>convolution_xor(vector<T>a,vector<T>b){
 	if(a.empty()||b.empty())return{};
@@ -98,5 +102,4 @@ vector<T>convolution_xor(vector<T>a,vector<T>b){
 }
 // end for polynomial/fwt.cpp
 /////////////////////////
-// !!!!! Transform length must be a power of two; integer intermediates must fit
-// T; mint XOR requires 2 to be invertible. !!!!
+// !!!!! Integer intermediates must fit T; mint XOR needs an inverse of 2. !!!!

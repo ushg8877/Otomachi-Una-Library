@@ -2,11 +2,12 @@
 //
 // template for Floor Sum, O(log c)
 //
-// usage:
-//   floor_sum(l,r,a,b,c); // sum floor((a*i+b)/c), l<=i<=r
+// usage: floor_sum(l,r,a,b,c); // sum floor((a*i+b)/c), l<=i<=r
 //   0<=l,r,a,b; c>0; return __int128, answer must fit
 //
 ////////////////////////////////////////////////////////////////
+// Sum floor((a*i+b)/c) over [l,r]; l,r,a,b>=0, c>0.
+// The result must fit __int128; basic/fast-io.cpp can print it.
 __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 	assert(l>=0&&r>=0&&a>=0&&b>=0&&c>0);
 	if(l>r)return 0;
@@ -24,5 +25,3 @@ __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 }
 // end for number-theory/floor-sum.cpp
 /////////////////////////
-// !!!!! Requires nonnegative l,r,a,b and positive c; result is __int128,
-// basic/fast-io.cpp provides decimal IO. !!!!

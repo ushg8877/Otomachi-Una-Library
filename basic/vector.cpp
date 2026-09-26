@@ -1,24 +1,11 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for vector operations
-// usage:
-//   auto a=vrange(1,6); // {1,2,3,4,5,6}, [l,r]
-//   auto b=vcat(a,a); // concatenate
-//   a+x, a-x, a*x, a/x, a%x; a&x, a|x, a^x, a<<x, a>>x
-//   a==x, a!=x, a<x, a<=x, a>x, a>=x, a&&x, a||x -> vector<bool>
-//   +a, -a, ~a, !a; a+=x, a-=x, ...; ++a, a++, --a, a--
-//   vadd(a,2); vsub(a,1); // named versions
-//   auto e=vmap(a,[](int x){return 1ll*x*x;}); // vector<ll>
-//   auto f=vfilter(a,[](int x){return x&1;}); // keep odd elements
-//   auto g=vunique(b); // sort and remove duplicates
-//   a&b / a|b: set intersection / union; a&=b / a|=b modify a.
-//   vintersection(a,b); vunion(a,b); // sorted and unique results
-//   vsort(a); vreverse(a); vslice(a,1,3); // return new vectors
-//   Compound assignments and ++/-- modify a; other operations return copies.
-//   O(n), except vsort / vunique: O(n log n); vslice: O(r-l+1).
-//   Set intersection / union: O(n log n+m log m).
+// usage: auto a=vrange(1,6); auto b=a+2; auto c=vmap(a,f);
+//   vcat(a,b); vunique(a); a&b; a|b;
 //
 ////////////////////////////////////////////////////////////////
+// Integers in [l,r], inclusive; O(r-l+1).
 template<typename T=int>
 vector<T> vrange(T l,T r){
 	static_assert(is_integral_v<T>&&sizeof(T)<=8&&!is_same_v<T,bool>);
@@ -30,6 +17,7 @@ vector<T> vrange(T l,T r){
 	for(size_t i=1;i<a.size();i++)a[i]=a[i-1]+1;
 	return a;
 }
+// Concatenate two vectors; O(a.size()+b.size()).
 template<typename T>
 vector<T> vcat(vector<T> a,const vector<T> &b){
 	assert(b.size()<=a.max_size()-a.size());
@@ -37,6 +25,7 @@ vector<T> vcat(vector<T> a,const vector<T> &b){
 	a.insert(a.end(),b.begin(),b.end());
 	return a;
 }
+// Return f(x) for each element; result type is inferred. O(n).
 template<typename T,typename F,typename Alloc>
 auto vmap(const vector<T,Alloc> &a,F f){
 	using U=decay_t<decltype(f((const T&)a[0]))>;
@@ -54,6 +43,9 @@ auto vsub(const vector<T> &a,const U &x){
 	return vmap(a,[&](const T &y){return y-x;});
 }
 // Alloc keeps the STL vector-vector comparisons more specific.
+// Scalar-right arithmetic / bitwise operations return a new vector.
+// Comparisons and && / || return vector<bool>; no operand short-circuit.
+// Vector-vector comparisons keep STL rules; ^ is bitwise xor. O(n).
 #define VEC_BINARY(op) \
 template<typename T,typename U,typename Alloc> \
 auto operator op(const vector<T,Alloc> &a,const U &x){ \
@@ -66,6 +58,7 @@ VEC_BINARY(>) VEC_BINARY(>=) VEC_BINARY(&&) VEC_BINARY(||)
 #undef VEC_BINARY
 
 // Copy x in case it refers to a[i]; the local T also supports vector<bool>.
+// Compound assignments modify a and keep the element type. O(n).
 #define VEC_ASSIGN(op) \
 template<typename T,typename U> \
 vector<T>& operator op(vector<T> &a,U x){ \
@@ -76,6 +69,7 @@ VEC_ASSIGN(+=) VEC_ASSIGN(-=) VEC_ASSIGN(*=) VEC_ASSIGN(/=) VEC_ASSIGN(%=)
 VEC_ASSIGN(&=) VEC_ASSIGN(|=) VEC_ASSIGN(^=) VEC_ASSIGN(<<=) VEC_ASSIGN(>>=)
 #undef VEC_ASSIGN
 
+// Elementwise +, -, ~ and !; ! returns vector<bool>. O(n).
 #define VEC_UNARY(op) \
 template<typename T> \
 auto operator op(const vector<T> &a){ \
@@ -104,6 +98,7 @@ vector<T> operator--(vector<T> &a,int){
 	vector<T> b=a;--a;
 	return b;
 }
+// Keep elements satisfying f(x), preserving their order. O(n).
 template<typename T,typename F>
 vector<T> vfilter(const vector<T> &a,F f){
 	vector<T> b;
@@ -111,11 +106,13 @@ vector<T> vfilter(const vector<T> &a,F f){
 	for(const T &x:a)if(f(x))b.push_back(x);
 	return b;
 }
+// Return a sorted copy; O(n log n).
 template<typename T>
 vector<T> vsort(vector<T> a){
 	sort(a.begin(),a.end());
 	return a;
 }
+// Return a sorted copy with duplicates removed; O(n log n).
 template<typename T>
 vector<T> vunique(vector<T> a){
 	sort(a.begin(),a.end());
@@ -157,11 +154,13 @@ template<typename T>
 vector<T>& operator|=(vector<T> &a,const vector<T> &b){
 	return a=vunion(a,b);
 }
+// Return a reversed copy; O(n).
 template<typename T>
 vector<T> vreverse(vector<T> a){
 	reverse(a.begin(),a.end());
 	return a;
 }
+// Copy 0-based indices [l,r], inclusive; O(r-l+1).
 template<typename T>
 vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 	assert(l<=r&&r<a.size());
@@ -169,11 +168,3 @@ vector<T> vslice(const vector<T> &a,size_t l,size_t r){
 }
 // end for basic/vector.cpp
 /////////////////////////
-// !!!!! GNU C++17; ranges are [l,r]; vslice uses 0-based indices.
-// vunique sorts first. Binary operators take a scalar on the right, except
-// vector & vector / vector | vector, which are set intersection / union.
-// Vector-vector comparisons keep the STL lexicographical / equality rules.
-// ^ is xor; !a is elementwise NOT. && / || do not short-circuit the operands.
-// Result types follow element expressions; compound assignments keep T.
-// Elements must support the operation. Avoid overflow, zero divisors and
-// invalid shifts, just as with scalar arithmetic. !!!!

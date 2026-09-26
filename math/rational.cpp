@@ -1,8 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for rational number
-// usage:
-//   Rat a(1,2),b(2,3); cout<<a+b; // 7/6
+// usage: Rat a(1,2),b(2,3); cout<<a+b; // 7/6
 //   p/q is reduced, q>0; +, -, *, / and comparisons are supported.
 //
 ////////////////////////////////////////////////////////////////
@@ -10,6 +9,8 @@ struct Rat{
 ll p=0,q=1;
 Rat()=default;
 Rat(ll a,ll b=1){*this=make(a,b);}
+// Normalize to coprime p/q with q>0; inputs and reduced results must fit ll.
+// Do not modify p/q directly.
 static Rat make(__int128 a,__int128 b){
 	assert(b);if(b<0)a=-a,b=-b;
 	__int128 x=a<0?-a:a,y=b;
@@ -48,5 +49,3 @@ friend ostream& operator<<(ostream &o,Rat a){return o<<a.p<<'/'<<a.q;}
 };
 // end for math/rational.cpp
 /////////////////////////
-// !!!!! Requires ll; inputs and reduced results must fit ll, q must be positive
-// after reduction. Do not modify p/q directly. !!!!

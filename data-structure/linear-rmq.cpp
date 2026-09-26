@@ -2,10 +2,8 @@
 //
 // template for linear RMQ
 //
-// usage:
-//   Linear_RMQ<int> t; t.build(a); t.ask(l,r); t.pos(l,r);
+// usage: Linear_RMQ<int> t; t.build(a); t.ask(l,r); t.pos(l,r);
 //   0-indexed, inclusive; use Linear_RMQ<int,true> for maximum.
-//   O(n) build / space, O(1) query on the word RAM; ties choose the leftmost.
 //
 ////////////////////////////////////////////////////////////////
 template<typename T,bool MAX=false>
@@ -26,6 +24,7 @@ int small(int l,int r)const{
 }
 public:
 void set(){n=0;B=1;a.clear();mask.clear();st.clear();}
+// O(n) preprocessing / space; MAX=true selects maximum instead of minimum.
 void build(const vector<T> &v){
 	assert(v.size()<(size_t)INT_MAX);
 	a=v;
@@ -55,6 +54,7 @@ void build(const vector<T> &v){
 			st[k][i]=chk(st[k-1][i],st[k-1][i+(1<<(k-1))]);
 	}
 }
+// 0-based inclusive [l,r]; return the leftmost optimum index. O(1).
 int pos(int l,int r)const{
 	assert(0<=l&&l<=r&&r<n);
 	int x=l/B,y=r/B;if(x==y)return small(l,r);

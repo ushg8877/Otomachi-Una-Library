@@ -1,13 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Bipartite Matching
-// usage:
-//   Bipartite_Matching g; g.setN(n,m); g.add_edge(u,v);
+// usage: Bipartite_Matching g; g.setN(n,m); g.add_edge(u,v);
 //   auto a=g.solve(); // pairs {u,v}, ordered by the left endpoint
-//   Left 1..n, right 1..m; a.size() is the maximum matching size.
-//   matchL / matchR are partners, 0 if unmatched; parallel edges are allowed.
-//   Greedy initialization + multi-source BFS augmentation; solve rebuilds.
-//   O(n+m+E) space; O(n+E) per BFS round.
 //
 ////////////////////////////////////////////////////////////////
 struct Bipartite_Matching{
@@ -27,6 +22,9 @@ void add_edge(int u,int v){
 	assert(1<=u&&u<=n&&1<=v&&v<=m&&e.size()<INT_MAX);
 	e.push_back({u,v});
 }
+// Rebuild matching; return pairs ordered by left endpoint.
+// matchL / matchR store partners, 0 if unmatched; left 1..n, right 1..m.
+// Greedy + multi-source BFS: O(n+E) per round, O(n+m+E) space.
 vector<pair<int,int>> solve(){
 	matchL.assign(n+1,0);matchR.assign(m+1,0);
 	vector<int> head(n+2),to(e.size()),rt(n+1),pre(n+1),q;

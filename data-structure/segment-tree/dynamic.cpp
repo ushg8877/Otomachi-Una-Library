@@ -4,8 +4,7 @@
 // this code accept single-point modify, range query, cost memory O(N)
 // version 1.0 (Last Update Jun 16th, 2026)
 //
-// usage:
-//   dynamic_segt T; T.set(); T.add(pos, val); T.ask(l, r);
+// usage: dynamic_segt T; T.set(); T.add(pos, val); T.ask(l, r);
 //   sparse segt on value domain [L,R]
 //
 ////////////////////////////////////////////////////////////////

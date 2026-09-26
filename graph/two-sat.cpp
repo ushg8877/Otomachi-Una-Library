@@ -2,10 +2,8 @@
 //
 // template for 2-SAT
 //
-// usage:
-//   two_sat sat; sat.set(); sat.setN(n); sat.add(x1,o1,x2,o2);
+// usage: two_sat sat; sat.set(); sat.setN(n); sat.add(x1,o1,x2,o2);
 //   auto ans = sat.solve();  // empty if unsat; var i: 2i-1=T, 2i=F
-//   setN clears old clauses
 //
 ////////////////////////////////////////////////////////////////
 struct two_sat{
@@ -13,6 +11,7 @@ int tot=0,scnt=0,top=0,n=0;
 vector<int> low,dfn,stk,bel;
 vector<vector<int>> edg;vector<char> inq;
 void set(){setN(0);}
+// Clear old clauses; variable i uses 2i-1=true and 2i=false.
 void setN(int _n){
 	// 1-index, 2i-1 true 2i false
 	assert(0<=_n&&_n<(INT_MAX-2)/2);n=_n;

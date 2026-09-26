@@ -1,10 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Generalized SAM
-// usage:
-//   GSAM sam; sam.insert(" aba"); sam.insert(" bab"); sam.build();
+// usage: GSAM sam; sam.insert(" aba"); sam.insert(" bab"); sam.build();
 //   sam.count(" ab"); sam.distinct();
-//   leading space, lowercase; count includes repeated strings
 //
 ////////////////////////////////////////////////////////////////
 struct GSAM{
@@ -67,6 +65,7 @@ int extend(int p,int c){
 	}
 	return cur;
 }
+// String has a leading space and lowercase letters.
 int insert(const string &s){
 	assert(!s.empty()&&s[0]==' '&&s.size()<INT_MAX);
 	int u=0;
@@ -97,6 +96,7 @@ int find(const string &s)const{
 	}
 	return u;
 }
+// Count occurrences over all inserted strings, including repetitions.
 ll count(const string &s)const{
 	assert(built);
 	int u=find(s);
@@ -110,5 +110,4 @@ ll distinct()const{
 };
 // end for string/generalized-suffix-automaton.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; insert every string before
-// build(). !!!!
+// !!!!! Insert every string before build(). !!!!

@@ -2,10 +2,8 @@
 //
 // template for BIT (sum)
 //
-// usage:
-//   Sum_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
+// usage: Sum_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
 //   add(i,v); ask(r); ask(l,r); initial values are zero.
-//   add(vr+1,v) is allowed as a difference sentinel.
 //
 ////////////////////////////////////////////////////////////////
 struct Sum_BIT{
@@ -21,6 +19,7 @@ void setRange(int l,int r){
 	a.assign(n+2,0);
 }
 void setN(int n){setRange(1,n);}
+// Point add; vr+1 is allowed as a difference-array sentinel.
 void add(ll x,ll v){
 	assert(!a.empty()&&vl<=x&&x<=(ll)vr+1);
 	for(ll i=x-vl+1;i<=n+1;i+=i&-i)a[i]+=v;

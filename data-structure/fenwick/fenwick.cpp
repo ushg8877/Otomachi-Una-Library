@@ -2,10 +2,8 @@
 //
 // template for BIT
 //
-// usage:
-//   BIT: setRange(l,r); add(i,v); ask(r); ask(l,r).
+// usage: BIT: setRange(l,r); add(i,v); ask(r); ask(l,r).
 //   setN(n) = setRange(1,n); add(vr+1,v) is a difference sentinel.
-//   rars: setRange(l,r); add(l,r,v); ask(l,r).
 //
 ////////////////////////////////////////////////////////////////
 struct BIT{
@@ -40,11 +38,13 @@ void add(ll x,ll v){
 ll ask(ll x)const{assert((ll)vl-1<=x&&x<=vr);return query(x-vl+1).x;}
 ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return ask(r)-ask((ll)l-1);}
 };
+// Range add / range sum: setRange(l,r), add(l,r,v), ask(l,r).
 struct rars{
 int vl=1,vr=0;BIT T0,T1;
 void set(){vl=1;vr=0;T0.set();T1.set();}
 void setRange(int l,int r){vl=l;vr=r;T0.setRange(l,r);T1.setRange(l,r);}
 void setN(int n){setRange(1,n);}
+// Point add; vr+1 is allowed as a difference-array sentinel.
 void add(int l,int r,ll x){
 	assert(vl<=l&&l<=r&&r<=vr);
 	ll a=(ll)l-vl+1,b=(ll)r-vl+2;

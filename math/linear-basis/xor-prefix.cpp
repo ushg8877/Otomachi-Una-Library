@@ -2,16 +2,15 @@
 //
 // template for xor prefix linear basis
 //
-// usage:
-// Prefix_Xor_Basis B; B.setM(m); int removed=B.insert(x,id);
-// m bits, 0<=m<=64; default 64. setM clears; set keeps m.
-// id must increase; 0: rank increased, otherwise removed id
+// usage: Prefix_Xor_Basis B; B.setM(m); int removed=B.insert(x,id);
+//   m bits, 0<=m<=64; default 64. setM clears; set keeps m.
 //
 ////////////////////////////////////////////////////////////////
 struct Prefix_Xor_Basis{
 int m=64,rank=0,last=0;
 vector<ull> a=vector<ull>(64);
 vector<int> pos=vector<int>(64);
+// Set bit width 0..64 and clear; default 64. set() retains the width.
 void setM(int _m){
 	assert(0<=_m&&_m<=64);
 	m=_m;
@@ -20,6 +19,8 @@ void setM(int _m){
 	pos.assign(m,0);
 }
 void set(){rank=last=0;fill(a.begin(),a.end(),0);fill(pos.begin(),pos.end(),0);}
+// Ids must be positive and strictly increasing. Return 0 if rank grows;
+// otherwise return the removed id, possibly the new element itself.
 int insert(ull x,int id){
 	assert(m==64||!(x>>m));
 	assert(id>last);last=id;
@@ -48,6 +49,5 @@ ull ask(ull x=0,int l=1)const{
 };
 // end for math/linear-basis/xor-prefix.cpp
 /////////////////////////
-// !!!!! Inserted values must fit m bits; setM clears the basis and ids. Ids
-// must be positive and strictly increasing; a dependent insertion may remove
-// its own id. !!!!
+// !!!!! Inserted values must fit m bits; ids must be positive and
+// increasing. !!!!

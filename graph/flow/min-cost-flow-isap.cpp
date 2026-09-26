@@ -2,16 +2,8 @@
 //
 // template for min cost max flow (potential + dijkstra + ISAP)
 //
-// usage:
-//   Cost_Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap,cost);
-//   auto [flow,cost]=g.min_cost_flow(); g.edge_flow(id);
-//   Alternative to min-cost-flow-simplex.cpp; use only one of the two
-//   templates.
-//   Negative costs allowed, input graph must have no negative cost cycle.
-//   Editing the graph makes the next solve start over.
-//   Flow and intermediate total cost must fit ll; distances use __int128.
-//   Initial SPFA: O(n*m); each cost phase:
-//   O(n*n*m+(n+m)*log(n+m+2)), O(n+m) space.
+// usage: Cost_Flow_Graph g; g.setN(n); g.setST(S,T);
+//   g.add_edge(u,v,cap,cost); auto [flow,cost]=g.min_cost_flow();
 //
 //////////////////////////////////////////////////////////////////
 struct Cost_Flow_Graph{
@@ -29,6 +21,7 @@ void add(int u,int v,ll w,ll c){
 	e.push_back({v,lst[u],w,c});
 	lst[u]=++m;
 }
+// Initial potentials: O(n*m), distances use __int128.
 void SPFA(){
 	fill(h.begin(),h.end(),0);
 	bool neg=false;
@@ -199,6 +192,9 @@ int add_edge(int u,int v,ll w,ll c){
 	add(v,u,0,-c);
 	return m-1;
 }
+// Return {flow,cost}; editing the graph makes the next solve start over.
+// Negative edge costs are allowed; flow and total cost must fit ll.
+// Each cost phase: O(n*n*m+(n+m)*log(n+m+2)); O(n+m) space.
 pair<ll,ll> min_cost_flow(){
 	assert(1<=min(S,T)&&max(S,T)<=n&&S!=T);
 	if(is_flowed)return {ans,cost};
@@ -227,5 +223,4 @@ pair<ll,ll> min_cost_flow(){
 };
 // end for graph/flow/min-cost-flow-isap.cpp
 /////////////////////////
-// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative
-// cost cycle; flow and total cost must fit ll. !!!!
+// !!!!! The input graph must have no negative cost cycle. !!!!

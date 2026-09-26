@@ -1,11 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Chordal Graph Recognition (MCS)
-// usage:
-//   Chordal g; g.setN(n); g.add_edge(u,v); bool ok=g.solve();
+// usage: Chordal g; g.setN(n); g.add_edge(u,v); bool ok=g.solve();
 //   If ok, peo[0..n-1] is the elimination order, rk[u] is 1-indexed.
-//   Undirected, vertices 1..n; loops are ignored, parallel edges are merged.
-//   O(n+m) time / space; a failed solve clears peo and rk.
 //
 ////////////////////////////////////////////////////////////////
 struct Chordal{
@@ -14,10 +11,12 @@ vector<vector<int>> edg;
 vector<int> peo,rk;
 void set(){n=0;edg.clear();peo.clear();rk.clear();}
 void setN(int _n){assert(0<=_n&&_n<INT_MAX);set();n=_n;edg.resize(n+1);}
+// Undirected, vertices 1..n; loops ignored, parallel edges merged.
 void add_edge(int u,int v){
 	assert(1<=min(u,v)&&max(u,v)<=n);
 	if(u!=v)edg[u].push_back(v),edg[v].push_back(u);
 }
+// O(n+m); success fills peo and 1-based rk; failure clears both.
 bool solve(){
 	vector<int> vis(n+1),cnt(n+1);vector<vector<int>> bucket(n+1),son(n+1);
 	for(int u=1;u<=n;u++){

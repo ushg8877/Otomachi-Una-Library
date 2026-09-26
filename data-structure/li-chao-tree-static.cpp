@@ -1,20 +1,15 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for static / compressed Li Chao tree
-// usage:
-//   struct F{
-//       using value_type=ll;
-//       ll k,b;int id;
-//       ll operator()(ll x)const{return k*x+b;}
-//   };
-//   LiChao<F> lc; lc.set({1,4,9},F{0,LLONG_MAX,-1});
-//   lc.add(F{2,3,0}); lc.add(F{-1,5,1},2,10); // [l,r)
-//   auto [y,f]=lc.ask(4); // value and function; f.id is the source
-//   LiChao<F,false,false> mx; mx.setRange(-100,101,F{0,LLONG_MIN,-1});
-//   set() clears functions and keeps the coordinates / default function.
-//   O(n) space; add / ask O(log n), interval add O(log^2 n).
+// usage: LiChao<F> lc; lc.set(X,default_f); lc.add(f);
+//   lc.add(f,l,r); auto [y,g]=lc.ask(x);
 //
 ////////////////////////////////////////////////////////////////
+// F needs value_type and const operator()(ll); for example:
+// struct F{using value_type=ll;ll k,b;int id;
+//     ll operator()(ll x)const{return k*x+b;}
+// };
+// COMPRESS=true uses discrete coordinates; MINIMIZE=true queries minima.
 template<typename F,bool COMPRESS=true,bool MINIMIZE=true>
 struct LiChao{
 using T=typename F::value_type;
@@ -22,6 +17,9 @@ int n=0,sz=1;
 ll lo=0,hi=0;
 vector<ll> X;
 vector<F> a;
+// Initialize the query coordinates; queries must belong to X.
+// f is the empty-node function, no better than any inserted function.
+// For min use F{0,LLONG_MAX,-1}, for max F{0,LLONG_MIN,-1}. O(n log n).
 void set(const vector<ll> &x,const F &f){
 	static_assert(COMPRESS);X=x;
 	sort(X.begin(),X.end());X.erase(unique(X.begin(),X.end()),X.end());
@@ -29,6 +27,8 @@ void set(const vector<ll> &x,const F &f){
 	n=X.size();
 	build(f);
 }
+// Initialize all integer coordinates in [l,r); requires COMPRESS=false.
+// O(r-l) space; f is the empty-node function.
 void setRange(ll l,ll r,const F &f){
 	static_assert(!COMPRESS);
 	assert(l<r&&(__int128)r-l<=(1<<29));
@@ -37,8 +37,11 @@ void setRange(ll l,ll r,const F &f){
 	n=r-l;
 	build(f);
 }
+// Clear functions, retaining coordinates and the default function.
 void set(){assert(n);fill(a.begin()+1,a.end(),a[0]);}
+// Insert on the whole domain; O(log n).
 void add(F f){assert(n);add(1,move(f));}
+// Insert only on [l,r), left closed and right open; O(log^2 n).
 void add(F f,ll l,ll r){
 	assert(n&&l<=r);
 	if constexpr(!COMPRESS){assert(lo<=l&&r<=hi);}
@@ -49,6 +52,8 @@ void add(F f,ll l,ll r){
 		L>>=1;R>>=1;
 	}
 }
+// Return {best value, source function}; ties may choose either. O(log n).
+// All evaluations must fit F::value_type.
 pair<T,F> ask(ll x)const{
 	assert(n);int p=idx(x);
 	if constexpr(COMPRESS){assert(p<n&&X[p]==x);}
@@ -90,7 +95,4 @@ void add(int i,F f){
 };
 // end for data-structure/li-chao-tree-static.cpp
 /////////////////////////
-// !!!!! F needs value_type and const operator()(ll). Pairwise preference must
-// switch at most once on the domain. Default F must be no better than any valid
-// function; ties may return either. Compressed queries must belong to X;
-// intervals and setRange use [l,r). All evaluations must fit value_type. !!!!
+// !!!!! Pairwise preference must switch at most once on the domain. !!!!

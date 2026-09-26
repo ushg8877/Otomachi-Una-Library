@@ -1,13 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Regular Bipartite Matching
-// usage:
-//   Regular_Bipartite g; g.setN(n); g.add_edge(u,v);
+// usage: Regular_Bipartite g; g.setN(n); g.add_edge(u,v);
 //   auto a=g.solve(); // d perfect matchings, a[c][u] is the right partner
-//   Each row has n+1 entries, a[c][0]=0; c is 0-indexed, u is 1-indexed.
-//   Both sides are 1..n; every vertex must have the same degree d.
-//   Parallel edges are allowed and counted with multiplicity.
-//   Deterministic O(n+nd*log(nd+1)) time, O(n+nd) space.
 //
 ////////////////////////////////////////////////////////////////
 struct Regular_Bipartite{
@@ -100,6 +95,9 @@ void divide(vector<int> a,int d,vector<vector<int>> &ans)const{
 	divide(move(r),k,ans);
 }
 public:
+// Return d perfect matchings; row c has n+1 entries, a[c][0]=0.
+// a[c][u] is the right partner: c is 0-based, u is 1-based.
+// O(n+nd*log(nd+1)) time, O(n+nd) space; parallel edges count separately.
 vector<vector<int>> solve()const{
 	if(!n)return {};
 	vector<int> l(n+1),r(n+1),ids(e.size()-1);
@@ -119,5 +117,4 @@ vector<vector<int>> solve()const{
 };
 // end for graph/matching/regular-bipartite.cpp
 /////////////////////////
-// !!!!! Both sides must have the same size and every vertex the same degree;
-// parallel edges count separately. !!!!
+// !!!!! Both sides must have equal size and every vertex equal degree. !!!!

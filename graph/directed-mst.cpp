@@ -1,13 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Directed MST (Chu-Liu / Edmonds)
-// usage:
-//   Directed_MST g; g.setN(n); g.add_edge(u,v,w); auto a=g.solve(S);
+// usage: Directed_MST g; g.setN(n); g.add_edge(u,v,w); auto a=g.solve(S);
 //   a.ok; a.cost; a.id[v] is the incoming edge of v, a.id[S]=0.
-//   Vertices / edge ids are 1-indexed; edges point away from the root S.
-//   Negative weights / parallel edges / loops are allowed. No solution:
-//   ok=false.
-//   O((n+m)*log(n+1)) time, O(n+m) space; cost uses __int128.
 //
 ////////////////////////////////////////////////////////////////
 struct Directed_MST{
@@ -17,6 +12,8 @@ int n=0;
 vector<edge> e=vector<edge>(1);
 void set(){n=0;e.assign(1,{});}
 void setN(int _n){assert(0<=_n&&_n<INT_MAX);set();n=_n;}
+// Vertices / edge ids are 1-based. Negative weights, loops and parallel
+// edges are allowed; edges point away from the chosen root.
 int add_edge(int u,int v,ll w){
 	assert(1<=min(u,v)&&max(u,v)<=n&&e.size()<INT_MAX);
 	int id=e.size();
@@ -68,6 +65,8 @@ struct DSU{
 	}
 };
 public:
+// Root S; return ok=false if impossible. Otherwise cost is __int128,
+// id[v] is the incoming edge id and id[S]=0. O((n+m)*log(n+1)).
 result solve(int S)const{
 	assert(1<=S&&S<=n);
 	DSU dsu(n);
@@ -129,5 +128,3 @@ result solve(int S)const{
 };
 // end for graph/directed-mst.cpp
 /////////////////////////
-// !!!!! The result cost is __int128; basic/fast-io.cpp provides decimal IO if
-// needed. !!!!

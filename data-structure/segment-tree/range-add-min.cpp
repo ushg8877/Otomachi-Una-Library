@@ -3,9 +3,8 @@
 // template for Segment Tree — 区间加 / 区间最小
 // version 1.0 (Last Update Jun 27th, 2026)
 //
-// usage:
-//   MinAdd_segt st; st.setN(n); upd/add; ask(l,r) for range min
-//   needs chkmin; set leaf INF in build for min queries
+// usage: MinAdd_segt st; st.setN(n); upd/add; ask(l,r) for range min
+//   upd(i,v); add(l,r,v); ask(l,r); initial values are zero.
 //
 ////////////////////////////////////////////////////////////////
 struct MinAdd_segt{
@@ -48,6 +47,7 @@ ll query(int ql,int qr,int id,int l,int r){
 
 public:
 void set(){vl=1;vr=0;tr.clear();}
+// Initialize [l,r] to zero; use upd to assign other initial values.
 void set(int l,int r){
 	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
 	vl=l;
@@ -67,5 +67,3 @@ ll ask(int x){return ask(x,x);}
 };
 // end for data-structure/segment-tree/range-add-min.cpp
 /////////////////////////
-// !!!!! Requires chkmin from basic/template.cpp; check the initial leaf value
-// before range additions. !!!!

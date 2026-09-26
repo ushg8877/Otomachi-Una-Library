@@ -4,8 +4,7 @@
 // Chtholly is very cute!
 // version 1.0 (Last Update Jun 16th, 2026)
 //
-// usage:
-//   Fast_ODT fot; fot.setN(n); fot.insert(l,r,c); fot.extract(l,r);
+// usage: Fast_ODT fot; fot.setN(n); fot.insert(l,r,c); fot.extract(l,r);
 //   requires data-structure/fast-set.cpp
 //
 ////////////////////////////////////////////////////////////////
@@ -59,5 +58,4 @@ vector<array<int,3>> insert(int l,int r,int c){
 };
 // end for data-structure/ordered-disjoint-interval-tree-fast.cpp
 /////////////////////////
-// !!!!! Paste data-structure/fast-set.cpp first, with the helpers from
-// basic/template.cpp. !!!!
+// !!!!! Paste data-structure/fast-set.cpp first. !!!!

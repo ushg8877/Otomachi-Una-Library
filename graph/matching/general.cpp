@@ -2,8 +2,7 @@
 //
 // template for General Graph Matching (blossom), O(n^3)
 //
-// usage:
-//   blossom g; g.setN(n); g.add_edge(u,v); int cnt=g.solve();
+// usage: blossom g; g.setN(n); g.add_edge(u,v); int cnt=g.solve();
 //   cnt*2==n if perfect; match[u]=0 if unmatched; 1-index
 //
 ////////////////////////////////////////////////////////////////

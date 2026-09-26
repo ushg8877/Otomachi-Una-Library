@@ -1,17 +1,12 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Stern-Brocot search
-// usage:
-//   SBT t; t.setM(M);
+// usage: SBT t; t.setM(M);
 //   while(!t.done()){Rat x=t.ask();t.tell(cmp(x));}
-//   cmp: -1 if x is too small, 0 if equal, +1 if too large.
-//   Search 0<=p<=M, 1<=q<=M; feedback must be monotone.
-//   found(): l==r is the answer; otherwise l,r bracket the target.
-//   l,r are {p,q}; {-1,0} / {1,0} mean no lower / upper candidate.
-//   O(log(M+1)) queries / local time, O(1) space; setM clears the search.
 //
 ////////////////////////////////////////////////////////////////
 struct SBT{
+// Final bounds {p,q}; {-1,0} / {1,0} mean no lower / upper candidate.
 pair<ll,ll> l,r;
 private:
 ll M=0,lo=0,hi=0,k=0,cap=0;
@@ -39,6 +34,8 @@ void split(){
 	phase=0;next();
 }
 public:
+// Search 0<=p<=M, 1<=q<=M; clear previous search.
+// O(log(M+1)) queries / local time and O(1) space.
 void setM(ll m){
 	assert(m>=1);
 	M=m;
@@ -49,8 +46,11 @@ void setM(ll m){
 	cur=Rat();
 }
 bool done()const{return stop;}
+// True means l==r is the answer; otherwise the final l,r bracket it.
 bool found()const{return stop&&M&&l==r;}
 Rat ask()const{assert(!stop);return cur;}
+// Describe the last ask(): -1 too small, 0 equal, +1 too large.
+// Feedback must be monotone with respect to the queried fraction.
 void tell(int res){
 	assert(!stop&&-1<=res&&res<=1);
 	if(!res){l=r={cur.p,cur.q};stop=true;return;}
@@ -76,5 +76,4 @@ void tell(int res){
 };
 // end for number-theory/stern-brocot.cpp
 /////////////////////////
-// !!!!! Paste math/rational.cpp first. tell(-1/0/1) describes the last ask()
-// result, not the target; l/r with q=0 are sentinels. !!!!
+// !!!!! Paste math/rational.cpp first. !!!!

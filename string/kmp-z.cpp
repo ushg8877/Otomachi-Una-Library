@@ -2,11 +2,9 @@
 // string algorithm template by Otomachi Una (Junlin Ye)
 // version 1.0 (last update May 24th 2026)
 //
-// usage:
-//   string s = " ababa"; auto b = border(s); auto z = z_function(s);
+// usage: string s = " ababa"; auto b = border(s); auto z = z_function(s);
 //   1-indexed with leading space
 //
-// your string should index from 1, begin with a space
 ////////////////////////////////////////////////////////////////
 vector<int> border(string s){
 	// s is a string with length n+1,

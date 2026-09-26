@@ -2,8 +2,7 @@
 //
 // template for FHQ Treap
 //
-// usage:
-//   FHQ t; t.setN(n); split_by_size / split_by_key / merge / merge_it
+// usage: FHQ t; t.setN(n); split_by_size / split_by_key / merge / merge_it
 //   t.push(id, x) for lazy add on key[]
 //
 ////////////////////////////////////////////////////////////////

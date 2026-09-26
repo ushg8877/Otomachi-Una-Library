@@ -3,8 +3,7 @@
 // template for  pq2stack (a.k.a. fuckGold14526 trick)
 // version 1.0 (Last Update Jun 28th, 2026)
 //
-// usage:
-//   pq2stack<T> pq; pq.push(x,w); pq.prep(); pq.pop();
+// usage: pq2stack<T> pq; pq.push(x,w); pq.prep(); pq.pop();
 //   pop removes max weight; needs chkmin; call prep() before each query
 //
 ////////////////////////////////////////////////////////////////
@@ -75,5 +74,4 @@ int pop(){
 };
 // end for data-structure/priority-queue-two-stacks.cpp
 /////////////////////////
-// !!!!! Requires chkmin from basic/template.cpp; call prep() before each query.
-// !!!!
+// !!!!! Requires chkmin; call prep() before each query. !!!!

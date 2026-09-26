@@ -2,8 +2,7 @@
 //
 // template for Linear Sieve
 //
-// usage:
-//   init(n); is_prime[x]; prime[i]  // i-th prime, 1-index
+// usage: init(n); is_prime[x]; prime[i]  // i-th prime, 1-index
 //
 ////////////////////////////////////////////////////////////////
 vector<char> is_prime;

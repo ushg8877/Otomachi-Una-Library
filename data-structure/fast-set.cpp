@@ -4,8 +4,7 @@
 // query a integer exist in O(1) 
 // version 1.2 (Last Update Jun 13th, 2026)
 //
-// usage:
-//   FastSet fs; fs.setN(n); fs.insert(x); fs.erase(x);
+// usage: FastSet fs; fs.setN(n); fs.insert(x); fs.erase(x);
 //   fs[x]; fs.prev/next; needs chkmin/chkmax/first_bit/last_bit
 //
 ////////////////////////////////////////////////////////////////

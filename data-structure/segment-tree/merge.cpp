@@ -3,8 +3,7 @@
 // template for Segment Tree Merge
 // version 1.0 (Last Update Jun 25th, 2026)
 //
-// usage:
-//   segt_merge sm; sm.setN(n); int rt=0;
+// usage: segt_merge sm; sm.setN(n); int rt=0;
 //   sm.add(rt,i,v); sm.ask(rt,x); sm.merge(a,b);
 //
 ////////////////////////////////////////////////////////////////
@@ -81,5 +80,4 @@ void merge(int &x,int &y){
 };
 // end for data-structure/segment-tree/merge.cpp
 /////////////////////////
-// !!!!! merge consumes the merged roots; do not reuse the old separate trees.
-// !!!!
+// !!!!! merge consumes roots; do not reuse the old separate trees. !!!!

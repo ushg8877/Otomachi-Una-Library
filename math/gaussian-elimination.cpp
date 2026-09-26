@@ -1,12 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Gaussian elimination and determinant
-// usage:
-//   Gauss<mint> G; // prime modulus, or Gauss<long double>
-//   int res=G.solve(a,m); // augmented matrix, m variables
-//   -1: no solution, 0: multiple, 1: unique; answer in G.x
-//   free variables are set to zero; G.rank, G.where
-//   G.det(a); // square matrix; floating point uses G.eps
+// usage: Gauss<mint> g; int res=g.solve(a,m);
+//   g.x; g.rank; g.det(a);
 //
 ////////////////////////////////////////////////////////////////
 template<typename T>
@@ -30,6 +26,9 @@ int pivot(const vector<vector<T>> &a,int r,int c)const{
 	}
 	return p;
 }
+// Augmented matrix with m variables; T is a field or floating point.
+// Return -1 / 0 / 1 for none / multiple / unique; x stores one solution.
+// Free variables are zero; rank / where store elimination information.
 int solve(vector<vector<T>> a,int m){
 	assert(m>=0&&m<INT_MAX&&a.size()<INT_MAX&&eps>=0);
 	int n=a.size();
@@ -57,6 +56,7 @@ int solve(vector<vector<T>> a,int m){
 	}
 	return rank==m?1:0;
 }
+// Determinant of a square matrix; floating-point zero tests use eps.
 T det(vector<vector<T>> a)const{
 	assert(a.size()<INT_MAX&&eps>=0);int n=a.size();
 	for(auto &v:a)assert(v.size()==(size_t)n);
@@ -78,5 +78,3 @@ T det(vector<vector<T>> a)const{
 };
 // end for math/gaussian-elimination.cpp
 /////////////////////////
-// !!!!! Gauss<mint> needs a field type such as math/mod-int.cpp; floating point
-// results depend on eps. !!!!

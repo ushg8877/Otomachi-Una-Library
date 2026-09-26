@@ -3,8 +3,7 @@
 // template for Single-source shortest path
 // last update Jun 23rd, 2026
 //
-// usage:
-//   graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
+// usage: graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
 //   auto d = G.SSSP();  // unreachable 1e18, non-negative weights
 //
 //////////////////////////////////////////////////////////////////
@@ -20,6 +19,7 @@ void add_edge(int u,int v,ll w){
 	assert(1<=min(u,v)&&max(u,v)<=n&&0<=w);
 	edg[u].push_back(make_pair(v,w));
 }
+// Unreachable distances are 1e18; finite distances must stay below it.
 vector<ll> SSSP(){
 	// return a vector of length n+1 --- ans[i] shortest path between s and i
 	// if no path, ans[i] will be 1e18
@@ -40,5 +40,4 @@ vector<ll> SSSP(){
 };
 // end for graph/dijkstra.cpp
 /////////////////////////
-// !!!!! Edge weights must be nonnegative; finite distances must be below the
-// INF sentinel. !!!!
+// !!!!! Edge weights must be nonnegative. !!!!

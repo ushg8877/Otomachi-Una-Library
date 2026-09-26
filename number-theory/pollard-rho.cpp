@@ -3,8 +3,7 @@
 // template for Pollard-Rho, prepared by Otomachi Una
 // version 1.0 (Last Update Jun 17th, 2026)
 //
-// usage:
-//   is_prime(n); auto f = factor(n);
+// usage: is_prime(n); auto f = factor(n);
 //
 ////////////////////////////////////////////////////////////////
 using ull=unsigned long long;

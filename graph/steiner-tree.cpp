@@ -2,13 +2,8 @@
 //
 // template for minimum Steiner tree
 //
-// usage:
-//   Steiner_Tree g; g.setN(n); g.add_edge(u,v,w);
+// usage: Steiner_Tree g; g.setN(n); g.add_edge(u,v,w);
 //   ll ans=g.solve({s1,s2,s3}); // minimum cost, -1 if disconnected
-//   Undirected graph, vertices 1..n, non-negative weights.
-//   Empty / single terminal set returns 0; repeated terminals are ignored.
-//   Weights and finite answer must be less than LLONG_MAX.
-//   O(n*3^k+m*log(m+2)*2^k) time, O(n*2^k+n+m) space.
 //
 //////////////////////////////////////////////////////////////////
 struct Steiner_Tree{
@@ -19,10 +14,14 @@ vector<vector<pair<int,ll>>> edg;
 public:
 void set(){n=0;edg.clear();}
 void setN(int _n){assert(0<=_n&&_n<INT_MAX);n=_n;edg.assign(n+1,{});}
+// Undirected, vertices 1..n; weights must be nonnegative and < LLONG_MAX.
 void add_edge(int u,int v,ll w){
 	assert(1<=min(u,v)&&max(u,v)<=n&&0<=w&&w<inf);
 	edg[u].push_back({v,w});edg[v].push_back({u,w});
 }
+// Minimum cost, -1 if disconnected; repeated terminals ignored.
+// Empty / single-terminal set returns 0; finite answers < LLONG_MAX.
+// For k terminals: O(n*3^k+m*log(m+2)*2^k) time, O(n*2^k+n+m) space.
 ll solve(vector<int> s)const{
 	for(int u:s)assert(1<=u&&u<=n);
 	sort(s.begin(),s.end());s.erase(unique(s.begin(),s.end()),s.end());
@@ -64,5 +63,3 @@ ll solve(vector<int> s)const{
 };
 // end for graph/steiner-tree.cpp
 /////////////////////////
-// !!!!! Undirected nonnegative weights; memory is O(n*2^k+n+m), so the number
-// of terminals must be small. !!!!

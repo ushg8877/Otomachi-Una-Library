@@ -3,8 +3,7 @@
 // template for Segment Tree
 // version 1.1 (Last Update Jun 27th, 2026)
 //
-// usage:
-//   segt st; st.setN(n);  // or set(l,r), 1-indexed
+// usage: segt st; st.setN(n);  // or set(l,r), 1-indexed
 //   upd/add point; add(l,r,v) range; ask; find_first/last
 //
 ////////////////////////////////////////////////////////////////
@@ -29,6 +28,7 @@ struct lazt{
 		return lazt(*this)+=y;
 	}
 };
+// Edit info and lazy together; find_first/last require monotonicity.
 struct info{
 	// modify here
 	ll s,len;
@@ -198,5 +198,3 @@ int find_last(ll x){
 #undef USE_COMPARE
 // end for data-structure/segment-tree/lazy.cpp
 /////////////////////////
-// !!!!! Edit info/lazy together for the problem; find_first/last require
-// monotonicity; only paste one segt variant. !!!!

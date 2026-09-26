@@ -5,8 +5,7 @@
 // ec[i] for edge in i-th component
 // version 1.0 (Last Update Jun 17th, 2026)
 //
-// usage:
-//   block_cut bc; bc.setN(n); bc.add_edge(u,v); bc.build();
+// usage: block_cut bc; bc.setN(n); bc.add_edge(u,v); bc.build();
 //   vertex u -> tree u; BCC i -> tree n+i; bc.ec[i] edges
 //
 ////////////////////////////////////////////////////////////////

@@ -3,8 +3,7 @@
 // template for Segment Tree — 区间加 / 区间最大
 // version 1.0 (Last Update Jun 27th, 2026)
 //
-// usage:
-//   MaxAdd_segt st; st.setN(n); upd/add; ask(l,r) for range max
+// usage: MaxAdd_segt st; st.setN(n); upd/add; ask(l,r) for range max
 //   default leaf value 0
 //
 ////////////////////////////////////////////////////////////////

@@ -1,12 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for Palindromic Automaton
-// usage:
-//   PAM pam; pam.build(" ababa"); auto cnt=pam.count();
+// usage: PAM pam; pam.build(" ababa"); auto cnt=pam.count();
 //   Or pam.set(n), then pam.extend(c); returns the longest suffix node.
-//   Leading space, lowercase; real nodes are 2..tot, count() is repeatable.
-//   len / fail / num / pos: length, suffix link, suffix count, first end.
-//   O(n) build / space for a fixed alphabet, O(n) count.
 //
 ////////////////////////////////////////////////////////////////
 struct PAM{
@@ -39,6 +35,7 @@ int get_fail(int u)const{
 	while(s[n-len[u]-1]!=s[n])u=fail[u];
 	return u;
 }
+// Append one lowercase letter; return the longest palindromic suffix node.
 int extend(char c){
 	assert('a'<=c&&c<='z'&&n<INT_MAX-3);
 	s+=c;
@@ -58,11 +55,15 @@ int extend(char c){
 	siz[lst]++;
 	return lst;
 }
+// Leading space and lowercase letters; O(n) time / space.
+// Nodes 0,1 are virtual; real nodes 2..tot. len/fail/num/pos store
+// length, suffix link, suffix count and first occurrence end.
 void build(string S){
 	assert(!S.empty()&&S[0]==' '&&S.size()<INT_MAX-2);
 	set((int)S.size()-1);
 	for(int i=1;i<(int)S.size();i++)extend(S[i]);
 }
+// Occurrence counts; repeatable, O(n).
 vector<int> count()const{
 	vector<int> cnt=siz;
 	for(int u=tot;u>=2;u--)cnt[fail[u]]+=cnt[u];
@@ -72,5 +73,3 @@ vector<int> count()const{
 };
 // end for string/palindromic-automaton.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; nodes 0 and 1 are virtual roots.
-// !!!!

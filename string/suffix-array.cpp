@@ -2,8 +2,7 @@
 // string algorithm template by Otomachi Una (Junlin Ye)
 // version 1.0 (last update May 24th 2026)
 //
-// usage:
-//   SA sa; sa.build(" abc");  // leading space, 1-indexed
+// usage: SA sa; sa.build(" abc");  // leading space, 1-indexed
 //   sa.sa[i], sa.rk[i]
 //
 ////////////////////////////////////////////////////////////////
@@ -127,6 +126,7 @@ int ask(int i,int j)const{return lcp(i,j);}
 // SA_LCS L; L.build(" ababa"); L.lcs(i,j);
 // Longest common suffix of prefixes s[1..i] and s[1..j].
 // O(n) build / space, O(1) query; index 0 denotes the empty prefix.
+// LCS query indices refer to prefix endpoints, not suffix starts.
 struct SA_LCS{
 int n=0;
 SA_LCP st;
@@ -147,5 +147,4 @@ int ask(int i,int j)const{return lcs(i,j);}
 };
 // end for string/suffix-array.cpp
 /////////////////////////
-// !!!!! Paste data-structure/linear-rmq.cpp first; leading space, bytes in
-// [1,M); LCS indices are prefix endpoints. !!!!
+// !!!!! Paste data-structure/linear-rmq.cpp first. !!!!

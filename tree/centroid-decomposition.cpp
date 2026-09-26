@@ -3,8 +3,7 @@
 // template for Centroid Decomposition, prepared by Otomachi Una
 // version 1.0 (Last Update Jun 13th, 2026)
 //
-// usage:
-//   Tree tr; tr.setN(n); tr.add_edge(u,v); tr.HLD_build(); tr.DC_build();
+// usage: Tree tr; tr.setN(n); tr.add_edge(u,v); tr.HLD_build(); tr.DC_build();
 //   fill logic inside DC();
 //
 ////////////////////////////////////////////////////////////////
@@ -136,6 +135,7 @@ void get(int u,int fa){
 		for(int v:edg[x])if(v!=p&&!vis[v])q.push_back({v,x});
 	}
 }
+// Fill this function with the problem-specific logic.
 void DC(int u){
 	vis[u]=true;
 	for(int v:edg[u]) if(!vis[v]){
@@ -191,5 +191,3 @@ void solve(){
 };
 // end for tree/centroid-decomposition.cpp
 /////////////////////////
-// !!!!! Fill DC() with the problem logic; do not paste with the other Tree
-// definition. !!!!

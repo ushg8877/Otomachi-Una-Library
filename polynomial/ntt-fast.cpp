@@ -3,8 +3,8 @@
 // template for ModInt
 // version 3.0 (Last Update Jun 15th, 2026)
 //
-// usage:
-//   init(n); mint a,b; C(n,k); binom(n,k);
+// usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
+//   init(n); C(n,k); BM(a);
 //
 ////////////////////////////////////////////////////////////////
 template<unsigned _M>
@@ -102,10 +102,6 @@ inline mint binom(int y,int x){return C(x,y);}
 // template for polynomial
 // version 7.0 (Last Update Jun 15th, 2026)
 // NTT core replaced with the faster version
-//
-// usage:
-//    init(n);
-//   poly h=f*g; Inv, Ln, Exp, BM, FSPE, value;
 //
 ////////////////////////////////////////////////////////////////
 
@@ -305,6 +301,7 @@ mint value(const poly &f,mint x){
 	return ans;
 }
 
+// Formal inverse; constant term must be invertible.
 poly Inv(poly f){
 	assert(!f.empty()&&f[0]);
 	int n=f.size();
@@ -343,6 +340,7 @@ poly diff(poly f){
 	return f;
 }
 
+// Formal logarithm; f[0]=1. Integration denominators must be invertible.
 poly Ln(poly f){
 	assert(!f.empty()&&f[0].x==1);
 	poly f_=diff(f),_f=Inv(f);
@@ -358,6 +356,7 @@ poly Ln(poly f){
 	return f_;
 }
 
+// Formal exponential; f[0]=0. Integration denominators must be invertible.
 poly Exp(poly f){
 	assert(!f.empty()&&!f[0]);
 	poly g{1},_f,_g;
@@ -460,6 +459,5 @@ poly lagrange(vector<mint>x,vector<mint>y){
 // use init(n) before accessing fac / ifac / inv directly
 // end for polynomial/ntt-fast.cpp
 /////////////////////////
-// !!!!! Choose only one polynomial implementation; it already defines modular
-// arithmetic. Check constant terms before inv/ln/exp and the transform size
-// limit. !!!!
+// !!!!! Contains mint already; do not paste another mint or poly
+// implementation. !!!!

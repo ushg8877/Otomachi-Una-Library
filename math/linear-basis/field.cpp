@@ -2,9 +2,8 @@
 //
 // template for field linear basis
 //
-// usage:
-// Linear_Basis<mint> B; B.setN(n); B.insert(x); B.contains(x);
-// T must be an exact field type; coordinates are 0..n-1
+// usage: Linear_Basis<mint> B; B.setN(n); B.insert(x); B.contains(x);
+//   T must be an exact field type; coordinates are 0..n-1
 //
 ////////////////////////////////////////////////////////////////
 template<typename T>
@@ -45,5 +44,4 @@ bool contains(vector<T> x)const{
 };
 // end for math/linear-basis/field.cpp
 /////////////////////////
-// !!!!! T must be an exact field type, e.g. mint from math/mod-int.cpp;
-// coordinates are 0..n-1. !!!!
+// !!!!! T must be an exact field type, such as mint with a prime modulus. !!!!

@@ -2,8 +2,7 @@
 //
 // template for mod-int
 //
-// usage:
-//   mint a,b; init(n); C(n,k); // fixed prime modulus
+// usage: mint a,b; init(n); C(n,k); // fixed prime modulus
 //
 ////////////////////////////////////////////////////////////////
 template <unsigned _M>
@@ -110,5 +109,5 @@ inline mint Apple_in_Box(int n,int m,int k){
 }
 // end for math/mod-int.cpp
 /////////////////////////
-// !!!!! Choose only one mint definition; division requires an invertible
-// divisor, factorial formulas require a suitable prime modulus. !!!!
+// !!!!! Division needs an invertible divisor; factorials need a prime
+// modulus. !!!!

@@ -3,8 +3,7 @@
 // template for Hash, prepared by Otomachi_Una
 // version 1.2 (Last Update Jun 13th, 2026)
 //
-// usage:
-//   init_hash(); auto H = Hash_of(" abc"); Hash sub = H[r]-H[l-1];
+// usage: init_hash(); auto H = Hash_of(" abc"); Hash sub = H[r]-H[l-1];
 //   sub.v() for compare; random bases each run
 //
 ////////////////////////////////////////////////////////////////
@@ -15,6 +14,7 @@ const int B1 = 256 + rnd() % (MOD1-257);
 const int B2 = 256 + rnd() % (MOD2-257);
 
 vector<ll> pw1{1}, pw2{1};
+// Choose random bases; hashes may collide.
 void init_hash(int n=0);
 
 struct Hash {
@@ -74,5 +74,4 @@ vector<Hash> Hash_of(const string &s) {
 }
 // end for string/rolling-hash.cpp
 /////////////////////////
-// !!!!! Call init_hash() first; hashing has collision risk; rnd may conflict
-// with other templates. !!!!
+// !!!!! Call init_hash() first. !!!!

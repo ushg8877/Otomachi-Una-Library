@@ -2,13 +2,8 @@
 //
 // template for max flow (highest label push-relabel)
 //
-// usage:
-//   Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap);
+// usage: Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap);
 //   ll f = g.max_flow(); g.edge_flow(id);
-//   setN clears the graph; new_node keeps existing edges
-//   Returns total flow; adding edges continues on the residual graph.
-//   Excess is returned to S, so edge_flow gives a feasible flow.
-//   Capacities and total flow must fit ll; excess uses __int128.
 //
 //////////////////////////////////////////////////////////////////
 struct Flow_Graph{
@@ -120,6 +115,7 @@ void set(){
 	bucket.clear();
 	ex.clear();
 }
+// Clear the graph; use new_node() to keep existing edges.
 void setN(int _n){
 	assert(0<=_n&&_n<INT_MAX/2);
 	set();
@@ -164,6 +160,9 @@ int add_edge(int u,int v,ll w){
 	add(v,u,0);
 	return m-1;
 }
+// Return total flow; adding edges continues on the residual graph.
+// Excess is returned to S, so edge_flow(id) gives a feasible flow.
+// Capacities / total flow must fit ll; excess uses __int128.
 ll max_flow(){
 	assert(1<=min(S,T)&&max(S,T)<=n&&S!=T);
 	if(is_flowed) return ans;
@@ -200,5 +199,3 @@ ll max_flow(){
 };
 // end for graph/flow/max-flow-hlpp.cpp
 /////////////////////////
-// !!!!! Capacities and total flow must fit ll; setN clears the residual graph.
-// !!!!

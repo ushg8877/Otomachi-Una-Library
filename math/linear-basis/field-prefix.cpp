@@ -2,9 +2,8 @@
 //
 // template for field prefix linear basis
 //
-// usage:
-// Prefix_Linear_Basis<mint> B; B.setN(n); int removed=B.insert(x,id);
-// id must increase; 0: rank increased, otherwise removed id
+// usage: Prefix_Linear_Basis<mint> B; B.setN(n); int removed=B.insert(x,id);
+//   id must increase; 0: rank increased, otherwise removed id
 //
 ////////////////////////////////////////////////////////////////
 template<typename T>
@@ -21,6 +20,8 @@ void setN(int _n){
 	a.assign(n,{});
 	pos.assign(n,0);
 }
+// Ids must be positive and strictly increasing. Return 0 if rank grows;
+// otherwise return the removed id, possibly the new element itself.
 int insert(vector<T> x,int id){
 	assert(x.size()==(size_t)n&&id>last);last=id;
 	for(int i=n-1;i>=0;i--)if(x[i]){
@@ -67,5 +68,4 @@ bool contains(vector<T> x,int l=1)const{
 };
 // end for math/linear-basis/field-prefix.cpp
 /////////////////////////
-// !!!!! Requires an exact field type; ids must be positive and strictly
-// increasing; a dependent insertion may remove its own id. !!!!
+// !!!!! T must be an exact field; ids must be positive and increasing. !!!!

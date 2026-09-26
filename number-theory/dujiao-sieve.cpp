@@ -2,11 +2,8 @@
 //
 // template for Du Jiao Sieve
 //
-// usage:
-//   du_jiao d; d.init_mu(B); ll mu=d.sum_mu(n);
+// usage: du_jiao d; d.init_mu(B); ll mu=d.sum_mu(n);
 //   d.init_phi(B); __int128 phi=d.sum_phi(n);
-//   sum over [1,n], n>=0; init only what is needed
-//   B ~ n^(2/3); O(B+n/sqrt(B)) time, O(B+n/B) space
 //
 ////////////////////////////////////////////////////////////////
 struct du_jiao{
@@ -14,6 +11,8 @@ vector<int> mu;
 vector<ll> phi;
 unordered_map<ll,ll> mem_mu;
 unordered_map<ll,__int128> mem_phi;
+// Precompute through B; usually B ~ n^(2/3). With this cutoff,
+// O(B+n/sqrt(B)) time and O(B+n/B) space for a prefix query.
 void init_mu(int m){
 	assert(m>=1&&m<INT_MAX);
 	vector<int> prime;vector<bool> vis(m+1,false);
@@ -48,6 +47,7 @@ void init_phi(int m){
 	}
 	for(int i=1;i<=m;i++)phi[i]+=phi[i-1];
 }
+// Sum mu over [1,n], n>=0; initialize only mu if phi is not needed.
 ll sum_mu(ll n){
 	assert(n>=0&&!mu.empty());
 	if(n<(ll)mu.size())return mu[n];
@@ -61,6 +61,7 @@ ll sum_mu(ll n){
 	}
 	return mem_mu[n]=(ll)ans;
 }
+// Sum phi over [1,n], n>=0; result is __int128.
 __int128 sum_phi(ll n){
 	assert(n>=0&&!phi.empty());
 	if(n<(ll)phi.size())return phi[n];
@@ -77,5 +78,5 @@ __int128 sum_phi(ll n){
 };
 // end for number-theory/dujiao-sieve.cpp
 /////////////////////////
-// !!!!! Call init_mu/init_phi for the needed function; sum_phi returns
-// __int128, basic/fast-io.cpp provides decimal IO. !!!!
+// !!!!! Call init_mu / init_phi before querying the corresponding
+// function. !!!!

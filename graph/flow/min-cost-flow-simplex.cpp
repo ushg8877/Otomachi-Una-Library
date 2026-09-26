@@ -2,12 +2,8 @@
 //
 // template for min cost max flow (network simplex)
 //
-// usage:
-//   Cost_Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap,cost);
-//   auto [flow,cost]=g.min_cost_flow(); g.edge_flow(id);
-//   negative costs allowed, input graph must have no negative cost cycle
-//   setN clears the graph; editing the graph makes the next solve start over
-//   flow and cost must fit ll; potentials use ll when safe, otherwise __int128
+// usage: Cost_Flow_Graph g; g.setN(n); g.setST(S,T);
+//   g.add_edge(u,v,cap,cost); auto [flow,cost]=g.min_cost_flow();
 //
 //////////////////////////////////////////////////////////////////
 struct Cost_Flow_Graph{
@@ -131,6 +127,8 @@ int add_edge(int u,int v,ll w,ll c){
 	is_flowed=false;
 	return id;
 }
+// Return {flow,cost}; editing the graph makes the next solve start over.
+// Negative edge costs are allowed; flow and total cost must fit ll.
 pair<ll,ll> min_cost_flow(){
 	assert(1<=min(S,T)&&max(S,T)<=n&&S!=T);
 	if(is_flowed)return {ans,cost};
@@ -167,5 +165,4 @@ pair<ll,ll> min_cost_flow(){
 };
 // end for graph/flow/min-cost-flow-simplex.cpp
 /////////////////////////
-// !!!!! Only paste one Cost_Flow_Graph variant; input must have no negative
-// cost cycle; flow and total cost must fit ll. !!!!
+// !!!!! The input graph must have no negative cost cycle. !!!!

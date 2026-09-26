@@ -2,13 +2,7 @@
 //
 // template for Divide-Combine Tree
 //
-// usage:
-//   Paste data-structure/linear-rmq.cpp first.
-//   xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
-//   Or setN(n), fill a[1..n], then auto t=tr.build().
-//   Input must be a permutation of 1..n. Node / interval indices are 1-based.
-//   t.rt, t.son, t.typ, t.L/R, t.mn/mx, t.id; no problem-specific solver.
-//   Build O(n log n), space O(n). Children are ordered by position.
+// usage: xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
 //
 ////////////////////////////////////////////////////////////////
 struct xihe_tree{
@@ -53,6 +47,9 @@ struct segt{
 	}
 };
 public:
+// Input a[1..n] must be a permutation of 1..n.
+// Return rt, son, typ, L/R, mn/mx and leaf id; children follow position order.
+// O(n log n) time and O(n) space, with no problem-specific solver.
 result build()const{
 	assert(a.size()==(size_t)n+1||!n);
 	result res;res.n=n;
@@ -144,5 +141,4 @@ result build(const vector<int> &v){
 };
 // end for tree/divide-combine-tree.cpp
 /////////////////////////
-// !!!!! Paste data-structure/linear-rmq.cpp first; input must be a permutation
-// of 1..n. !!!!
+// !!!!! Paste data-structure/linear-rmq.cpp first. !!!!

@@ -1,15 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //
 // template for XOR equations (bitset Gaussian elimination)
-// usage:
-//   Xor_Gauss<N> G; G.setN(n); // n<=N, default n=N
-//   G.add(a,b); // xor of x[i] with a[i]=1 equals b
-//   int res=G.solve(); // -1: no solution, 0: multiple, 1: unique
-//   answer in G.x[0..n-1], free variables are set to zero
-//   G.rank; G.set(); // clear equations, keep n
-//   add returns whether the whole system is still consistent
-//   variables and right-hand sides are ll, not individual bits
-//   GNU bitset; W=ceil(N/64), O((n+1)*(W+1)) per add, O(n*(n+W+1)) to solve
+// usage: Xor_Gauss<N> g; g.setN(n); g.add(a,b);
+//   int res=g.solve(); auto x=g.x;
 //
 ////////////////////////////////////////////////////////////////
 template<size_t N>
@@ -18,6 +11,7 @@ static_assert(N<INT_MAX);
 int n=N,rank=0;bool ok=true;
 vector<bitset<N>> a=vector<bitset<N>>(N);
 vector<ll> b=vector<ll>(N),x;
+// Clear equations and keep n; setN(n) also changes the variable count.
 void set(){
 	rank=0;
 	ok=true;
@@ -34,6 +28,9 @@ void setN(int _n){
 	b.assign(n,0);
 	x.clear();
 }
+// XOR of variables selected by v equals w; variables / RHS are ll.
+// Return whether the whole system is consistent. W=ceil(N/64);
+// O((n+1)*(W+1)) per insertion, including elimination.
 bool add(bitset<N> v,ll w){
 	assert((v>>n).none());x.clear();
 	if(!ok)return false;
@@ -43,6 +40,8 @@ bool add(bitset<N> v,ll w){
 	}
 	return ok=(w==0);
 }
+// Return -1 / 0 / 1 for none / multiple / unique; x[0..n-1] is a solution.
+// Free variables are zero; O(n*(n+W+1)), W=ceil(N/64).
 int solve(){
 	x.clear();if(!ok)return -1;
 	x.assign(n,0);
@@ -56,5 +55,4 @@ int solve(){
 };
 // end for math/xor-equations.cpp
 /////////////////////////
-// !!!!! Uses GNU libstdc++ bitset extensions; variables are ll and coordinates
-// are 0..n-1. !!!!
+// !!!!! Requires GNU libstdc++ bitset extensions. !!!!

@@ -2,8 +2,7 @@
 //
 // template for Disjoint Set Union (DSU)
 //
-// usage:
-//   DSU dsu; dsu.setN(n); dsu.merge(u, v);
+// usage: DSU dsu; dsu.setN(n); dsu.merge(u, v);
 //   dsu.same(u, v); int r = dsu.find(u);  // merge returns new root or 0
 //
 ////////////////////////////////////////////////////////////////

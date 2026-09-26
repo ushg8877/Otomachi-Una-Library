@@ -4,8 +4,7 @@
 // Chtholly is very cute!
 // version 1.0 (Last Update Jun 16th, 2026)
 //
-// usage:
-//   ODT odt; odt.set(); odt.erase(l,r); odt.add(l,r,c);
+// usage: ODT odt; odt.set(); odt.erase(l,r); odt.add(l,r,c);
 //   odt.extract(l,r);  // assign color on [l,r]
 //
 ////////////////////////////////////////////////////////////////

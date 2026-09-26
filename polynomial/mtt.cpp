@@ -2,9 +2,8 @@
 //
 // template for MTT with runtime modulus
 //
-// usage:
-//   mint::setM(mod); poly h=f*g; // 2<=mod<=INT_MAX
-//   init(n); C(n,k); // setM clears fac / ifac / inv
+// usage: mint::setM(mod); poly h=f*g;
+//   Inv(f); Ln(f); Exp(f); init(n); C(n,k);
 //
 ////////////////////////////////////////////////////////////////
 template<unsigned _M>
@@ -85,6 +84,7 @@ const unsigned &MOD=mint::MOD;
 using poly=vector<mint>;
 using Poly=poly;
 vector<mint>fac{1},ifac{1},inv{0,1};
+// 2<=mod<=INT_MAX; clears fac / ifac / inv and invalidates old values.
 template<unsigned _M>
 void ModInt<_M>::setM(unsigned m){
 	static_assert(_M==0,"only the target modulus can change");
@@ -95,6 +95,7 @@ void ModInt<_M>::setM(unsigned m){
 	ifac.assign(1,1);
 	::inv={0,1};
 }
+// Prepare factorials through n; requires gcd(n!,MOD)=1.
 void init(int n=0){
 	assert(0<=n&&(unsigned)n<MOD);
 	int m=fac.size();if(n<m)return;
@@ -116,14 +117,6 @@ inline mint binom(int y,int x){return C(x,y);}
 ////////////////////////////////////////////////////////////////
 //
 // template for MTT (three-prime CRT)
-// usage:
-//   poly h=f*g; Inv(f); Ln(f); Exp(f);
-//   diff, integ, value, BM, FSPE, RSPE, lagrange;
-//   Multiplication allows composite moduli; division requires a unit.
-//   init(n) needs gcd(n!,MOD)=1; Ln / Exp need 1..n-1 invertible.
-//   Ln needs f[0]=1, Exp needs f[0]=0
-//   convolution length <= 2^23; FPS length <= 2^22
-//
 ////////////////////////////////////////////////////////////////
 const int FFT_MAX=23;
 template<unsigned MO>
@@ -260,6 +253,7 @@ vector<ModInt<MO>>convolution(const poly &f,const poly &g,int n){
 	a.resize(f.size()+g.size()-1);
 	return a;
 }
+// Composite moduli allowed; convolution length <=2^23.
 poly operator*(const poly &f,const poly &g){
 	if(f.empty()||g.empty())return{};
 	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
@@ -314,6 +308,8 @@ mint value(const poly &f,mint x){
 	for(int i=(int)f.size()-1;i>=0;i--)ans=ans*x+f[i];
 	return ans;
 }
+// Formal inverse; constant term must be invertible.
+// FPS length <=2^22; divisions require units modulo MOD.
 poly Inv(const poly &f){
 	assert(!f.empty()&&f[0]&&f.size()<=(1<<(FFT_MAX-1)));
 	int n=f.size();poly g{f[0].inv()};
@@ -341,6 +337,7 @@ poly integ(poly f){
 	f[0]=0;
 	return f;
 }
+// Formal logarithm; f[0]=1. Integration denominators must be invertible.
 poly Ln(const poly &f){
 	assert(!f.empty()&&f[0].x==1&&f.size()<(size_t)MOD&&
 		f.size()<=(1<<(FFT_MAX-1)));
@@ -348,6 +345,7 @@ poly Ln(const poly &f){
 	g.resize(f.size()-1);
 	return integ(move(g));
 }
+// Formal exponential; f[0]=0. Integration denominators must be invertible.
 poly Exp(const poly &f){
 	assert(!f.empty()&&!f[0]&&f.size()<(size_t)MOD&&f.size()<=(1<<(FFT_MAX-1)));
 	int n=f.size();poly g{1};
@@ -439,7 +437,5 @@ poly lagrange(const vector<mint>&x,const vector<mint>&y){
 }
 // end for polynomial/mtt.cpp
 /////////////////////////
-// !!!!! Call mint::setM(mod) before constructing polynomials; changing mod
-// invalidates old values and clears tables. Do not paste another mint. Division
-// requires invertible divisors; check Ln/Exp constant terms and length limits.
-// !!!!
+// !!!!! Call mint::setM(mod) before creating values; changing mod
+// invalidates them. !!!!

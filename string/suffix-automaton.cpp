@@ -2,11 +2,9 @@
 // string algorithm template by Otomachi Una (Junlin Ye)
 // version 1.0 (last update May 24th 2026)
 //
-// usage:
-//   SAM sam; sam.build(" abaab");  // leading space, lowercase
+// usage: SAM sam; sam.build(" abaab");  // leading space, lowercase
 //   sam.len[u], sam.fail[u], sam.siz[u]
 //
-// your string should index from 1, begin with a space
 ////////////////////////////////////////////////////////////////
 struct SAM{
 // this SAM rooted at 0
@@ -101,4 +99,3 @@ void solve(){
 };
 // end for string/suffix-automaton.cpp
 /////////////////////////
-// !!!!! Leading space and lowercase letters; the root is 0. !!!!

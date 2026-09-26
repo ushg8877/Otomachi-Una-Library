@@ -3,9 +3,8 @@
 // template for unionfind (accept undo, O(nlogn))
 // saver.version 1.0 (Last Update Jun 28th, 2026)
 //
-// usage:
-//   Paste data-structure/rollback-int.cpp first.
-//   unionfind uf; uf.setN(n); int t=version(); uf.merge(u,v); roll_back(t);
+// usage: unionfind uf; uf.setN(n); int t=version();
+//   uf.merge(u,v); roll_back(t);
 //
 ////////////////////////////////////////////////////////////////
 struct unionfind{
@@ -33,5 +32,4 @@ inline int merge(int x,int y){
 };
 // end for data-structure/disjoint-set-rollback.cpp
 /////////////////////////
-// !!!!! Paste data-structure/rollback-int.cpp first; saved elements must keep
-// their addresses until roll_back(). !!!!
+// !!!!! Paste data-structure/rollback-int.cpp first. !!!!
