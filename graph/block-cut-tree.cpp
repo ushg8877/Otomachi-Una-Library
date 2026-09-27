@@ -1,9 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Block Cut Tree
-// use add_edge to add (u,v), tr[n+i] for vertex in i-th component
-// ec[i] for edge in i-th component
-// version 1.0 (Last Update Jun 17th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: block_cut bc; bc.setN(n); bc.add_edge(u,v); bc.build();
 //   vertex u -> tree u; BCC i -> tree n+i; bc.ec[i] edges

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for FHQ Treap
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: FHQ t; t.setN(n); split_by_size / split_by_key / merge / merge_it
 //   t.push(id, x) for lazy add on key[]

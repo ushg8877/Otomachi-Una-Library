@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for XOR equations (bitset Gaussian elimination)
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Xor_Gauss<N> g; g.setN(n); g.add(a,b);
 //   int res=g.solve(); auto x=g.x;
 //

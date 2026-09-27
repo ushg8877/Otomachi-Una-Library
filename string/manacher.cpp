@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Manacher
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Manacher t; t.build(" abba"); t.ask(1,4);
 //   Leading space, 1-indexed; ask(l,r) checks a nonempty closed interval.
 //

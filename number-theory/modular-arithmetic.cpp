@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for inv, CRT, etc.
-// version 1.0 (Last Update Jun 23rd, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: inv(x,M); COE a(r,M); COE c=a+b;
 //   c.empty() if no solution

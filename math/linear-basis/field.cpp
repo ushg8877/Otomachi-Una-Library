@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for field linear basis
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Linear_Basis<mint> B; B.setN(n); B.insert(x); B.contains(x);
 //   T must be an exact field type; coordinates are 0..n-1

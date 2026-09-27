@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Disjoint Set Union (DSU)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: DSU dsu; dsu.setN(n); dsu.merge(u, v);
 //   dsu.same(u, v); int r = dsu.find(u);  // merge returns new root or 0

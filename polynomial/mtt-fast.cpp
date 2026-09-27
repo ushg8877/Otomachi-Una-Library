@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for fast MTT with runtime modulus
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: mint::setM(mod); poly h=f*g;
 //   Inv(f); Ln(f); Exp(f); init(n); C(k,n);

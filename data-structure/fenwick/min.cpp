@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for BIT (min)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Min_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
 //   upd(i,v) is chmin, not assignment; ask(r) queries [vl,r].

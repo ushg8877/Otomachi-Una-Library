@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Cartesian Tree (min heap)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: auto [ls,rs]=cartesian(a); // 0-indexed, absent child = -1
 //   O(n); equal values keep the earlier index above the later one.

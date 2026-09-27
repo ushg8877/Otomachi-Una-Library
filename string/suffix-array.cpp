@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
-// string algorithm template by Otomachi Una (Junlin Ye)
-// version 1.0 (last update May 24th 2026)
+//
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: SA sa; sa.build(" abc");  // leading space, 1-indexed
 //   sa.sa[i], sa.rk[i]

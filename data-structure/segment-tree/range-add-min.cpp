@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Segment Tree — 区间加 / 区间最小
-// version 1.0 (Last Update Jun 27th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: MinAdd_segt st; st.setN(n); upd/add; ask(l,r) for range min
 //   upd(i,v); add(l,r,v); ask(l,r); initial values are zero.

@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ST table
-// version 1.0 (Last Update Jun 23rd, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: S.setN(n); fill S.a[0][1..n]; S.build();
 //   int mx = S.ask(l, r);  // static RMQ, tweak chk() for min

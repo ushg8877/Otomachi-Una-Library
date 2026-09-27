@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Segment Tree
-// version 1.1 (Last Update Jun 27th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: segt st; st.setN(n);  // or set(l,r), 1-indexed
 //   upd/add point; ask(l,r); find_first/last

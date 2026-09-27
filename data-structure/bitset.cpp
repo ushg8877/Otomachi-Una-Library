@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for dynamic bitset
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Bitset a(n),b(n); a.set(i); a|=b; a<<=k;
 //   a.count(l,r); a.positions(); a.window_xor(l,r,b,to);
 //

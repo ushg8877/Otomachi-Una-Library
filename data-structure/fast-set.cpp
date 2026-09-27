@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for fast set, insert/erase a non-negative integer in O(log_w(V))
-// query a integer exist in O(1) 
-// version 1.2 (Last Update Jun 13th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: FastSet fs; fs.setN(n); fs.insert(x); fs.erase(x);
 //   fs[x]; fs.prev/next; needs chkmin/chkmax/first_bit/last_bit

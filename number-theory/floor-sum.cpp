@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Floor Sum, O(log c)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: floor_sum(l,r,a,b,c); // sum floor((a*i+b)/c), l<=i<=r
 //   0<=l,r,a,b; c>0; return __int128, answer must fit

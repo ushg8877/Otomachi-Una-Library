@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Fast ODT, require Fast Set
-// Chtholly is very cute!
-// version 1.0 (Last Update Jun 16th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Fast_ODT fot; fot.setN(n); fot.insert(l,r,c); fot.extract(l,r);
 //   requires data-structure/fast-set.cpp

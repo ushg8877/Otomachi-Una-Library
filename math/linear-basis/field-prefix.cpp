@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for field prefix linear basis
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Prefix_Linear_Basis<mint> B; B.setN(n); int removed=B.insert(x,id);
 //   id must increase; 0: rank increased, otherwise removed id

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for xor linear basis
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Xor_Basis B; B.setM(m); B.insert(x); B.contains(x); B.ask(x);
 //   m bits, 0<=m<=64; default 64. setM clears; set keeps m.

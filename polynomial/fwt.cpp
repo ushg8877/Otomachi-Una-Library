@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// template for FWT and bitwise convolution
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: auto c=convolution_and(a,b); // convolution_or / convolution_xor
 //   fwt_and(a); fwt_and(a,true); // forward / inverse; also or / xor

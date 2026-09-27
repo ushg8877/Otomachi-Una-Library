@@ -1,7 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// template for Single-source shortest path
-// last update Jun 23rd, 2026
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
 //   auto d = G.SSSP();  // unreachable 1e18, non-negative weights

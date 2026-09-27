@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Segment Tree Merge
-// version 1.0 (Last Update Jun 25th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: segt_merge sm; sm.setN(n); int rt=0;
 //   sm.add(rt,i,v); sm.ask(rt,x); sm.merge(a,b);

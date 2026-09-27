@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ModInt, prepared by Otomachi Una
-// version 3.0 (Last Update Jun 15th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
 //   init(n); C(n,k); BM(a);

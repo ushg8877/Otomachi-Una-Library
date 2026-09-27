@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for 2D geometry
-// version 1.0 (Last Update Jun 16th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Point A,B; convex(hull); convec_area(hull);
 //

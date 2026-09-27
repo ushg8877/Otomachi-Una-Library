@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ZKW segment tree
-// version 1.0 (Last Update Jun 13th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: zkw_segt z; z.setN(n); z.upd(i, s, mx); z.ask(l, r);
 //   0-indexed; leaf mx=max(0ll,s); ask returns maximum prefix sum

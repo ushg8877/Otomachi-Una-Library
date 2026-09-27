@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for static / compressed Li Chao tree
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: LiChao<F> lc; lc.set(X,default_f); lc.add(f);
 //   lc.add(f,l,r); auto [y,g]=lc.ask(x);
 //

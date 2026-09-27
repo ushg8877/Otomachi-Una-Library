@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Dynamic Segment Tree
-// this code accept single-point modify, range query, cost memory O(N)
-// version 1.0 (Last Update Jun 16th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: dynamic_segt T; T.set(); T.add(pos, val); T.ask(l, r);
 //   sparse segt on value domain [L,R]

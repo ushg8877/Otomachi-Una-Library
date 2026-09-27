@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for unionfind (accept undo, O(nlogn))
-// saver.version 1.0 (Last Update Jun 28th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: unionfind uf; uf.setN(n); int t=version();
 //   uf.merge(u,v); roll_back(t);

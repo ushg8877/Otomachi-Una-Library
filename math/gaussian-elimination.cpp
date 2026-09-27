@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Gaussian elimination and determinant
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Gauss<mint> g; int res=g.solve(a,m);
 //   g.x; g.rank; g.det(a);
 //

@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Pollard-Rho, prepared by Otomachi Una
-// version 1.0 (Last Update Jun 17th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: is_prime(n); auto f = factor(n);
 //

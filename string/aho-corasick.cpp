@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Aho-Corasick
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: AC ac; int id=ac.insert(" aba"); ac.build();
 //   auto cnt=ac.count(" ababa"); cnt[id];
 //

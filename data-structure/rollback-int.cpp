@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for rollback-int
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: int t=version(); save(x); x=1; roll_back(t);
 //

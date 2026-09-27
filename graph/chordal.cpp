@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Chordal Graph Recognition (MCS)
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Chordal g; g.setN(n); g.add_edge(u,v); bool ok=g.solve();
 //   If ok, peo[0..n-1] is the elimination order, rk[u] is 1-indexed.
 //

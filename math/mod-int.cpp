@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for mod-int
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: mint a,b; init(n); C(n,k); // fixed prime modulus
 //

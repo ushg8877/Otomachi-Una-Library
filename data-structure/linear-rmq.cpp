@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for linear RMQ
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Linear_RMQ<int> t; t.build(a); t.ask(l,r); t.pos(l,r);
 //   0-indexed, inclusive; use Linear_RMQ<int,true> for maximum.

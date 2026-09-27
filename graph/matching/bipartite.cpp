@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Bipartite Matching
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Bipartite_Matching g; g.setN(n,m); g.add_edge(u,v);
 //   auto a=g.solve(); // pairs {u,v}, ordered by the left endpoint
 //

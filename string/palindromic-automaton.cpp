@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Palindromic Automaton
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: PAM pam; pam.build(" ababa"); auto cnt=pam.count();
 //   Or pam.set(n), then pam.extend(c); returns the longest suffix node.
 //

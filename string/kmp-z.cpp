@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
-// string algorithm template by Otomachi Una (Junlin Ye)
-// version 1.0 (last update May 24th 2026)
+//
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: string s = " ababa"; auto b = border(s); auto z = z_function(s);
 //   1-indexed with leading space

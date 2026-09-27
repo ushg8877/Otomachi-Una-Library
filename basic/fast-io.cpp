@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for buffered IO / __int128 IO
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: input.set(stdin); output.set(stdout); // after freopen
 //   input >> x; output << x << '\n'; output.flush();

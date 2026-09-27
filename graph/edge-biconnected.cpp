@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Edge BCC (edge-biconnected components)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: bi_edge b; b.setN(n); b.add_edge(u,v); auto E = b.build();
 //   bel[u] is EBCC id; E lists edges between different blocks

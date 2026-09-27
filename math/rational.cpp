@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for rational number
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: Rat a(1,2),b(2,3); cout<<a+b; // 7/6
 //   p/q is reduced, q>0; +, -, *, / and comparisons are supported.
 //

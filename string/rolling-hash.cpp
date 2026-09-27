@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Hash, prepared by Otomachi_Una
-// version 1.2 (Last Update Jun 13th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: init_hash(); auto H = Hash_of(" abc"); Hash sub = H[r]-H[l-1];
 //   sub.v() for compare; random bases each run

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for big-int
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: BigInt a,b; cin>>a>>b; cout<<a+b; // also -, *, /, %
 //

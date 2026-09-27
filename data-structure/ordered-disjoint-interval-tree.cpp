@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ODT
-// Chtholly is very cute!
-// version 1.0 (Last Update Jun 16th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: ODT odt; odt.set(); odt.erase(l,r); odt.add(l,r,c);
 //   odt.extract(l,r);  // assign color on [l,r]

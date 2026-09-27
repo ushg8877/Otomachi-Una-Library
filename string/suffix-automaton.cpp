@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
-// string algorithm template by Otomachi Una (Junlin Ye)
-// version 1.0 (last update May 24th 2026)
+//
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: SAM sam; sam.build(" abaab");  // leading space, lowercase
 //   sam.len[u], sam.fail[u], sam.siz[u]

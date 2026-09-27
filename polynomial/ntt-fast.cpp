@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for polynomial modulo 998244353
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
 //   Sqrt(f); Div(f,g,q,r); Eval(f,x); FSPE(f,g,k);

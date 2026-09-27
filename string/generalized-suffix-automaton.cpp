@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Generalized SAM
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: GSAM sam; sam.insert(" aba"); sam.insert(" bab"); sam.build();
 //   sam.count(" ab"); sam.distinct();
 //

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Linear Sieve
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: init(n); is_prime[x]; prime[i]  // i-th prime, 1-index
 //

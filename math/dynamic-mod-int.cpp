@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ModInt (Mod isn't assign)
-// version 1.0 (Last Update Jun 16th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: mint::setM(mod); init_fact(n); mint x; cin >> x;
 //

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// template for min cost max flow (network simplex)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Cost_Flow_Graph g; g.setN(n); g.setST(S,T);
 //   g.add_edge(u,v,cap,cost); auto [flow,cost]=g.min_cost_flow();

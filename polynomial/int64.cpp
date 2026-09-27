@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for polynomial modulo 2^64
+// https://github.com/ushg8877/Otomachi-Una-Library
+//
 // usage: poly h=f*g; ull x=recurrence(a,c,k);
 //   FSPE(f,g,k); RSPE(a,k);
 //

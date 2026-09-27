@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Divide-Combine Tree
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
 //

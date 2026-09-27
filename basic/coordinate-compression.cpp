@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Coordinate Compression
-// version 2.0 (Last Update Jul 3rd, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: compress<int> cc; cc.set(); cc.pb(x); cc.build();
 //   cc.id(x); cc[i]; cc.range(l,r);  // call set() each problem

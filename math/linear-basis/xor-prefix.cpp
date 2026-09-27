@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for xor prefix linear basis
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Prefix_Xor_Basis B; B.setM(m); int removed=B.insert(x,id);
 //   m bits, 0<=m<=64; default 64. setM clears; set keeps m.

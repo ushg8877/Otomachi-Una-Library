@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for Centroid Decomposition, prepared by Otomachi Una
-// version 1.0 (Last Update Jun 13th, 2026)
+// https://github.com/ushg8877/Otomachi-Una-Library
 //
 // usage: Tree tr; tr.setN(n); tr.add_edge(u,v); tr.HLD_build(); tr.DC_build();
 //   fill logic inside DC();
