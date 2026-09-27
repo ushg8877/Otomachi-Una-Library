@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/flow/max-flow-hlpp.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/graph/flow/max-flow-hlpp.cpp
 //
 // usage: Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap);
 //   ll f = g.max_flow(); g.edge_flow(id);

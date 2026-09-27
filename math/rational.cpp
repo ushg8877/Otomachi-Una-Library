@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/rational.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/math/rational.cpp
 //
 // usage: Rat a(1,2),b(2,3); cout<<a+b; // 7/6
 //   p/q is reduced, q>0; +, -, *, / and comparisons are supported.

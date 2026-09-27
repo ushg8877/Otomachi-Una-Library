@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/polynomial/ntt-fast.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/polynomial/ntt-fast.cpp
 //
 // usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
 //   Sqrt(f); Div(f,g,q,r); Eval(f,x); FSPE(f,g,k);

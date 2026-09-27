@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/suffix-array.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/suffix-array.cpp
 //
 // usage: SA sa; sa.build(" abc");  // leading space, 1-indexed
 //   sa.sa[i], sa.rk[i]

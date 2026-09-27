@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/tree/divide-combine-tree.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/tree/divide-combine-tree.cpp
 //
 // usage: xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
 //

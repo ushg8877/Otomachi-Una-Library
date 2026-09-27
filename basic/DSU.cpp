@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/basic/DSU.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/basic/DSU.cpp
 //
 // usage:
 //   DSU dsu; dsu.setN(n); dsu.merge(u, v);

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/geometry/geometry-2d.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/geometry/geometry-2d.cpp
 //
 // usage: Point A,B; convex(hull); convec_area(hull);
 //

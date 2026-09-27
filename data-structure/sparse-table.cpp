@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/sparse-table.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/sparse-table.cpp
 //
 // usage: S.setN(n); fill S.a[0][1..n]; S.build();
 //   int mx = S.ask(l, r);  // static RMQ, tweak chk() for min

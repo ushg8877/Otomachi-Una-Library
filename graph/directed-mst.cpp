@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/directed-mst.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/graph/directed-mst.cpp
 //
 // usage: Directed_MST g; g.setN(n); g.add_edge(u,v,w); auto a=g.solve(S);
 //   a.ok; a.cost; a.id[v] is the incoming edge of v, a.id[S]=0.

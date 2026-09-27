@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/rollback-int64.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/rollback-int64.cpp
 //
 // usage: ::set(); int t=version(); save(x); x=1; roll_back(t);
 //   supports int and ll; do not paste with (int) saver

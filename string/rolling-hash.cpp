@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/rolling-hash.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/rolling-hash.cpp
 //
 // usage: init_hash(); auto H = Hash_of(" abc"); Hash sub = H[r]-H[l-1];
 //   sub.v() for compare; random bases each run

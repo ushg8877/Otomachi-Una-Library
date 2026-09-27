@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/suffix-automaton.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/suffix-automaton.cpp
 //
 // usage: SAM sam; sam.build(" abaab");  // leading space, lowercase
 //   sam.len[u], sam.fail[u], sam.siz[u]

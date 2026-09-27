@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/dynamic.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/segment-tree/dynamic.cpp
 //
 // usage: dynamic_segt T; T.set(); T.add(pos, val); T.ask(l, r);
 //   sparse segt on value domain [L,R]

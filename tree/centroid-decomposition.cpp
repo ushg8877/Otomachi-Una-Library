@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/tree/centroid-decomposition.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/tree/centroid-decomposition.cpp
 //
 // usage: Tree tr; tr.setN(n); tr.add_edge(u,v); tr.HLD_build(); tr.DC_build();
 //   fill logic inside DC();

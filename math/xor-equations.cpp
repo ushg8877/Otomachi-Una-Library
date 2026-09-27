@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/xor-equations.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/math/xor-equations.cpp
 //
 // usage: Xor_Gauss<N> g; g.setN(n); g.add(a,b);
 //   int res=g.solve(); auto x=g.x;

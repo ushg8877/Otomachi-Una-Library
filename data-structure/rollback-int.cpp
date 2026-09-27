@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/rollback-int.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/rollback-int.cpp
 //
 // usage: int t=version(); save(x); x=1; roll_back(t);
 //

@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/li-chao-tree-static.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/li-chao-tree-static.cpp
 //
 // usage: LiChao<F> lc; lc.set(X,default_f); lc.add(f);
 //   lc.add(f,l,r); auto [y,g]=lc.ask(x);

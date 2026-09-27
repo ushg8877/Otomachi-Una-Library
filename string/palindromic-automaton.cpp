@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/palindromic-automaton.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/palindromic-automaton.cpp
 //
 // usage: PAM pam; pam.build(" ababa"); auto cnt=pam.count();
 //   Or pam.set(n), then pam.extend(c); returns the longest suffix node.

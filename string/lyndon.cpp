@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/lyndon.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/lyndon.cpp
 //
 // usage: auto a=lyndon(" ababab"); // [1,2], [3,4], [5,6]
 //   Leading space, 1-indexed closed intervals, ordered from left to right.

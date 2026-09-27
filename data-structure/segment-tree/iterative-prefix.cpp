@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/iterative-prefix.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/segment-tree/iterative-prefix.cpp
 //
 // usage: zkw_segt z; z.setN(n); z.upd(i, s, mx); z.ask(l, r);
 //   0-indexed; leaf mx=max(0ll,s); ask returns maximum prefix sum

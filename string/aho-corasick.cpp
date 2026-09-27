@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/aho-corasick.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/string/aho-corasick.cpp
 //
 // usage: AC ac; int id=ac.insert(" aba"); ac.build();
 //   auto cnt=ac.count(" ababa"); cnt[id];

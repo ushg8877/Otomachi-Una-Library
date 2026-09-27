@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/polynomial/int64.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/polynomial/int64.cpp
 //
 // usage: poly h=f*g; ull x=recurrence(a,c,k);
 //   FSPE(f,g,k); RSPE(a,k);

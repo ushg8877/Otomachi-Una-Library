@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/disjoint-set-rollback.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/disjoint-set-rollback.cpp
 //
 // usage: unionfind uf; uf.setN(n); int t=version();
 //   uf.merge(u,v); roll_back(t);

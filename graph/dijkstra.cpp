@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/dijkstra.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/graph/dijkstra.cpp
 //
 // usage: graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
 //   auto d = G.SSSP();  // unreachable 1e18, non-negative weights

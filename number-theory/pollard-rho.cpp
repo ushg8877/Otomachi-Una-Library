@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/number-theory/pollard-rho.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/number-theory/pollard-rho.cpp
 //
 // usage: is_prime(n); auto f = factor(n);
 //

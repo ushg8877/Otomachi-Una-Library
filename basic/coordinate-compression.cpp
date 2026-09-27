@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/basic/coordinate-compression.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/basic/coordinate-compression.cpp
 //
 // usage: compress<int> cc; cc.set(); cc.pb(x); cc.build();
 //   cc.id(x); cc[i]; cc.range(l,r);  // call set() each problem

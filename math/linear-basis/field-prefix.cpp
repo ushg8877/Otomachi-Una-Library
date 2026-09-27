@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/linear-basis/field-prefix.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/math/linear-basis/field-prefix.cpp
 //
 // usage: Prefix_Linear_Basis<mint> B; B.setN(n); int removed=B.insert(x,id);
 //   id must increase; 0: rank increased, otherwise removed id

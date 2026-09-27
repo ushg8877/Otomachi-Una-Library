@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/two-sat.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/graph/two-sat.cpp
 //
 // usage: two_sat sat; sat.set(); sat.setN(n); sat.add(x1,o1,x2,o2);
 //   auto ans = sat.solve();  // empty if unsat; var i: 2i-1=T, 2i=F

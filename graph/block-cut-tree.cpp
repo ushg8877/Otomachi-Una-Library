@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/block-cut-tree.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/graph/block-cut-tree.cpp
 //
 // usage: block_cut bc; bc.setN(n); bc.add_edge(u,v); bc.build();
 //   vertex u -> tree u; BCC i -> tree n+i; bc.ec[i] edges

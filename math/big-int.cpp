@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/big-int.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/math/big-int.cpp
 //
 // usage: BigInt a,b; cin>>a>>b; cout<<a+b; // also -, *, /, %
 //

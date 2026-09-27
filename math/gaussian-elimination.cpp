@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/gaussian-elimination.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/math/gaussian-elimination.cpp
 //
 // usage: Gauss<mint> g; int res=g.solve(a,m);
 //   g.x; g.rank; g.det(a);

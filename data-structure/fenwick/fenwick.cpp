@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/fenwick/fenwick.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/fenwick/fenwick.cpp
 //
 // usage: BIT: setRange(l,r); add(i,v); ask(r); ask(l,r).
 //   setN(n) = setRange(1,n); add(vr+1,v) is a difference sentinel.

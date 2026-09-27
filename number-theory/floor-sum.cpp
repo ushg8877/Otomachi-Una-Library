@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/number-theory/floor-sum.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/number-theory/floor-sum.cpp
 //
 // usage: floor_sum(l,r,a,b,c); // sum floor((a*i+b)/c), l<=i<=r
 //   0<=l,r,a,b; c>0; return __int128, answer must fit

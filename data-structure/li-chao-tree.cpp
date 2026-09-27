@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/li-chao-tree.cpp
+// https://github.com/ushg8877/Otomachi-Una-Library
+// blob/main/data-structure/li-chao-tree.cpp
 //
 // usage: lichao lc; lc.set(); lc.add({k,b}); lc.add({k,b}, l, r);
 //   ll y = lc.ask(x);  // min y=kx+b, INF if empty
