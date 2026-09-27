@@ -694,6 +694,456 @@ void invFft(mint *a,int n){
 void fft(poly &a){fft(a.data(),a.size());}
 void invFft(poly &a){invFft(a.data(),a.size());}
 
+// AVX-512 incomplete NTT: the last 16 points use local convolution.
+#pragma GCC push_options
+#pragma GCC target("avx512f")
+#pragma GCC optimize("O3")
+namespace Poly_Fast512{
+using u32=uint32_t;
+using u64=uint64_t;
+using idt=size_t;
+using I128=__m128i;
+using I256=__m256i;
+using I512=__m512i;
+struct Mont{
+	u32 M,M2,niv,R,R2;
+	Mont()=default;
+	Mont(u32 m):M{m},M2{m*2},niv{2+m},R{-m%m},R2((-u64(m))%m){
+		for(u32 i=0;i<4;++i){niv*=2+m*niv;}
+	}
+	template<bool cond=true>u32 shr(u32 x)const{
+		if constexpr(cond){
+			return min(x,x-M);
+		}
+		return x;
+	}
+	u32 shr2(u32 x)const{
+		return min(x,x-M2);
+	}
+	u32 dil(u32 x)const{
+		return min(x,x+M);
+	}
+	u32 dil2(u32 x)const{
+		return min(x,x+M2);
+	}
+	u32 reduce(u64 x)const{
+		return (x+u64(u32(x)*niv)*M)>>32;
+	}
+	template<bool shrk=false>u32 mul(u32 x,u32 y)const{
+		return shr<shrk>(reduce(u64(x)*y));
+	}
+	template<bool shrk=false>u32 qpw(u32 a,u32 b,u32 r)const{
+		for(;b;b>>=1,a=mul(a,a)){
+			b&1?r=mul(r,a):r;
+		}
+		return shr<shrk>(r);
+	}
+	template<bool shrk=false>u32 qpw(u32 a,u32 b)const{
+		return qpw<shrk>(a,b,R);
+	}
+	template<bool shrk=false>u32 inv(u32 a)const{
+		return qpw<shrk>(a,M-2);
+	}
+	template<bool shrk=false>u32 in(u32 x)const{
+		return mul<shrk>(x,R2);
+	}
+	u32 add(u32 x,u32 y)const{
+		return shr2(x+y);
+	}
+	u32 sub(u32 x,u32 y)const{
+		return dil2(x-y);
+	}
+	u32 Ladd(u32 x,u32 y)const{
+		return x+y;
+	}
+	u32 Lsub(u32 x,u32 y)const{
+		return x+M2-y;
+	}
+	u32 neg(u32 x)const{
+		return M2-x;
+	}
+};
+struct Mont16{
+	I512 M,M2,niv;
+	Mont16()=default;
+	Mont16(Mont mt):M{_mm512_set1_epi32(mt.M)},M2{_mm512_set1_epi32(mt.M2)},
+		niv{_mm512_set1_epi32(mt.niv)}{}
+	template<bool cond=true>I512 shr(I512 x)const{
+		if constexpr(cond){
+			return _mm512_min_epu32(x,_mm512_sub_epi32(x,M));
+		}
+		return x;
+	}
+	I512 shr2(I512 x)const{
+		return _mm512_min_epu32(x,_mm512_sub_epi32(x,M2));
+	}
+	I512 dil(I512 x)const{
+		return _mm512_min_epu32(x,_mm512_add_epi32(x,M));
+	}
+	I512 dil2(I512 x)const{
+		return _mm512_min_epu32(x,_mm512_add_epi32(x,M2));
+	}
+	I512 _mul_hi(I512 x,I512 y)const{
+		I512 a=_mm512_mul_epu32(x,y);
+		return _mm512_add_epi64(a,_mm512_mul_epu32(_mm512_mul_epu32(a,niv),M));
+	}
+	template<bool shrk=false>I512 mul(I512 x,I512 y)const{
+		I512 a=_mm512_mul_epu32(x,y),b=_mm512_mul_epu32(_mm512_srli_epi64(x,
+			32),_mm512_srli_epi64(y,32));
+		I512 c=_mm512_mul_epu32(a,niv),d=_mm512_mul_epu32(b,niv);
+		c=_mm512_mul_epu32(c,M),d=_mm512_mul_epu32(d,M);
+		return shr<shrk>(_mm512_mask_blend_epi32(0xaaaa,_mm512_srli_epi64(
+			_mm512_add_epi64(a,c),32),_mm512_add_epi64(b,d)));
+	}
+	template<bool shrk=false>I512 mul_sm(I512 x,I512 y)const{
+		I512 a=_mm512_mul_epu32(x,y),b=_mm512_mul_epu32(_mm512_srli_epi64(x,
+			32),y);
+		I512 c=_mm512_mul_epu32(a,niv),d=_mm512_mul_epu32(b,niv);
+		c=_mm512_mul_epu32(c,M),d=_mm512_mul_epu32(d,M);
+		return shr<shrk>(_mm512_mask_blend_epi32(0xaaaa,_mm512_srli_epi64(
+			_mm512_add_epi64(a,c),32),_mm512_add_epi64(b,d)));
+	}
+	template<bool shrk=false>I512 mul_hi(I512 x,I512 y)const{
+		return shr<shrk>(_mm512_srli_epi64(_mul_hi(x,y),32));
+	}
+	I512 add(I512 x,I512 y)const{
+		return shr2(_mm512_add_epi32(x,y));
+	}
+	I512 sub(I512 x,I512 y)const{
+		return dil2(_mm512_sub_epi32(x,y));
+	}
+	I512 Ladd(I512 x,I512 y)const{
+		return _mm512_add_epi32(x,y);
+	}
+	I512 Lsub(I512 x,I512 y)const{
+		return _mm512_add_epi32(_mm512_sub_epi32(x,y),M2);
+	}
+	I512 neg(I512 x)const{
+		return _mm512_sub_epi32(M2,x);
+	}
+	template<u32 z>I512 neg_m(I512 x)const{
+		return _mm512_mask_sub_epi32(x,z,M2,x);
+	}
+};
+inline u32*alc(idt n){return new(align_val_t(64))u32[n];}
+inline void fre(u32*p){::operator delete[](p,align_val_t(64));}
+template<class T>inline T*cpy(T*f,const T*g,idt n){return (T*)memcpy(f,g,
+	n*sizeof(T));}
+template<class T>inline T*clr(T*f,idt n){return (T*)memset(f,0,n*sizeof(T));}
+constexpr u32 mxlg=26,_lg_iter_thre=6;
+struct NTT{
+	Mont mt;
+	u32 RT1[mxlg]{};
+	Mont16 ms;
+	alignas(32) array<u64,4> rt3[mxlg-6]{},rt3i[mxlg-6]{};
+	alignas(32) array<u64,4> st[(mxlg-_lg_iter_thre)>>1]{};
+	alignas(32) array<u64,4> st2[_lg_iter_thre>>1]{},bwb{};
+	I512 imgx16;
+	alignas(64) static constexpr u32
+	idx[]={0,2,0,4,0,2,0,4,0,2,0,4,0,2,0,4},
+	id2x[]={8,0,9,1,10,2,11,3,12,4,13,5,14,6,15,7},
+	id2i[]={0,2,4,6,8,10,12,14,1,3,5,7,9,11,13,15};
+	NTT()=default;
+	NTT(u32 M,u32 k,u32 _g):mt{M},ms{mt}{
+		u32 rt1[mxlg-1],rt1i[mxlg-1];
+		rt1[k-2]=_g,rt1i[k-2]=mt.inv(_g);
+		for(u32 i=k-2;i>0;--i){
+			rt1[i-1]=mt.mul(rt1[i],rt1[i]);
+			rt1i[i-1]=mt.mul(rt1i[i],rt1i[i]);
+		}
+		for(u32 i=1;i<=k;++i){
+			RT1[i-1]=mt.qpw<true>(_g,3<<(k-i));
+		}
+		u32 pr=mt.R,pri=mt.R;
+		bwb={mt.R,mt.R,mt.M-mt.R};
+		for(u32 i=0;i<k-6;pr=mt.mul(pr,rt1i[i+1]),pri=mt.mul(pri,rt1[i+1]),++i){
+			u32 r=mt.mul<true>(pr,rt1[i+1]),ri=mt.mul<true>(pri,rt1i[i+1]);
+			u32 r2=mt.mul<true>(r,r),r2i=mt.mul<true>(ri,ri);
+			u32 r3=mt.mul<true>(r,r2),r3i=mt.mul<true>(ri,r2i);
+			rt3[i]={r,r2,r3},rt3i[i]={ri,r2i,r3i};
+		}
+		u32 w[8],wi[8];
+		w[0]=mt.R,wi[0]=mt.R;
+		for(u32 i=0;i<3;++i){
+			pr=rt1[i],pri=rt1i[i];
+			for(u32 j=1<<i,k=0;k<j;++k){
+				w[j+k]=mt.mul<true>(w[k],pr);
+				wi[j+k]=mt.mul<true>(wi[k],pri);
+			}
+		}
+		imgx16=_mm512_set1_epi32(w[1]);
+	}
+	template<bool first>static void forward4(I512*p0,I512*p1,I512*p2,I512*p3,
+		I512 img,I512 r1,I512 r2,I512 nr3,const Mont16&ms){
+		if constexpr(first){
+			//in : [0,2mod)
+			auto f1=_mm512_load_si512(p1);
+			auto f3=_mm512_load_si512(p3);
+			auto g1=ms.add(f1,f3);
+			auto g3=ms.mul_sm(ms.Lsub(f1,f3),img);
+			auto f0=_mm512_load_si512(p0);
+			auto f2=_mm512_load_si512(p2);
+			auto g0=ms.add(f0,f2);
+			auto g2=ms.sub(f0,f2);
+			_mm512_store_si512(p0,ms.add(g0,g1));
+			_mm512_store_si512(p1,ms.Lsub(g0,g1));
+			_mm512_store_si512(p2,ms.Ladd(g2,g3));
+			_mm512_store_si512(p3,ms.Lsub(g2,g3));
+			return;
+		}
+		//in : [0,4mod)
+		auto f1=ms.mul_sm(_mm512_load_si512(p1),r1);
+		auto nf3=ms.mul_sm(_mm512_load_si512(p3),nr3);
+		auto g1=ms.sub(f1,nf3);
+		auto f0=ms.shr2(_mm512_load_si512(p0));
+		auto f2=ms.mul_sm(_mm512_load_si512(p2),r2);
+		auto g3=ms.mul_sm(ms.Ladd(f1,nf3),img);
+		auto g0=ms.add(f0,f2);
+		auto g2=ms.sub(f0,f2);
+		_mm512_store_si512(p0,ms.Ladd(g0,g1));
+		_mm512_store_si512(p1,ms.Lsub(g0,g1));
+		_mm512_store_si512(p2,ms.Ladd(g2,g3));
+		_mm512_store_si512(p3,ms.Lsub(g2,g3));
+	}
+	template<bool first>void dif4(I512*f,idt lm,idt ix){
+		const auto ms=this->ms;
+		if(lm<=(idt(1)<<_lg_iter_thre)){
+			u32 p=0;
+			auto id=_mm512_load_si512(idx),img=imgx16;
+			idt l=lm,L=lm>>2,yk=ix;
+			for(;L;l=L,L>>=2,++p,yk<<=2){
+				if constexpr(first){st2[p]=bwb;}
+				auto rt=_mm512_zextsi256_si512(_mm256_load_si256((
+					const I256*)(st2+p)));
+				for(idt i=0,k=yk;i<lm;i+=l,++k){
+					auto r1=_mm512_permutexvar_epi32(id,rt);
+					auto r2=_mm512_shuffle_epi32(r1,_MM_PERM_BBBB);
+					auto nr3=_mm512_shuffle_epi32(r1,_MM_PERM_DDDD);
+					I512 tr=_mm512_zextsi256_si512(_mm256_load_si256((
+						const I256*)(rt3+__builtin_ctzll(~k))));
+					rt=ms.mul_hi<true>(rt,tr);
+					for(idt j=0;j<L;++j){
+						forward4<false>(f+i+j+L*0,f+i+j+L*1,f+i+j+L*2,
+							f+i+j+L*3,img,r1,r2,nr3,ms);
+					}
+				}
+				_mm256_store_si256((I256*)(st2+p),_mm512_castsi512_si256(rt));
+			}
+
+			return;
+		}
+		idt qlm=lm>>2;
+		const u32 p=(__builtin_ctzll(lm)-_lg_iter_thre-1)>>1;
+		if constexpr(first){
+			st[p]=bwb;
+		}
+		auto rt=_mm512_zextsi256_si512(_mm256_load_si256((const I256*)(st+p)));
+		auto r1=_mm512_permutexvar_epi32(_mm512_load_si512(idx),rt),img=imgx16;
+		auto r2=_mm512_shuffle_epi32(r1,_MM_PERM_BBBB),nr3=
+			_mm512_shuffle_epi32(r1,_MM_PERM_DDDD);
+		I512 tr=_mm512_zextsi256_si512(_mm256_load_si256((const I256*)(
+			rt3+__builtin_ctzll(~ix))));
+		_mm256_store_si256((I256*)(st+p),_mm512_castsi512_si256(
+			ms.mul_hi<true>(rt,tr)));
+		for(idt j=0;j<qlm;++j){
+			forward4<first>(f+j+qlm*0,f+j+qlm*1,f+j+qlm*2,f+j+qlm*3,img,r1,r2,
+				nr3,ms);
+		}
+		dif4<first>(f+qlm*0,qlm,ix<<2|0);
+		dif4<false>(f+qlm*1,qlm,ix<<2|1);
+		dif4<false>(f+qlm*2,qlm,ix<<2|2);
+		dif4<false>(f+qlm*3,qlm,ix<<2|3);
+	}
+	void dif(I512*f,idt n){
+		if(__builtin_ctzll(n)&1){
+			const auto ms=this->ms;
+			n>>=1;
+			for(idt i=0;i<n;++i){
+				auto x=_mm512_load_si512(f+i),y=_mm512_load_si512(f+n+i);
+				_mm512_store_si512(f+i,ms.add(x,y)),_mm512_store_si512(f+n+i,
+					ms.Lsub(x,y));
+			}
+			dif4<true>(f,n,0),dif4<false>(f+n,n,1);
+		}
+		else{
+			dif4<true>(f,n,0);
+		}
+	}
+	template<bool first,bool shrk=false>static void inverse4(I512*p0,I512*p1,
+		I512*p2,I512*p3,I512 img,I512 r1,I512 r2,I512 nr3,const Mont16&ms){
+		if constexpr(first){
+			auto f2=_mm512_load_si512(p2);
+			auto f3=_mm512_load_si512(p3);
+			auto g3=ms.mul_sm(ms.Lsub(f3,f2),img);
+			auto g2=ms.add(f2,f3);
+			auto f0=_mm512_load_si512(p0);
+			auto f1=_mm512_load_si512(p1);
+			auto g0=ms.add(f0,f1);
+			auto g1=ms.sub(f0,f1);
+			_mm512_store_si512(p0,ms.shr<shrk>(ms.add(g0,g2)));
+			_mm512_store_si512(p1,ms.shr<shrk>(ms.add(g1,g3)));
+			_mm512_store_si512(p2,ms.shr<shrk>(ms.sub(g0,g2)));
+			_mm512_store_si512(p3,ms.shr<shrk>(ms.sub(g1,g3)));
+			return;
+		}
+		auto f0=_mm512_load_si512(p0);
+		auto f1=_mm512_load_si512(p1);
+		auto nf2=ms.neg(_mm512_load_si512(p2));
+		auto f3=_mm512_load_si512(p3);
+		auto g0=ms.add(f0,f1);
+		auto ng2=ms.sub(nf2,f3);
+		auto g3=ms.mul_sm(ms.Ladd(nf2,f3),img);
+		_mm512_store_si512(p2,ms.mul_sm<shrk>(ms.Ladd(g0,ng2),r2));
+		_mm512_store_si512(p0,ms.shr<shrk>(ms.sub(g0,ng2)));
+		auto g1=ms.sub(f0,f1);
+		_mm512_store_si512(p1,ms.mul_sm<shrk>(ms.Ladd(g1,g3),r1));
+		_mm512_store_si512(p3,ms.mul_sm<shrk>(ms.Lsub(g3,g1),nr3));
+	}
+	template<bool first,bool shrk=false>void dit4(I512*f,idt lm,idt ix){
+		const auto ms=this->ms;
+		if(lm<=(idt(1)<<_lg_iter_thre)){
+			idt yk=ix<<__builtin_ctzll(lm);
+
+			auto id=_mm512_load_si512(idx),img=imgx16;
+			u32 p=0;
+			idt l=4,L=1;
+			for(;yk>>=2,L<lm;L=l,l<<=2,++p){
+				if constexpr(first){st2[p]=bwb;}
+				auto rt=_mm512_zextsi256_si512(_mm256_load_si256((
+					const I256*)(st2+p)));
+				for(idt i=0,k=yk;i<lm;i+=l,++k){
+					auto r1=_mm512_permutexvar_epi32(id,rt);
+					auto r2=_mm512_shuffle_epi32(r1,_MM_PERM_BBBB);
+					auto nr3=_mm512_shuffle_epi32(r1,_MM_PERM_DDDD);
+					I512 tr=_mm512_zextsi256_si512(_mm256_load_si256((
+						const I256*)(rt3i+__builtin_ctzll(~k))));
+					rt=ms.mul_hi<true>(rt,tr);
+					for(idt j=0;j<L;++j){
+						inverse4<false>(f+i+j+L*0,f+i+j+L*1,f+i+j+L*2,
+							f+i+j+L*3,img,r1,r2,nr3,ms);
+					}
+				}
+				_mm256_store_si256((I256*)(st2+p),_mm512_castsi512_si256(rt));
+			}
+			if constexpr(shrk){
+				for(idt i=0;i<lm;++i){
+					_mm512_store_si512(f+i,ms.shr(_mm512_load_si512(f+i)));
+				}
+			}
+			return;
+		}
+		idt qlm=lm>>2;
+		dit4<first>(f+qlm*0,qlm,ix<<2|0);
+		dit4<false>(f+qlm*1,qlm,ix<<2|1);
+		dit4<false>(f+qlm*2,qlm,ix<<2|2);
+		dit4<false>(f+qlm*3,qlm,ix<<2|3);
+		const u32 p=(__builtin_ctzll(lm)-_lg_iter_thre-1)>>1;
+		if constexpr(first){st[p]=bwb;}
+		auto rt=_mm512_zextsi256_si512(_mm256_load_si256((const I256*)(st+p)));
+		auto r1=_mm512_permutexvar_epi32(_mm512_load_si512(idx),rt),img=imgx16;
+		auto r2=_mm512_shuffle_epi32(r1,_MM_PERM_BBBB),nr3=
+			_mm512_shuffle_epi32(r1,_MM_PERM_DDDD);
+		I512 tr=_mm512_zextsi256_si512(_mm256_load_si256((const I256*)(
+			rt3i+__builtin_ctzll(~ix))));
+		_mm256_store_si256((I256*)(st+p),_mm512_castsi512_si256(
+			ms.mul_hi<true>(rt,tr)));
+		for(idt j=0;j<qlm;++j){
+			inverse4<first,shrk>(f+j+qlm*0,f+j+qlm*1,f+j+qlm*2,f+j+qlm*3,img,
+				r1,r2,nr3,ms);
+		}
+	}
+	template<bool shrk=false>void dit(I512*f,idt n){
+
+		if(__builtin_ctzll(n)&1){
+			n>>=1;
+			dit4<true>(f,n,0),dit4<false>(f+n,n,1);
+			const auto ms=this->ms;
+			for(idt i=0;i<n;++i){
+				auto x=_mm512_load_si512(f+i),y=_mm512_load_si512(f+n+i);
+				_mm512_store_si512(f+i,ms.shr<shrk>(ms.add(x,y)));
+				_mm512_store_si512(f+n+i,ms.shr<shrk>(ms.sub(x,y)));
+			}
+		}
+		else{
+			dit4<true,shrk>(f,n,0);
+		}
+	}
+	//mod x^16-w
+	static void conv16(I512*a,I512*b,I512 w,I512 fx,const Mont16&ms){
+		auto aa=ms.shr(ms.shr2(_mm512_load_si512(a))),bb=ms.mul_sm<true>(
+			_mm512_load_si512(b),fx);
+		auto ix=_mm512_set1_epi64(u64(8)<<32),al1=_mm512_set1_epi32(1);
+		auto a1=_mm512_permutexvar_epi32(_mm512_load_si512(id2x),aa),a0=
+			_mm512_shuffle_epi32(a1,_MM_PERM_CDAB);
+		auto a1w=ms.mul_sm<true>(a1,w),a0w=_mm512_shuffle_epi32(a1w,
+			_MM_PERM_CDAB);
+		auto res0=_mm512_setzero_si512(),res1=_mm512_setzero_si512();
+		auto res2=_mm512_setzero_si512(),res3=_mm512_setzero_si512();
+		// alignr needs an immediate shift; this unroll is required.
+		#pragma GCC unroll 8
+		for(u32 i=0;i<8;++i){
+			auto b0=_mm512_permutexvar_epi32(ix,bb),b1=_mm512_shuffle_epi32(
+				b0,_MM_PERM_CDAB);
+			//i,i+8 i+8,i
+			auto pr1=(i==0)?a1:_mm512_alignr_epi64(a1,a0,8-i);
+			auto pr2=(i==0)?a0:_mm512_alignr_epi64(a0,a1w,8-i);
+			auto pr3=(i==0)?a1w:_mm512_alignr_epi64(a1w,a0w,8-i);
+			res0=_mm512_add_epi64(res0,_mm512_mul_epu32(b0,pr2));
+			res1=_mm512_add_epi64(res1,_mm512_mul_epu32(b0,pr1));
+			res2=_mm512_add_epi64(res2,_mm512_mul_epu32(b1,pr3));
+			res3=_mm512_add_epi64(res3,_mm512_mul_epu32(b1,pr2));
+			ix=_mm512_add_epi32(ix,al1);
+		}
+		res0=_mm512_add_epi64(res0,res2),res1=_mm512_add_epi64(res1,res3);
+		res2=_mm512_sub_epi64(res0,ms.M2),res3=_mm512_sub_epi64(res1,ms.M2);
+		res0=_mm512_min_epu64(res0,res2),res1=_mm512_min_epu64(res1,res3);
+		res2=_mm512_mul_epu32(res0,ms.niv),res3=_mm512_mul_epu32(res1,ms.niv);
+		res2=_mm512_mul_epu32(res2,ms.M),res3=_mm512_mul_epu32(res3,ms.M);
+		res0=_mm512_add_epi64(res0,res2),res1=_mm512_add_epi64(res1,res3);
+		res0=_mm512_mask_blend_epi32(0xaaaa,_mm512_srli_epi64(res0,32),res1);
+		_mm512_store_si512(a,_mm512_permutexvar_epi32(_mm512_load_si512(id2i),
+			ms.shr2(res0)));
+	}
+	void dot_I512(I512*a,const I512*b,idt lm){
+		const auto ms=this->ms;
+		for(idt i=0;i<lm;++i){
+			_mm512_store_si512(a+i,ms.mul(_mm512_load_si512(a+i),
+				_mm512_load_si512(b+i)));
+		}
+	}
+	void dot(I512*a,I512*b,idt lm){
+		u32 R=mt.R;
+		const auto ms=this->ms;
+		const auto fx=mt.in<true>(mt.in(mt.M-((mt.M-1)>>(__builtin_ctzll(
+			lm)))));
+		for(idt i=0;i<lm;++i){
+			conv16(a+i,b+i,_mm512_set1_epi32(R),_mm512_set1_epi32(fx),ms);
+			R=mt.mul(R,RT1[__builtin_ctzll(~i)]);
+		}
+	}
+};
+
+poly mul(const poly &a,const poly &b){
+	int m=a.size()+b.size()-1,n=16;
+	while(n<m)n<<=1;
+	auto f=alc(n),g=alc(n);
+	for(int i=0;i<(int)a.size();i++)f[i]=a[i].x;
+	for(int i=0;i<(int)b.size();i++)g[i]=b[i].x;
+	clr(f+a.size(),n-a.size());clr(g+b.size(),n-b.size());
+	static NTT ntt{998244353,23,752838388};
+	ntt.dif((I512*)f,n>>4);
+	ntt.dif((I512*)g,n>>4);
+	ntt.dot((I512*)f,(I512*)g,n>>4);
+	ntt.dit<true>((I512*)f,n>>4);
+	poly h(m);
+	for(int i=0;i<m;i++)h[i].x=f[i];
+	fre(f);fre(g);
+	return h;
+}
+
+}
+#pragma GCC pop_options
+
 poly operator*(const poly &f,const poly &g){
 	if(f.empty()||g.empty())return{};
 	int n=f.size()+g.size()-1;
@@ -704,6 +1154,8 @@ poly operator*(const poly &f,const poly &g){
 			for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
 		return h;
 	}
+	static const bool avx512=__builtin_cpu_supports("avx512f");
+	if(avx512)return Poly_Fast512::mul(f,g);
 	int l=Poly_Fast::bcl(n);
 	auto a=Poly_Fast::read(f.data(),f.size(),l);
 	auto b=Poly_Fast::read(g.data(),g.size(),l);

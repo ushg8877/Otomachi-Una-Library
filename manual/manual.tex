@@ -4452,7 +4452,7 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 \clearpage
 \subsection{\texttt{polynomial/ntt-fast.cpp}}
 \textbf{998244353 快速多项式}\par
-\TemplUsage{固定模数 998244353；面向极限卡常，使用 AVX2 Montgomery 模乘、32 字节对齐、基 4 蝶形及分块 Ln/Exp/Sqrt。保留 poly、mint.x 等接口，内部转换为 Montgomery 表示。需要支持 AVX2 的 CPU、GNU C++17/20，并在模板前包含 <immintrin.h>。参考内核作者为 QedDust413 与 Killer\_joke。}
+\TemplUsage{固定模数 998244353；面向极限卡常，使用 AVX2 Montgomery 模乘、32 字节对齐、基 4 蝶形及分块 Ln/Exp/Sqrt。保留 poly、mint.x 等接口。普通卷积在支持 AVX-512F 时使用不完全 NTT 与 16 点局部卷积，否则自动走 AVX2；小输入仍使用朴素乘法。Inv/Ln/Exp/Sqrt 保留 AVX2 分块内核。需要支持 AVX2 的 CPU、GNU C++17/20，并在模板前包含 <immintrin.h>。参考内核作者为 QedDust413 与 Killer\_joke。}
 \subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,1,0,0};
@@ -4666,7 +4666,7 @@ poly S2line(int n)
 
 \textbf{复杂度：}O(n log(n+1))。
 
-\TemplNote{必须先包含 \texttt{<immintrin.h>}，运行机器必须支持 AVX2；不支持时选普通 ntt.cpp。本文件不提供运行时分派。GCC target/optimize 选项只作用于内部内核，不会关闭 assert。Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
+\TemplNote{必须先包含 \texttt{<immintrin.h>}，运行机器必须支持 AVX2；不支持时选普通 ntt.cpp。仅卷积自动检测 AVX-512F；AVX2 仍是最低运行条件，不提供纯标量回退。GCC target/optimize 选项只作用于内部内核，不会关闭 assert。AVX-512 路径已通过 C++17/20 编译和标量指令模拟对拍，当前测试机器无 AVX-512，尚无该路径的真实硬件性能数据。Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
 \end{minipage}\par\vspace{0.4em}
 \clearpage
 \subsection{\texttt{polynomial/ntt.cpp}}
