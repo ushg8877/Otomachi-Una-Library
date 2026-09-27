@@ -965,4 +965,3 @@ poly S2line(int n){
 /////////////////////////
 // !!!!! Requires GNU C++17/20, AVX2 and <immintrin.h>.
 // Contains mint already; do not paste another mint or poly. !!!!
-
