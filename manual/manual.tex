@@ -4284,7 +4284,7 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 \clearpage
 \subsection{\texttt{polynomial/ntt-fast.cpp}}
 \textbf{998244353 快速多项式}\par
-\TemplUsage{固定模数 998244353；两层蝶形合并与 Shoup 模乘加速 NTT，求逆只补新增系数，Exp、Sqrt 同时维护逆级数并复用变换。不要求 AVX2，GNU C++17/20 均可使用。}
+\TemplUsage{固定模数 998244353；面向极限卡常，使用 AVX2 Montgomery 模乘、32 字节对齐、基 4 蝶形及分块 Ln/Exp/Sqrt。保留 poly、mint.x 等接口，内部转换为 Montgomery 表示。需要支持 AVX2 的 CPU、GNU C++17/20，并在模板前包含 <immintrin.h>。参考内核作者为 QedDust413 与 Killer\_joke。}
 \subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,1,0,0};
@@ -4322,7 +4322,7 @@ poly; Poly; f[i]; f.resize(n)
 \noindent\begin{minipage}{\textwidth}
 \textbf{3. 声明 / 调用形式}
 \begin{lstlisting}
-poly operator*(poly f,poly g); f+g; f-g; f+=g; f-=g
+poly operator*(const poly &f,const poly &g); f+g; f-g; f+=g; f-=g
 \end{lstlisting}
 \textbf{参数、效果与返回：}* 为卷积；+/- 按次数相加减并扩展至较长长度；复合加减原地修改。空输入的卷积为空。
 
@@ -4444,7 +4444,7 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 \begin{lstlisting}
 void fft(mint *a,int n); void invFft(mint *a,int n); void fft(poly &a); void invFft(poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，频域按位逆序，逆变换已经乘 n 的逆元。旋转因子缓存占 O(N) 空间，N 为调用过的最大长度。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
+\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，频域按位逆序，逆变换已经乘 n 的逆元。使用对齐的内部缓冲区，调用者不需要自定义 allocator。内部保留 O(N) 的逆元等缓存，N 为调用过的最大精度。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
 
 \textbf{复杂度：}O(n log n)。
 
@@ -4498,7 +4498,7 @@ poly S2line(int n)
 
 \textbf{复杂度：}O(n log(n+1))。
 
-\TemplNote{Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
+\TemplNote{必须先包含 \texttt{<immintrin.h>}，运行机器必须支持 AVX2；不支持时选普通 ntt.cpp。本文件不提供运行时分派。GCC target/optimize 选项只作用于内部内核，不会关闭 assert。Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
 \end{minipage}\par\vspace{0.4em}
 \clearpage
 \subsection{\texttt{polynomial/ntt.cpp}}
