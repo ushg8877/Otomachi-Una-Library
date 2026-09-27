@@ -1,77 +1,69 @@
-\documentclass[UTF8,a4paper,11pt]{ctexart}
-\usepackage{amsmath,amssymb,geometry,listings,xcolor,hyperref,enumitem,fancyhdr}
-\geometry{margin=2cm,headheight=15pt}
-\hypersetup{hidelinks,pdftitle={Otomachi Una C++ 模板库使用手册}}
-\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em,parsep=0pt}
+\documentclass[UTF8,a4paper,10pt]{ctexart}
+\usepackage{amsmath,amssymb,geometry,listings,xcolor,hyperref,enumitem,fancyhdr,needspace}
+\geometry{left=20mm,right=20mm,top=21mm,bottom=20mm,headheight=15pt}
+\hypersetup{hidelinks,pdftitle={Otomachi Una Library 接口参考手册},bookmarksdepth=2}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.2em,topsep=0.3em,parsep=0pt}
 \sloppy\setlength{\emergencystretch}{3em}
-\setlength{\parindent}{0pt}\setlength{\parskip}{0.4em}
-\pagestyle{fancy}\fancyhf{}\fancyhead[L]{Otomachi Una 模板库}\fancyhead[R]{使用手册}\fancyfoot[C]{\thepage}
-\lstset{language=C++,basicstyle=\ttfamily\small,keywordstyle=\color{blue!60!black},commentstyle=\color{black!55},frame=single,rulecolor=\color{black!25},breaklines=true,columns=fullflexible,keepspaces=true,tabsize=2,showstringspaces=false}
-\newcommand{\TemplUsage}[1]{\textbf{什么时候用}\par #1\par}
-\newcommand{\TemplApi}[1]{\textbf{调用顺序与接口}\par #1\par}
-\newcommand{\TemplNote}[1]{\textbf{使用边界}\par #1\par}
-\title{Otomachi Una C++ 模板库\\使用手册}
-\author{Junlin Ye}
-\date{2026-09-26}
+\setlength{\parindent}{0pt}\setlength{\parskip}{0.35em}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{Otomachi Una Library}
+\fancyhead[R]{接口参考}\fancyfoot[C]{\thepage}
+\lstset{language=C++,basicstyle=\ttfamily\small,keywordstyle=\color{blue!55!black},
+commentstyle=\color{black!55},backgroundcolor=\color{black!3},
+frame=single,rulecolor=\color{black!18},breaklines=true,columns=fullflexible,
+keepspaces=true,tabsize=4,showstringspaces=false,aboveskip=0.3em,belowskip=0.3em}
+\newcommand{\TemplUsage}[1]{\textbf{用途}\par #1\par}
+\newcommand{\TemplApi}[1]{\textbf{调用概览}\par #1\par}
+\newcommand{\TemplNote}[1]{\textbf{注意事项}\par #1\par}
+\title{Otomachi Una Library\\接口参考手册}
+\author{Junlin Ye}\date{2026-09-27}
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
-这份手册面向首次使用此模板库的选手。先读“接入模板”，再按目录找到所需算法；每个模板都给出真实文件路径、调用顺序、最小示例和使用边界。
+按当前源码核对的 79 份竞赛模板接口参考。先看用途与示例，再按接口名查参数、返回值和边界；同类重载放在一起说明。
 
-示例中的断言同时给出了预期结果。它们用于说明接口，不代替题目的输入输出代码。basic/template.cpp 提供头文件和 main；其他算法文件保持不带头文件和 main 的形式。
+组织方式参考 \href{https://en.cppreference.com/cpp/container/vector}{cppreference} 的声明、行为、复杂度与示例分层，具体契约以本库当前实现为准。
 
-本次核对范围是主目录下的全部 C++ 模板；manual 目录中的历史题解、测试程序和旧代码汇编不属于选型范围。
+每节对应一个实际源码文件。使用底稿 \texttt{basic/template.cpp}，按依赖顺序粘贴所需模板。不要把全库同时编译进一份程序。
 \vfill
-阅读顺序：接入模板 → 选择对应文件 → 按依赖顺序粘贴 → 运行示例 → 替换为题目逻辑。
+范围：当前模板的公开调用、运算符、结果字段及必要的改写入口。构建内部的递归步骤、缓存和底层算术辅助不作为独立 API；名称即使在 struct 中可见，也不代表可以任意调用。
 \end{titlepage}
-{\footnotesize\tableofcontents}\clearpage
-\begingroup\small
-\section{接入模板}
-\subsection*{一份可以提交的程序怎样组成}
-编译标准使用 GNU C++17 或更新版本。以 basic/template.cpp 为底稿，在其 main 前按顺序粘贴依赖和算法文件，再填写 main 中的题目逻辑。不要把本库所有文件一起粘贴。
+{\small\tableofcontents}\clearpage
+\section{阅读与接入}
+\subsection*{接口项怎么读}
+每项依次给出“声明 / 调用形式”“参数、效果与返回”“复杂度”。运算符用表达式展示，连续同类重载可能省略重复类型，用省略号时参数规则与同组第一个相同；实际 const、引用与模板声明仍以源文件为准。
+
+复杂度中的 n、m 默认是本节数据量，N 是补齐后的变换长度。若涉及用户提供的函数、域运算或比较，另乘其单次代价。void 接口通过修改对象或引用参数产生结果；未明确写失败返回值时，不满足前置条件通常会触发 assert，而不是返回特殊答案。
+
+\subsection*{粘贴顺序与运行}
+使用 GNU C++17 或更新版本。\texttt{basic/template.cpp} 提供头文件、ll/ull、调试宏和 main；算法代码粘在 main 前，示例放在 main 内。不同章节示例独立，不要将它们同时粘进一个 main。
 \begin{lstlisting}
 #include<bits/stdc++.h>
-// Common definitions from basic/template.cpp.
-// Paste dependencies and the selected template here.
+using namespace std;
+using ll=long long;
+using ull=unsigned long long;
+// Paste common definitions and dependencies here.
+// Paste the selected algorithm here.
 int main(){
-    // Keep the LOCAL file IO block from src here.
-    ios::sync_with_stdio(false);cin.tie(0);cout.tie(0);
-    // Read input, initialize, build, then query.
+    ios::sync_with_stdio(false);cin.tie(0);
+    // Run one example, then replace it with problem input.
 }
 \end{lstlisting}
-各节“最小示例”放在上面的 main 内即可运行。示例使用固定数据与 assert 检查预期值；提交时改成题目输入，并自行循环输出答案。不要额外复制第二份 main。
-
-\textbf{调试：}编译时加 -DDEBUG 开启 debug/debugl；不加时这两个宏不执行参数表达式。cerr 也仅在定义 DEBUG 时输出；关闭时流表达式不求值。assert 检查模板前置条件，加 -DNDEBUG 会关闭它，初次接入建议保留。
-
-\textbf{下标：}多数图、树、字符串接口从 1 开始；多项式、矩阵、zkw 线段树从 0 开始。区间若无特别说明为闭区间。字符串中的前导空格只是下标占位，不属于实际内容。
-
-\textbf{多测：}清空对象统一使用 set 或 setN；build 用于建表或计算。init、init\_mu、init\_phi 等保留为预处理接口，是否重算见各节。内部数组为 vector 不代表多个对象之间所有全局表都独立。
-
-\subsection*{先解决依赖和重名}
 \begin{itemize}
-\item 可撤销并查集：先粘贴一种 roll back saver，再粘贴 DSU (with undo)。FastODT：先 FastSet，再 FastODT。析合树：先 ST table (linear)，再 xihe\_tree。SA/LCP/LCS：先线性 RMQ，再后缀数组；Runs 在这两者之后。
-\item Gauss<mint>：先选一份模整数定义；Gauss<long double> 不需要模整数。多项式文件已自带模整数、阶乘表，只选一份多项式实现。
-\item 两种旧线段树同名 segt；HLD 与 DC 都叫 Tree；部分文件自带全局 S、T、rnd、init、inv 等。局部对象不能解决全局重复定义，需要删去重复实现或统一改名。
-\item DC 和几何的调试成员统一名为 output，可直接与 src 的 debug 宏一起使用。
-\item 几何需要 \texttt{using ld=long double;}；FastIO 使用 fread/fwrite，支持 Windows 的 GNU C++，无需 POSIX 头文件。
+\item 回滚并查集先粘贴一种 rollback 保存器；FastODT 先 FastSet；析合树先 linear-rmq；SA/LCP/LCS 先 linear-rmq；Runs 再加 suffix-array。
+\item SBT 先 Rat。Gauss/域线性基使用 mint 时先选模整数。多项式文件已内置 mint，不再粘贴独立 ModInt。
+\item 同名实现只选一份或手动改名：segt、Tree、Cost\_Flow\_Graph、mint、poly、init、全局 S/T/rnd 等都可能冲突。
+\item -DDEBUG 开启 debug/debugl 和 cerr；-DLOCAL 开启底稿的 Otomachi\_Una.in/out。assert 不要在调试时关闭。
 \end{itemize}
-\subsection*{怎样判断示例覆盖了什么}
-示例检查初始化、参数和返回值的用法，不能证明算法能处理任意题目的数据。点分治和可改 info 的结构需要加入题目逻辑，析合树返回结构后在外部处理答案；手册会明确标出。浮点误差、整数溢出、递归栈深度和内存上限仍由题目约束决定。
+多数图树使用 1 起点号；vector、Bitset、矩阵、多项式从 0 起。字符串模板通常要求一个前导空格。区间边界逐接口标注，特别注意静态李超树是半开区间。
 
-示例用于说明接口；本次检查覆盖所有模板编译，以及修改过的字符串查询和 IO 的运行验证。PDF 中不会嵌入大段算法源码；需要复制算法时，以标题中的源码路径为准。
-\endgroup\clearpage
+多测先 set/setN/setM，再加数据与 build/solve。本文示例说明接口，未声称对所有算法重新完成正确性验证；已有实现的数值约束、复杂度及随机化限制同样需要满足。
+\clearpage
+\clearpage
 \section{基础 / basic}
-\noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{basic/coordinate-compression.cpp}}
-\textbf{离散化并原地回写}
-
+\textbf{离散化并原地回写}\par
 \TemplUsage{先收集所有会用到的值，再排序去重，把已登记变量改写成 1..k 的排名。时间 O(n log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{compress<T> c; c.set()} 清空。\texttt{c.pb(x)} 要求可修改左值，会保存 x 的地址。
-\item \texttt{c.build()} 原地改写 x；\texttt{c.id(original)} 找已登记原值的排名。
-\item \texttt{c[i]} 由排名恢复原值；\texttt{range(l,r)} 返回落在原值闭区间中的排名范围，左端大于右端表示空。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 compress<int> c; c.set();
 int a=30,b=10,d=30;
@@ -79,19 +71,63 @@ c.pb(a); c.pb(b); c.pb(d); c.build();
 assert(a==2 && b==1 && d==2 && c[2]==30);
 assert(c.id(30)==2);
 \end{lstlisting}
-\TemplNote{pb 后、build 前变量必须存活且地址稳定：不要登记即将离开作用域的局部变量，也不要让所属 vector 扩容。\texttt{id} 参数是原值，不是已改写后的排名。range 当前端点参数为 int。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+compress<T>; void set()
+\end{lstlisting}
+\textbf{参数、效果与返回：}创建收集器；set 清空值及待回写地址，开始下一组数据。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void pb(T &x); void pb(const T &x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}非 const 左值：登记原值并保存地址，build 时把 x 改成排名；const 左值或临时值：只登记，不回写。地址须保持有效，不能让所在 vector 扩容。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}排序去重，并一次性回写已登记变量；之后才能 id、range、operator[]。再次插入并 build 会使旧排名失效。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int id(T x) const; T operator[](int k) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}id 输入原值，返回 1 起排名，x 必须已登记；c[k] 输入 1..size() 排名，返回原值。
+
+\textbf{复杂度：}id: O(log n)；下标: O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+int size() const; array<int,2> range(const T &l,const T &r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}size 返回当前存储值数量，build 后才是去重数。range 返回原值闭区间 [l,r] 对应的排名闭区间；左端大于右端表示空。端点类型为 T。
+
+\textbf{复杂度：}size: O(1)；range: O(log n)。
+
+\TemplNote{pb 后、build 前变量必须存活且地址稳定：不要登记即将离开作用域的局部变量，也不要让所属 vector 扩容。\texttt{id} 参数是原值，不是已改写后的排名。range 的端点参数类型为 T。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{basic/fast-io.cpp}}
-\textbf{缓冲 IO 与 128 位整数 IO}
+\textbf{缓冲 IO 与 128 位整数 IO}\par
 \TemplUsage{fread/fwrite 缓冲加速，适用于 Windows 和 Linux 下的 GNU C++17。整数、字符、字符串使用 input/output；cin/cout 也支持有符号及无符号 128 位整数。}
-\TemplApi{\begin{itemize}
-\item freopen 之后调用 \texttt{input.set(stdin); output.set(stdout);}，默认缓冲区 64 KiB，set 的第二个参数可指定大小。
-\item \texttt{input >> x}、\texttt{output << x}；\texttt{input.read(x)} 返回是否成功，或用 \texttt{if(input >> x)} 判断 EOF。
-\item char 读取下一个非空白字符，string 读取下一个单词。整数输入必须合法且能存入目标类型；不支持浮点。
-\item \texttt{output.flush()} 刷新用户缓冲区。交互时随后调用 \texttt{fflush(stdout)} 刷新 C 标准库缓冲区。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 // Input: 2 10 20
 input.set(stdin); output.set(stdout);
@@ -103,95 +139,608 @@ lll v; istringstream in("-170141183460469231731687303715884105728");
 in >> v; ostringstream out; out << v;
 assert(out.str()=="-170141183460469231731687303715884105728");
 \end{lstlisting}
-\TemplNote{不要在同一输入流上混用 input 和 cin，或在同一输出流上混用 output 和 cout。文件必须在 Writer 刷新前保持打开；重定向输出前先 flush。流式 128 位输入遇到非法或越界值设置 failbit；快速整数输入以合法数据为前提。原生 MSVC 不支持本模板使用的 \_\_int128。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{basic/template.cpp}}
-\textbf{公共底稿}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Reader input; Writer output; void set(FILE *f,size_t sz=1<<16)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Reader 默认 stdin，Writer 默认 stdout；freopen 后重新 set。sz 为正的缓冲字节数。Writer::set 会先刷新旧输出；旧 FILE 此时必须仍有效。
 
+\textbf{复杂度：}O(sz)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool Reader::read(T &x); Reader& operator>>(T &x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}T 可为整数、char、string，含有符号/无符号 \_\_int128，不支持浮点。char 跳过空白，string 读单词；整数必须合法且不越界。返回成功标志；流式读取返回 Reader 引用。
+
+\textbf{复杂度：}O(读入字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int Reader::get(); int Reader::next()
+\end{lstlisting}
+\textbf{参数、效果与返回：}get 读取原始下一个字节，不跳空白；next 跳过 <=32 的空白后读一个字节。返回 0..255 或 EOF，这两个底层接口不更新最近一次 read 的 ok 标志。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+explicit Reader::operator bool() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}if(input>>x) 检查最近一次读取是否成功；适合 while(input>>x) 读到 EOF。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+void Writer::put(char c); Writer& operator<<(T x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}输出整数十进制、char、string 或 C 字符串；output<<x<<'\textbackslash{}n'。流式运算返回自身引用，可连续使用。
+
+\textbf{复杂度：}O(输出字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+void Writer::flush()
+\end{lstlisting}
+\textbf{参数、效果与返回：}写出用户缓冲；析构也会刷新。交互题还须 fflush(stdout)。不要在同一流混用 input/cin 或 output/cout。
+
+\textbf{复杂度：}O(缓冲中的字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+istream& operator>>(istream&,lll&); istream& operator>>(istream&,__uint128_t&)
+\end{lstlisting}
+\textbf{参数、效果与返回：}lll 是 \_\_int128 别名，\_\_uint128\_t 为无符号 128 位整数；标准流十进制读取，非法或越界置 failbit。与快速输入是两种独立用法。
+
+\textbf{复杂度：}O(字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+ostream& operator<<(ostream&,lll); ostream& operator<<(ostream&,__uint128_t)
+\end{lstlisting}
+\textbf{参数、效果与返回：}用 cout 或 ostringstream 输出完整十进制数，返回流引用。
+
+\textbf{复杂度：}O(十进制位数)。
+
+\TemplNote{不要在同一输入流上混用 input 和 cin，或在同一输出流上混用 output 和 cout。文件必须在 Writer 刷新前保持打开；重定向输出前先 flush。流式 128 位输入遇到非法或越界值设置 failbit；快速整数输入以合法数据为前提。原生 MSVC 不支持本模板使用的 \_\_int128。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{basic/template.cpp}}
+\textbf{公共底稿}\par
 \TemplUsage{提供类型别名、调试宏和其他模板依赖的辅助函数。自带标准头文件和 main，可直接作为提交程序的底稿。}
-\TemplApi{\begin{itemize}
-\item 直接复制本文件，在 \texttt{main} 前粘贴算法，并在其中填写输入输出与求解逻辑。
-\item \texttt{debug(...) / debugl(tag,...)} 接受 1 至 10 个参数；编译时加 \texttt{-DDEBUG} 才输出，关闭时参数不求值。
-\item \texttt{chkmin/chkmax} 更新最值并返回是否修改。\texttt{first\_bit/last\_bit} 返回最低/最高置位的位置，参数必须非零。
-\item \texttt{inf<int>}、\texttt{inf<ll>} 已特化；其他类型默认值为零，不能当无穷大。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 int a=7; chkmin(a,3);
 assert(a==3 && first_bit(12)==2 && last_bit(12)==3);
 debug(a);
 cerr << "diagnostic\n";
 \end{lstlisting}
-\TemplNote{定义 \texttt{LOCAL} 时从 \texttt{Otomachi\_Una.in} 读入并写入 \texttt{Otomachi\_Una.out}，打开失败返回 1；否则使用标准输入输出。\texttt{DEBUG} 独立控制调试输出。未定义时通过宏屏蔽裸写的 \texttt{cerr}，不要写 \texttt{std::cerr}。向量输入前必须先分配非空长度；向量输出带方括号并截断长向量，正式答案应自己循环输出。}
-\end{minipage}\par\vspace{1.2em}
-\section{数据结构 / data-structure}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+ll; ull; inf<T>
+\end{lstlisting}
+\textbf{参数、效果与返回：}ll/ull 是 64 位整数别名。inf<int>、inf<ll> 有专门值；其他 T 的默认 inf<T> 是 T\{\}，不能当作通用无穷大。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+cin >> a; cout << a
+\end{lstlisting}
+\textbf{参数、效果与返回：}a 为已定长非空 vector 或 array：输入逐项读取；输出带方括号和逗号，最多显示 50 项，适合调试，非题目常规输出格式。
+
+\textbf{复杂度：}输入 O(n)；输出至多 50 项。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+debug(x1,...,x10); debugl(label,x1,...,x10)
+\end{lstlisting}
+\textbf{参数、效果与返回：}支持 1..10 个表达式，输出行号、名字和值；debugl 另加标签。编译 -DDEBUG 开启；否则参数不求值，cerr 也不输出。带逗号的表达式须加括号。
+
+\textbf{复杂度：}与各表达式及输出相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int last_bit(ull x); int first_bit(ull x); int popc(ull x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}last\_bit/first\_bit 返回最高/最低 1 的位编号，0 起，x 必须非零；popc 返回 1 的个数，允许零。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+bool chkmax(A &x,const B &y); bool chkmin(A &x,const B &y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}把 x 更新为最大/最小值，发生改变返回 true；否则 false。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+LOCAL; DEBUG; main()
+\end{lstlisting}
+\textbf{参数、效果与返回：}-DLOCAL 将 stdin/stdout 重定向到 Otomachi\_Una.in/out；DEBUG 单独控制调试。以本文件为程序底稿，其他模板粘在 main 前，按题意改主流程。
+
+\textbf{复杂度：}不适用。
+
+\TemplNote{定义 \texttt{LOCAL} 时从 \texttt{Otomachi\_Una.in} 读入并写入 \texttt{Otomachi\_Una.out}，打开失败返回 1；否则使用标准输入输出。\texttt{DEBUG} 独立控制调试输出。未定义时通过宏屏蔽裸写的 \texttt{cerr}，不要写 \texttt{std::cerr}。向量输入前必须先分配非空长度；向量输出带方括号并截断长向量，正式答案应自己循环输出。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{basic/vector.cpp}}
+\textbf{vector 常用操作与运算符}\par
+\TemplUsage{生成区间、拼接、逐项运算及集合操作；多数接口返回新 vector，复合赋值才原地修改。}
+\subsubsection*{最小示例}
+\begin{lstlisting}
+auto a=vrange(1,4);
+auto b=a*2;
+assert((b==vector<int>{2,4,6,8}));
+auto c=vmap(a,[](int x){return x*x;});
+auto d=a&vector<int>{2,2,4,9};
+assert((d==vector<int>{2,4}));
+assert((a<3)==vector<bool>({true,true,false,false}));
+for(int x:vrange(2,4))cout<<x<<' '; // 2 3 4
+\end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vrange(T l,T r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}生成整数闭区间 [l,r]，要求 l<=r，T 为非 bool 的至多 64 位整数；vrange(1,4) 得 \{1,2,3,4\}。
+
+\textbf{复杂度：}O(r-l+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vcat(vector<T> a,const vector<T> &b)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 a 后拼接 b，不修改传入的普通左值；可用 move(a) 转移 a 的存储。
+
+\textbf{复杂度：}O(a.size()+b.size())。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+auto vmap(const vector<T,Alloc> &a,F f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}对每项调用 f(x)，按原顺序返回新 vector；结果元素类型自动推导，空 vector 也可。例 vmap(a,[](int x)\{return 1ll*x*x;\})。
+
+\textbf{复杂度：}O(n) 次 f 调用。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+auto vadd(const vector<T> &a,const U &x); auto vsub(const vector<T> &a,const U &x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}分别返回逐项加 x、减 x 的新 vector，与 a+x、a-x 相同。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+a+x; a-x; a*x; a/x; a%x; a&x; a|x; a^x; a<<x; a>>x
+\end{lstlisting}
+\textbf{参数、效果与返回：}x 在右侧，为标量；逐元素运算，返回新 vector，结果类型按元素表达式推导。除数非零，位移和溢出规则同 C++ 标量运算。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+a==x; a!=x; a<x; a<=x; a>x; a>=x; a&&x; a||x
+\end{lstlisting}
+\textbf{参数、效果与返回：}右侧标量时返回 vector<bool>。\&\&、|| 不跳过右侧实参求值；两边都是 vector 的比较仍按 STL 字典序，返回 bool。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+a+=x; a-=x; a*=x; a/=x; a%=x; a&=x; a|=x; a^=x; a<<=x; a>>=x
+\end{lstlisting}
+\textbf{参数、效果与返回：}原地逐项更新，保留 a 的元素类型，返回 a 的引用；x 按值保存，允许 x 来自 a 的某个元素。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
++a; -a; ~a; !a
+\end{lstlisting}
+\textbf{参数、效果与返回：}此行 +a 是一元正号：返回逐项正值；其余为负值、按位取反、逻辑取反。均返回新 vector，!a 的元素类型为 bool。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+++a; a++; --a; a--
+\end{lstlisting}
+\textbf{参数、效果与返回：}所有元素自增/自减；前置返回 a 引用，后置返回修改前副本。此组要求元素能绑定 T\&，不适用于 vector<bool>。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vfilter(const vector<T> &a,F f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}保留 f(x) 为真的元素，顺序不变，返回新 vector。
+
+\textbf{复杂度：}O(n) 次 f 调用。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vsort(vector<T> a); vector<T> vunique(vector<T> a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}vsort 返回排序结果；vunique 返回排序去重结果，均不保留原顺序。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vintersection(vector<T> a,vector<T> b); vector<T> vunion(vector<T> a,vector<T> b)
+\end{lstlisting}
+\textbf{参数、效果与返回：}集合交/并，输入可乱序、重复；输出升序且唯一。交集可写 a\&b，并集可写 a|b；a\&=b、a|=b 原地替换。不是按位置位运算。
+
+\textbf{复杂度：}O(n log n+m log m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> vreverse(vector<T> a); vector<T> vslice(const vector<T> &a,size_t l,size_t r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}vreverse 返回逆序副本；vslice 复制 0 起闭区间 [l,r]，要求 l<=r<a.size()，不支持空区间。
+
+\textbf{复杂度：}O(n) / O(r-l+1)。
+
+\TemplNote{标量右侧运算与 vector 对 vector 的集合运算不同。for(int x:f()) 中 f() 只调用一次，返回的临时 vector 活到循环结束。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{数据结构 / data-structure}
+\subsection{\texttt{data-structure/bitset.cpp}}
+\textbf{动态 Bitset}\par
+\TemplUsage{运行时位数的按位集合，支持位移、区间计数、枚举及窗口位运算。}
+\subsubsection*{最小示例}
+\begin{lstlisting}
+Bitset a(130),b(130);
+a.set(0);a.set(64);a.set(129);
+assert(a.count(1,128)==1);
+assert((a.positions()==vector<int>{0,64,129}));
+a.window_xor(64,129,b,0);
+assert((b.positions()==vector<int>{0,65}));
+assert(a.next(64)==129 && a.prev(64)==0);
+\end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Bitset(); Bitset(int n); Bitset(const vector<T>&); Bitset(const string&); using BS=Bitset
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认长度 0，整数构造为 n 个零；vector/string 只允许 0/1。输入第 i 项就是 bit i；字符串顺序与 std::bitset 字符串构造相反。
+
+\textbf{复杂度：}O(n/64+1)；序列构造 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void set(); void fill(bool v); int size() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}setN 重设长度并清零；set 保留长度清零；fill 统一赋值；size 返回位数。空 bitset 合法。
+
+\textbf{复杂度：}修改 O(n/64+1)，size O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void set(int i,bool v=true); void reset(int i); void flip(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}0<=i<n；分别赋值、清零、翻转一位。注意 set() 不是把所有位设为 1。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+bool get(int i) const; bool operator[](int i) const; void flip()
+\end{lstlisting}
+\textbf{参数、效果与返回：}get 和 a[i] 只读，写入必须 set；无参 flip 翻转所有有效位。
+
+\textbf{复杂度：}读 O(1)；全翻转 O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+int count() const; int count(int l,int r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回全部或非空闭区间 [l,r] 内的 1 数量，0<=l<=r<n。
+
+\textbf{复杂度：}O(n/64+1) / O((r-l+1)/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+vector<int> positions() const; string str() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}positions 返回所有 1 的升序下标；str 返回长度 n 的 01 字符串，下标 0 的字符对应最低位。
+
+\textbf{复杂度：}O(n/64+1+答案数) / O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+bool any() const; bool none() const; bool all() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}判断至少一位为 1、全为 0、全为 1。空对象的 any=false，none=true，all=true。
+
+\textbf{复杂度：}最坏 O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+int next(int p) const; int prev(int p) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}next 找严格大于 p 的 1，找不到返回 n；prev 找严格小于 p 的 1，找不到返回 -1。next 允许 -1..n，prev 允许 0..n。
+
+\textbf{复杂度：}最坏 O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+int first() const; int last() const; int _Find_first() const; int _Find_next(int p) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}first=next(-1)，last=prev(n)；两个 \_Find 接口分别同 first 和 next。
+
+\textbf{复杂度：}最坏 O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+a&b; a|b; a^b; a&=b; a|=b; a^=b; ~a
+\end{lstlisting}
+\textbf{参数、效果与返回：}两个对象须等长，按位运算；普通形式返回新对象，复合形式改 a 并返回引用。\textasciitilde{}a 只翻转有效 n 位。
+
+\textbf{复杂度：}O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+a<<k; a>>k; a<<=k; a>>=k
+\end{lstlisting}
+\textbf{参数、效果与返回：}k>=0，左移到较大下标，右移到较小下标；越界位丢弃，k>=n 清零，长度不变。
+
+\textbf{复杂度：}O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+a==b; a!=b; a<b
+\end{lstlisting}
+\textbf{参数、效果与返回：}== 同时比较长度与内容；< 要求等长，把 bit 0 当最低位进行非负整数大小比较。没有 >、<=、>= 重载。
+
+\textbf{复杂度：}最坏 O(n/64+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+void window_and(int l,int r,Bitset &b,int to) const; window_or(...); window_xor(...)
+\end{lstlisting}
+\textbf{参数、效果与返回：}a.window\_xor(l,r,b,to) 把 a 的 [l,r] 异或进 b 的 [to,to+r-l]；另两种同理。两段均须有效；允许 a、b 同对象且区间重叠，按更新前源区间计算。无返回值。
+
+\textbf{复杂度：}O((r-l+1)/64+1)，额外空间 O(1)。
+
+\TemplNote{下标从 0 起；所有区间为闭区间。不要直接修改底层 vector，否则尾部无效位可能破坏 count/比较等接口。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{data-structure/disjoint-set-rollback.cpp}}
-\textbf{可撤销并查集}
-
+\textbf{可撤销并查集}\par
 \TemplUsage{适合线段树分治或搜索中加入连边后回退。按大小合并、不做路径压缩，单次查找 O(log n)。}
-\TemplApi{\begin{itemize}
-\item 先粘贴一种 saver，再粘贴本文件。
-\item \texttt{unionfind d; d.setN(n)} 初始化；\texttt{find/merge} 与普通版类似。
-\item 通过全局 \texttt{version/roll\_back} 撤销 merge，而不是调用对象成员。
-\end{itemize}}
-\textbf{额外依赖（按此顺序粘贴）：}\texttt{data-structure/rollback-int.cpp}。
-
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 ::set(); unionfind d; d.setN(3);
 auto t=version(); d.merge(1,2);
 assert(d.find(1)==d.find(2));
 roll_back(t); assert(d.find(1)!=d.find(2));
 \end{lstlisting}
-\TemplNote{setN 前先清空旧历史，不能在旧历史仍引用数组时重新分配。不要自行加入路径压缩。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/disjoint-set.cpp}}
-\textbf{普通并查集}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}重建 1..n 单点集合；要求全局 version()==0。先回滚或清空保存器，避免旧地址跨过重新分配。
 
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int find(int x); int merge(int x,int y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}find 不压缩路径；merge 按大小合并并 save 修改过的父亲/大小。成功返回新根，同集合返回 0。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+fa; siz; version(); roll_back(t)
+\end{lstlisting}
+\textbf{参数、效果与返回：}用 siz[find(x)] 读集合大小；用 find(x)==find(y) 判断连通。保存全局版本 t 后合并，再 roll\_back(t) 撤销；该版本也包括其他对象的 save。
+
+\textbf{复杂度：}撤销 O(保存条数)。
+
+\TemplNote{setN 前先清空旧历史，不能在旧历史仍引用数组时重新分配。不要自行加入路径压缩。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/disjoint-set.cpp}}
+\textbf{普通并查集}\par
 \TemplUsage{维护集合连通关系，路径压缩配合按大小合并。操作均摊近似 O(1)，空间 O(n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{DSU d; d.setN(n)} 创建 1..n 的独立集合。
-\item \texttt{find(x)} 返回代表元；\texttt{same(x,y)} 判断同集合。
-\item \texttt{merge(x,y)} 成功返回新代表元，已经连通返回 0。\texttt{siz[find(x)]} 为集合大小。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 DSU d; d.setN(4);
 d.merge(1,2); assert(d.same(1,2));
 assert(d.siz[d.find(1)]==2 && !d.same(1,3));
 \end{lstlisting}
-\TemplNote{再次 setN 会清空关系。普通版不能回滚；需要撤销时选择 unionfind。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fast-set.cpp}}
-\textbf{有界整数集合}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}重建 1..n 的 n 个单点集合，清除旧关系；允许 n=0。
 
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int find(int x); bool same(int x,int y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}find 返回代表元并压缩路径；same 判断同一集合，点必须在 1..n。
+
+\textbf{复杂度：}均摊 O(alpha(n))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int merge(int x,int y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}按大小合并；成功返回合并后的根，原本同集合返回 0。不是返回合并后的大小。
+
+\textbf{复杂度：}均摊 O(alpha(n))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+fa; siz
+\end{lstlisting}
+\textbf{参数、效果与返回：}fa[x] 为父结点；siz[find(x)] 为集合大小，非根的 siz 不保证代表当前集合。只读这些成员，修改会破坏不变量。
+
+\textbf{复杂度：}查询大小需一次 find。
+
+\TemplNote{再次 setN 会清空关系。普通版不能回滚；需要撤销时选择 unionfind。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fast-set.cpp}}
+\textbf{有界整数集合}\par
 \TemplUsage{用分层位集维护集合成员及前驱后继。修改和前驱后继 O(log\_64 V)，成员判断 O(1)。}
-\TemplApi{\begin{itemize}
-\item \texttt{FastSet s; s.setN(v)} 允许存储 0..v，包含 v。
-\item \texttt{insert/erase} 幂等，\texttt{s[x]} 判断是否存在。
-\item \texttt{prev(x)} 为最大 <=x 的元素，\texttt{next(x)} 为最小 >=x 的元素；没有则返回 -1。
-\item \texttt{front/back} 返回最小/最大元素；\texttt{to\_vector()} 扫描整个值域输出元素。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 FastSet s; s.setN(100);
 s.insert(3); s.insert(100);
 assert(s.next(3)==3 && s.prev(99)==3);
 assert(s.next(101)==-1);
 \end{lstlisting}
-\TemplNote{值域太大时不适合使用，空间跟 V 相关而非当前元素个数。需要 src 的位运算和最值辅助函数。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fenwick/fenwick.cpp}}
-\textbf{自定义下标的树状数组}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int V)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空并设允许元素为 0..V，包含 V；不是 0..V-1。
 
+\textbf{复杂度：}O(V/64+log(V+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void insert(int x); void erase(int x); bool operator[](int x) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}插入、删除、查询存在性；重复插入和删除不存在元素无影响；要求 0<=x<=初始化的 V。
+
+\textbf{复杂度：}修改 O(log\_64(V+1))，查询 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int prev(int x); int next(int x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}prev 找 <=x 的最大元素；next 找 >=x 的最小元素，包含 x 自身。都以 -1 表示不存在，参数可超出集合域。
+
+\textbf{复杂度：}O(log\_64(V+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int front(); int back(); vector<int> to_vector() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}front/back 返回最小/最大元素，空集 -1；to\_vector 返回全部元素的升序 vector。
+
+\textbf{复杂度：}前两项 O(log\_64(V+1))；枚举 O(V/64+答案数)。
+
+\TemplNote{值域太大时不适合使用，空间跟 V 相关而非当前元素个数。需要 src 的位运算和最值辅助函数。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fenwick/fenwick.cpp}}
+\textbf{自定义下标的树状数组}\par
 \TemplUsage{同时提供单点加的 BIT 和区间加的双 BIT。初始化 O(n)，单次操作 O(log n)，空间 O(n)。}
-\TemplApi{两种结构都用 \texttt{setRange(L,R)} 设置闭区间，\texttt{setN(n)} 等价于 \texttt{setRange(1,n)}。BIT 的 \texttt{add(i,v)} 单点加，\texttt{ask(r)} 返回 [L,r] 的和，\texttt{ask(l,r)} 返回区间和。rars 的 \texttt{add(l,r,v)} 区间加，\texttt{ask(l,r)} 查区间和。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 BIT b; b.setRange(-2,2); b.add(0,7);
 assert(b.ask(0)==7 && b.ask(-1,1)==7);
@@ -199,59 +748,196 @@ rars t; t.setRange(-2,2); t.add(-1,1,3);
 assert(t.ask(-2,0)==6);
 b.setN(3); assert(b.ask(3)==0);
 \end{lstlisting}
-\TemplNote{下标 0 或负数只要在设定区间内就合法；内部会转成正下标。ask(L-1) 返回零，add(R+1,v) 是差分哨兵，不计入查询。极端坐标的 L-1/R+1 用 ll 计算。rars 的加权差分使用相对位置，不依赖坐标绝对值；值、加权积与答案须在 ll 范围内。set() 清空；重新 setRange/setN 丢弃旧值。文件末尾保留全局 rars 对象 T。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fenwick/max.cpp}}
-\textbf{树状数组：最大值特化}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+BIT::set(); BIT::setRange(int L,int R); BIT::setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空，或建立初值全零的闭区间；setN(n)=setRange(1,n)。
 
+\textbf{复杂度：}O(R-L+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+BIT::add(ll i,ll v); BIT::ask(ll r); BIT::ask(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}单点加、前缀和、闭区间和；允许 i=R+1 哨兵；前缀只允许 L-1..R；双端查询要求 L<=l<=r<=R。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+rars::set(); rars::setRange(int L,int R); rars::setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}两棵 BIT 维护区间加区间和，初始化域与 BIT 相同，初值零。
+
+\textbf{复杂度：}O(R-L+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+rars::add(int l,int r,ll v); rars::ask(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}在有效闭区间整体加 v，返回区间总和；必须 L<=l<=r<=R，不接受空区间。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+ll rars::query(ll r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回前缀 [L,r] 的总和，允许 L-1<=r<=R；r=L-1 返回 0。与 rars::ask(l,r) 的双端闭区间区分。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\TemplNote{下标 0 或负数只要在设定区间内就合法；内部会转成正下标。ask(L-1) 返回零，add(R+1,v) 是差分哨兵，不计入查询。极端坐标的 L-1/R+1 用 ll 计算。rars 的加权差分使用相对位置，不依赖坐标绝对值；值、加权积与答案须在 ll 范围内。set() 清空；重新 setRange/setN 丢弃旧值。文件末尾保留全局 rars 对象 T。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fenwick/max.cpp}}
+\textbf{树状数组：最大值特化}\par
 \TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Max\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{upd(i,v)} 把第 i 项取最大值，并非赋值；\texttt{ask(r)} 查询 [L,r] 的最大值。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Max_BIT t; t.setRange(-2,2); t.upd(0,5); t.upd(0,3);
 assert(t.ask(1)==5);
 \end{lstlisting}
-\TemplNote{初值和空前缀返回 LLONG\_MIN。只支持单点 chmax；不能把已有大值减小。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fenwick/min.cpp}}
-\textbf{树状数组：最小值特化}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setRange(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空域；setRange 设置闭区间 [L,R] 并重置所有值为 LLONG\_MIN；setN(n) 等价 setRange(1,n)，允许 n=0 建空域。
 
+\textbf{复杂度：}O(R-L+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(ll i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}将下标 i 的值取 max(原值,v)，不是任意赋值。不支持撤回旧最值或反向修改。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(ll r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回前缀 [L,r] 的max；只允许 L-1<=r<=R；r=L-1 返回 LLONG\_MIN；不自动截断越界参数。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\TemplNote{初值和空前缀返回 LLONG\_MIN。只支持单点 chmax；不能把已有大值减小。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fenwick/min.cpp}}
+\textbf{树状数组：最小值特化}\par
 \TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Min\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{upd(i,v)} 把第 i 项取最小值，并非赋值；\texttt{ask(r)} 查询 [L,r] 的最小值。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Min_BIT t; t.setRange(-2,2); t.upd(0,5); t.upd(0,3);
 assert(t.ask(1)==3);
 \end{lstlisting}
-\TemplNote{初值和空前缀返回 LLONG\_MAX。只支持单点 chmin；不能把已有小值增大。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fenwick/sum.cpp}}
-\textbf{树状数组：和特化}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setRange(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空域；setRange 设置闭区间 [L,R] 并重置所有值为 LLONG\_MAX；setN(n) 等价 setRange(1,n)，允许 n=0 建空域。
 
+\textbf{复杂度：}O(R-L+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(ll i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}将下标 i 的值取 min(原值,v)，不是任意赋值。不支持撤回旧最值或反向修改。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(ll r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回前缀 [L,r] 的min；只允许 L-1<=r<=R；r=L-1 返回 LLONG\_MAX；不自动截断越界参数。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\TemplNote{初值和空前缀返回 LLONG\_MAX。只支持单点 chmin；不能把已有小值增大。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fenwick/sum.cpp}}
+\textbf{树状数组：和特化}\par
 \TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Sum\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{add(i,v)} 单点加；\texttt{ask(r)} 查询 [L,r] 的和；\texttt{ask(l,r)} 查询区间和。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Sum_BIT t; t.setRange(-2,2); t.add(0,5); t.add(1,-3);
 assert(t.ask(0)==5 && t.ask(0,1)==2);
 \end{lstlisting}
-\TemplNote{初始值全零；允许 add(R+1,v) 差分哨兵及 ask(L-1) 空前缀。支持负坐标，查询不会修改树。 三个类名不同，可组合粘贴；set() 清空。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/fhq-treap.cpp}}
-\textbf{按键或按序列位置分裂的 Treap}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setRange(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空域；setRange 设置闭区间 [L,R] 并重置所有值为 0；setN(n) 等价 setRange(1,n)，允许 n=0 建空域。
 
+\textbf{复杂度：}O(R-L+1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(ll i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}将下标 i 的值加上 v，不是任意赋值。i=R+1 是允许的差分哨兵，不参与有效域查询。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(ll r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回前缀 [L,r] 的和；只允许 L-1<=r<=R；r=L-1 返回 0；不自动截断越界参数。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回闭区间和，用前缀相减；要求 L<=l<=r<=R，不接受空区间。
+
+\textbf{复杂度：}O(log(R-L+2))。
+
+\TemplNote{初始值全零；允许 add(R+1,v) 差分哨兵及 ask(L-1) 空前缀。支持负坐标，查询不会修改树。 三个类名不同，可组合粘贴；set() 清空。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/fhq-treap.cpp}}
+\textbf{按键或按序列位置分裂的 Treap}\par
 \TemplUsage{随机平衡二叉树。外部维护根编号 rt，空树为 0，普通 split/merge 期望 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{FHQ t; t.set()} 清空；\texttt{newnode(x)} 建一个 key=x 的节点。
-\item \texttt{split\_by\_key(rt,k,a,b)} 分为 key<=k 与 key>k；\texttt{split\_by\_size(rt,k,a,b)} 分出前 k 个。
-\item \texttt{rt=merge(a,b)} 要求 a 所有元素应在 b 前面；按键维护时要求 max(a)<=min(b)。
-\item \texttt{merge\_it(a,b)} 可合并键域交错的两树。\texttt{push(rt,v)} 给整个非空子树的 key 加 v。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 FHQ t; t.set(); int rt=0;
 for(int v:{2,5,8})rt=t.merge(rt,t.newnode(v));
@@ -259,33 +945,205 @@ int a,b; t.split_by_key(rt,5,a,b);
 assert(t.siz[a]==2 && t.siz[b]==1);
 rt=t.merge(a,b); assert(t.siz[rt]==3);
 \end{lstlisting}
-\TemplNote{setN(n) 只是创建 n 个孤立节点，不会把它们连成树。按键分裂依赖排序不变量；区间加可能破坏该不变量。没有现成的区间翻转或持久化。全局 rnd 可能与别的模板重名。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/li-chao-tree.cpp}}
-\textbf{线段李超树}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); int newnode(int x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；setN 创建 n 个互不相连、key=0 的节点，不会建成一棵树；newnode 新增 key=x 节点并返回编号。根由调用者保存，0 表示空。
 
+\textbf{复杂度：}setN O(n)，newnode 均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int merge(int p,int q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}把 p 中序序列接在 q 前，返回新根；两树节点不相交。作为有序集合时须 max(p)<=min(q)。操作会修改原树。
+
+\textbf{复杂度：}期望 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void split_by_key(int rt,int k,int &p,int &q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}将 rt 拆成 key<=k 的 p 和 key>k 的 q，写入引用；原 rt 不再是独立有效的整树根。
+
+\textbf{复杂度：}期望 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void split_by_size(int rt,int k,int &p,int &q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}前 k 项归 p，剩余归 q，要求 0<=k<=siz[rt]；可用于序列区间切分。
+
+\textbf{复杂度：}期望 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+int merge_it(int p,int q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}合并任意两个有序树，允许键值域交错和重复值，保留所有节点；返回新根，消耗原树。两树节点不可共享。
+
+\textbf{复杂度：}取决于两树交错程度，不能按普通 merge 的 O(log n) 估算。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+int leftmost(int rt); int rightmost(int rt)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回最左/最右节点编号，空树返回 0；沿途下传标记。取值再读 key[id]。
+
+\textbf{复杂度：}期望 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+void push(const int &id,const int &x); void alldown(int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}push 给整棵非空子树的 key 加 x；必须保持与外部树的排序关系。alldown 把全部标记下传，之后可直接读取所有 key。
+
+\textbf{复杂度：}O(1) / O(子树大小)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+ls; rs; key; siz; tag; val; void pushup(const int &id); void pushdown(const int &id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}分别是左右儿子、键、大小、加法标记、随机堆优先级。手动改结构后 pushup 更新大小；读取儿子前 pushdown 下传。普通调用无需直接改这些成员。
+
+\textbf{复杂度：}单次维护 O(1)。
+
+\TemplNote{setN(n) 只是创建 n 个孤立节点，不会把它们连成树。按键分裂依赖排序不变量；区间加可能破坏该不变量。没有现成的区间翻转或持久化。全局 rnd 可能与别的模板重名。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/li-chao-tree-static.cpp}}
+\textbf{离散或连续整数域上的静态李超树}\par
+\TemplUsage{把函数类型作为模板参数，返回最优值和对应函数。}
+\subsubsection*{最小示例}
+\begin{lstlisting}
+struct F{
+    using value_type=ll;
+    ll k,b;int id;
+    ll operator()(ll x)const{return k*x+b;}
+};
+LiChao<F> t;
+t.set(vector<ll>{1,3,5},F{0,LLONG_MAX,-1});
+t.add(F{2,1,7});
+t.add(F{0,4,8},3,6);
+auto [y,f]=t.ask(3);
+assert(y==4 && f.id==8);
+\end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+LiChao<F,bool COMPRESS=true,bool MINIMIZE=true>
+\end{lstlisting}
+\textbf{参数、效果与返回：}F 提供 using value\_type=T 和 T operator()(ll x) const。COMPRESS 选择离散点/连续整数域，MINIMIZE 选择最小/最大。任意两函数优劣在域内至多切换一次，直线满足条件。
+
+\textbf{复杂度：}求值 F(x) 视为 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void set(const vector<ll> &X,const F &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}仅 COMPRESS=true：复制、排序去重 X，不能为空；f 是空节点默认函数，须始终不优于真实答案。例求最小用常数 LLONG\_MAX 函数。
+
+\textbf{复杂度：}O(n log n)，空间 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void setRange(ll l,ll r,const F &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}仅 COMPRESS=false：建立整数半开域 [l,r)，要求 0<r-l<=2\textasciicircum{}29；f 的要求同上。不是动态开点，按域长度分配。
+
+\textbf{复杂度：}O(r-l) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void add(F f); void add(F f,ll l,ll r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 只清空函数，保留坐标和默认函数；add(f) 全域插入；带区间重载只覆盖 [l,r)，空区间无效果。离散模式的区间端点无需在 X 内。
+
+\textbf{复杂度：}清空 O(n)，全域 O(log n)，区间 O(log\textasciicircum{}2 n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+pair<T,F> ask(ll x) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回最优值及产生该值的函数副本，可在 F 中自带 id。平局任取；无真实线返回默认函数。离散模式 x 必须在 X 内；连续模式须 l<=x<r。
+
+\textbf{复杂度：}O(log n)。
+
+\TemplNote{此模板用半开区间 [l,r)，与动态李超树的闭区间不同。默认函数也会被求值，因此必须构造成安全的常数函数。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/li-chao-tree.cpp}}
+\textbf{线段李超树}\par
 \TemplUsage{插入只在一段整数横坐标上有效的直线，查询某点的最小值。}
-\TemplApi{\begin{itemize}
-\item \texttt{lichao t; t.set()} 清空。
-\item \texttt{add(line\{k,b\},l,r)} 插入 y=kx+b；省略 l,r 表示整个默认值域。
-\item \texttt{ask(x)} 返回最小纵坐标，没有覆盖返回 2e18。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 lichao t; t.set();
 t.add({2,3},0,10); t.add({-1,8},0,10);
 assert(t.ask(2)==6);
 \end{lstlisting}
-\TemplNote{横坐标及斜率限制在 [-10\textasciicircum{}9,10\textasciicircum{}9]，有效端点的纵坐标需在 [-2e18,2e18]。整条线插入 O(log V)，线段插入 O(log\textasciicircum{}2 V)，查询 O(log V)。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/linear-rmq.cpp}}
-\textbf{四毛子 RMQ：线性预处理与空间}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+line{ll k,ll b}; ll line::f(ll x); void lichao::set()
+\end{lstlisting}
+\textbf{参数、效果与返回：}line 表示 k*x+b，f 求值；set 删除所有直线/线段。域固定为 [-V,V]，V=1e9。
 
+\textbf{复杂度：}求值 O(1)，清空与已分配空间相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(line f,int l=-V,int r=V)
+\end{lstlisting}
+\textbf{参数、效果与返回：}将函数插入闭区间 [l,r]；省略区间则全域。斜率绝对值<=V，相关乘加须安全，有效答案须在哨兵 inf=2e18 范围内。
+
+\textbf{复杂度：}全线 O(log V)，区间 O(log\textasciicircum{}2 V)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 x 处最小函数值；没有覆盖 x 的线返回 inf。不返回是哪条线。
+
+\textbf{复杂度：}O(log V)。
+
+\TemplNote{横坐标及斜率限制在 [-10\textasciicircum{}9,10\textasciicircum{}9]，有效端点的纵坐标需在 [-2e18,2e18]。整条线插入 O(log V)，线段插入 O(log\textasciicircum{}2 V)，查询 O(log V)。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/linear-rmq.cpp}}
+\textbf{四毛子 RMQ：线性预处理与空间}\par
 \TemplUsage{静态数组最值。采用块内单调栈位掩码、块间 ST 表；在机器字位运算为 O(1) 的模型下，预处理及空间 O(n)，查询 O(1)。}
-\TemplApi{\texttt{Linear\_RMQ<int> t; t.build(a)} 接受从 0 开始的 vector，内部保存副本。\texttt{ask(l,r)} 查询闭区间最小值，\texttt{pos(l,r)} 返回最小值下标；相等取最左。\texttt{Linear\_RMQ<int,true>} 改为最大值，其他接口相同。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 vector<int> a{4,1,1,3};
 Linear_RMQ<int> mn; mn.build(a);
@@ -293,58 +1151,118 @@ assert(mn.ask(0,3)==1 && mn.pos(0,3)==1);
 Linear_RMQ<int,true> mx; mx.build(a);
 assert(mx.ask(1,3)==3);
 \end{lstlisting}
-\TemplNote{块长 B=max(1,floor(log2 n))，不是固定常数；块数 m=ceil(n/B)，块间表 O(m log m)=O(n)。每个元素存一份块前缀的单调栈掩码，一次清除低位和 ctz 即可查询块内最左最值。n<INT\_MAX，块长最多 30，使用 unsigned 位运算。可 build 空数组，但不能查询；修改数组后须重新 build。set() 清空。不需要普通 ST 表或笛卡尔树作为依赖。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Linear_RMQ<T,bool MAX=false>; void set(); void build(const vector<T> &a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认最小值，MAX=true 最大值；set 清空，build 复制 0 起数组并预处理，可空数组但不能对其查询。
+
+\textbf{复杂度：}build O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int pos(int l,int r) const; T ask(int l,int r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}0<=l<=r<n 的闭区间；pos 返回最优值下标，平局最左；ask 返回该元素值。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{块长 B=max(1,floor(log2 n))，不是固定常数；块数 m=ceil(n/B)，块间表 O(m log m)=O(n)。每个元素存一份块前缀的单调栈掩码，一次清除低位和 ctz 即可查询块内最左最值。n<INT\_MAX，块长最多 30，使用 unsigned 位运算。可 build 空数组，但不能查询；修改数组后须重新 build。set() 清空。不需要普通 ST 表或笛卡尔树作为依赖。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{data-structure/ordered-disjoint-interval-tree-fast.cpp}}
-\textbf{位集加速的区间覆盖}
-
+\textbf{位集加速的区间覆盖}\par
 \TemplUsage{借助 FastSet 存储区间右端点。下标 1..n，适合值域固定的区间覆盖。}
-\TemplApi{\begin{itemize}
-\item 先粘贴 FastSet，再粘贴本文件。
-\item \texttt{Fast\_ODT t; t.setN(n)} 分配空间；先 insert(1,n,c0) 明确初始颜色。
-\item \texttt{insert(l,r,c)} 覆盖区间并返回旧的 \{L,R,col\} 段；\texttt{extract(l,r)} 获取当前片段。
-\end{itemize}}
-\textbf{额外依赖（按此顺序粘贴）：}\texttt{data-structure/fast-set.cpp}。
-
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Fast_ODT t; t.setN(5); t.insert(1,5,0);
 t.insert(2,4,7); auto a=t.extract(2,3);
 assert(a.size()==1 && a[0][2]==7);
 \end{lstlisting}
-\TemplNote{extract 会分裂边界。不保证任意操作序列的高效性，成本仍取决于访问的段数。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/ordered-disjoint-interval-tree.cpp}}
-\textbf{有序区间集合}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}建立 1..n，初始全部颜色 -1，n>=1；依赖 FastSet。
 
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<array<int,3>> extract(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效闭区间 [l,r] 内各段 \{左端,右端,颜色\}，按位置排列；只切段，不改颜色。
+
+\textbf{复杂度：}O((段数+1)*log\_64(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+vector<array<int,3>> insert(int l,int r,int c)
+\end{lstlisting}
+\textbf{参数、效果与返回：}把闭区间整体赋色 c；返回赋色前被覆盖的段，而不是新段。不会主动合并相邻同色段。
+
+\textbf{复杂度：}O((覆盖段数+1)*log\_64(n+1))。
+
+\TemplNote{extract 会分裂边界。不保证任意操作序列的高效性，成本仍取决于访问的段数。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/ordered-disjoint-interval-tree.cpp}}
+\textbf{有序区间集合}\par
 \TemplUsage{维护若干不相交的常值闭区间。适合区间覆盖以及依赖当前分段的统计。}
-\TemplApi{\begin{itemize}
-\item \texttt{ODT t; t.set()} 清空；\texttt{add(l,r,c)} 只插入一个区间，不会自动清除旧区间。
-\item 赋值应先 \texttt{erase(l,r)} 再 \texttt{add(l,r,c)}；erase 返回被覆盖的旧段。
-\item \texttt{extract(l,r)} 返回当前区间片段，每段字段为 l,r,c。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 ODT t; t.set(); t.add(1,5,0);
 t.erase(2,4); t.add(2,4,7);
 auto a=t.extract(2,3);
 assert(a.size()==1 && a[0].c==7);
 \end{lstlisting}
-\TemplNote{extract 会切开边界，可能增加内部段数；没有自动合并相邻同色段。一次操作可能遍历很多段，不保证对任意输入都是对数复杂度。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/priority-queue-two-stacks.cpp}}
-\textbf{把优先队列删除转为栈撤销}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+seg(int l,int r,int c); void ODT::set()
+\end{lstlisting}
+\textbf{参数、效果与返回：}seg 存闭区间及颜色，可读取 l/r/c；set 清空全部段，初始没有覆盖。
 
+\textbf{复杂度：}清空 O(段数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int l,int r,int c)
+\end{lstlisting}
+\textbf{参数、效果与返回：}插入一段 [l,r]；先用 erase 清掉重叠段。不会自动覆盖，也不会合并相邻同色段。
+
+\textbf{复杂度：}O(log 段数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+vector<seg> erase(int l,int r); vector<seg> extract(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}都按边界切段并按位置返回交集内各段；erase 删除这些段，extract 保留。没有覆盖的位置不返回。要求 l<=r。
+
+\textbf{复杂度：}O(log 段数+返回段数)。
+
+\TemplNote{extract 会切开边界，可能增加内部段数；没有自动合并相邻同色段。一次操作可能遍历很多段，不保证对任意输入都是对数复杂度。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/priority-queue-two-stacks.cpp}}
+\textbf{把优先队列删除转为栈撤销}\par
 \TemplUsage{适合只支持栈式加入/撤销，却需要删除最大权元素的离线或可撤销结构。模板只安排顺序，实际状态由调用方维护。}
-\TemplApi{\begin{itemize}
-\item \texttt{pq2stack<T> q; q.set()} 初始化；\texttt{push(x,w)} 登记元素及删除优先级。
-\item 每次查询前先 \texttt{prep()}，按返回顺序把元素加入外部状态。
-\item \texttt{pop()} 删除最大权元素，返回外部栈需要撤销的次数；之后再次 prep 会给出重新加入的元素。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 pq2stack<int> q; q.set(); vector<int> st;
 q.push(10,1); q.push(20,2);
@@ -353,132 +1271,381 @@ int k=q.pop(); while(k--)st.pop_back();
 for(int x:q.prep())st.push_back(x);
 assert(st.size()==1 && st[0]==10);
 \end{lstlisting}
-\TemplNote{不能把 pop 的返回值当成被删元素。每次重加入都需要重新产生撤销记录；同权元素删除顺序不固定。单次可能重排大量元素，收益依赖整段操作序列。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/rollback-int.cpp}}
-\textbf{记录并撤销变量修改}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+pq2stack<T>; void set(); void push(T x,int w)
+\end{lstlisting}
+\textbf{参数、效果与返回：}维护按 w 删除最大权元素的重排计划。set 清空计划；push 登记元素和权重，不会替你修改外部可撤销结构。
 
+\textbf{复杂度：}push 均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> prep()
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回外部结构尚未执行、需要按顺序加入的元素。每次查询答案前遍历 prep() 的结果执行加入，并保存撤销信息。连续 prep 且无修改返回空。
+
+\textbf{复杂度：}O(返回元素数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int pop()
+\end{lstlisting}
+\textbf{参数、效果与返回：}非空时删除最大 w 的元素，返回外部已执行操作中需要撤销的尾部个数；按该数量撤销，下一次 prep 重放剩余元素。返回值不是元素，也不是权重。
+
+\textbf{复杂度：}重排代价与当前元素和重建段长相关。
+
+\TemplNote{不能把 pop 的返回值当成被删元素。每次重加入都需要重新产生撤销记录；同权元素删除顺序不固定。单次可能重排大量元素，收益依赖整段操作序列。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/rollback-int.cpp}}
+\textbf{记录并撤销变量修改}\par
 \TemplUsage{保存变量的地址和旧值，用版本号撤销一段修改。每次保存和撤销一次记录都是 O(1)。}
-\TemplApi{\begin{itemize}
-\item 修改前先 \texttt{save(x)}。
-\item \texttt{version()} 返回当前记录数，\texttt{roll\_back(t)} 逆序恢复到该记录数。
-\item \texttt{set()} 仅丢弃历史，不恢复变量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 ::set(); int x=7;
 auto t=version(); save(x); x=20;
 roll_back(t); assert(x==7);
 \end{lstlisting}
-\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/rollback-int64.cpp}}
-\textbf{记录并撤销变量修改}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); int version()
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 丢弃保存记录，不会恢复变量；version 返回记录条数，用 int t=version() 保存检查点。
 
+\textbf{复杂度：}set O(记录数)，version O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void save(int &x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}记录变量当前地址和值，之后自行修改 x。重复 save 同一地址合法；变量必须一直存活且地址稳定，不能跨 vector 扩容或对象销毁。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void roll_back(int t)
+\end{lstlisting}
+\textbf{参数、效果与返回：}按逆序恢复到版本 t，要求 0<=t<=version()；恢复后记录被移除。两个保存器选一个，不可同时粘贴。
+
+\textbf{复杂度：}O(version()-t)。
+
+\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/rollback-int64.cpp}}
+\textbf{记录并撤销变量修改}\par
 \TemplUsage{保存变量的地址和旧值，用版本号撤销一段修改。每次保存和撤销一次记录都是 O(1)。}
-\TemplApi{\begin{itemize}
-\item 修改前先 \texttt{save(x)}。
-\item \texttt{version()} 返回当前记录数，\texttt{roll\_back(t)} 逆序恢复到该记录数。
-\item \texttt{set()} 仅丢弃历史，不恢复变量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 ::set(); ll x=7;
 auto t=version(); save(x); x=20;
 roll_back(t); assert(x==7);
 \end{lstlisting}
-\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/dynamic.cpp}}
-\textbf{大值域稀疏单点统计}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); int version()
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 丢弃保存记录，不会恢复变量；version 返回记录条数，用 int t=version() 保存检查点。
 
+\textbf{复杂度：}set O(记录数)，version O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void save(int 或 ll &x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}记录变量当前地址和值，之后自行修改 x。重复 save 同一地址合法；变量必须一直存活且地址稳定，不能跨 vector 扩容或对象销毁。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void roll_back(int t)
+\end{lstlisting}
+\textbf{参数、效果与返回：}按逆序恢复到版本 t，要求 0<=t<=version()；恢复后记录被移除。两个保存器选一个，不可同时粘贴。
+
+\textbf{复杂度：}O(version()-t)。
+
+\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/dynamic.cpp}}
+\textbf{大值域稀疏单点统计}\par
 \TemplUsage{在整数键 -10\textasciicircum{}9..10\textasciicircum{}9 上做单点加、区间和；节点带键交换以压缩空间。单次 O(log V)。}
-\TemplApi{\begin{itemize}
-\item \texttt{dynamic\_segt t; t.set()} 清空；\texttt{set(m)} 可预留节点。
-\item \texttt{add(x,v)} 给键 x 的权值加 v；\texttt{ask(l,r)} 求键区间权值和。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 dynamic_segt t; t.set();
 t.add(-100,3); t.add(200,4);
 assert(t.ask(-100,0)==3);
 \end{lstlisting}
-\TemplNote{空键权值为零。与主席树不同：不保留历史版本，也不支持复用旧根。文件有全局对象 T。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/iterative-prefix.cpp}}
-\textbf{非递归线段树框架}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(int m=0)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空并预留 m 个节点的容量，不改变固定域 [-1e9,1e9]；m 不是数组长度，也不是值域。
 
+\textbf{复杂度：}O(旧节点数)，预留空间 O(m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int p,ll v); ll ask(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}在 p 点加 v；查询闭区间和，要求端点位于固定域。未出现位置值为零；每个不同插入位置只占一个节点。
+
+\textbf{复杂度：}O(log 值域)，空间 O(不同位置数)。
+
+\TemplNote{空键权值为零。与主席树不同：不保留历史版本，也不支持复用旧根。文件有全局对象 T。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/iterative-prefix.cpp}}
+\textbf{非递归线段树框架}\par
 \TemplUsage{单点赋值和闭区间聚合，当前 info 维护区间和与最大前缀和（允许空前缀）。单次 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{zkw\_segt t; t.setN(n)} 下标为 0..n-1。
-\item \texttt{upd(i,a,b)} 设置该叶 info 的 s=a、mx=b。
-\item 合并两段时 s=L.s+R.s，mx=max(L.mx,L.s+R.mx)；ask 返回最终 mx。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 zkw_segt t; t.setN(3);
 t.upd(0,-4,0); t.upd(1,9,9); t.upd(2,-2,0);
 assert(t.ask(0,2)==5);
 \end{lstlisting}
-\TemplNote{普通数组的叶子设为 s=a[i]、mx=max(0,a[i])。若 s 全为零且 mx 非负，也可用于区间最大值。其他统计应重写 info 的合并和单位元；合并必须满足结合律。下标从 0 开始。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/lazy.cpp}}
-\textbf{通用线段树（带懒标记）}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}建立 0..n-1 的全零序列。
 
+\textbf{复杂度：}O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll s,ll mx)
+\end{lstlisting}
+\textbf{参数、效果与返回：}赋值叶子信息，总和 s、最大前缀 mx。普通单元素用 upd(i,v,max(0ll,v))，允许空前缀。也可把一个叶子当作已汇总的块。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 0 起闭区间 [l,r] 的最大前缀和；要求有效非空区间。不会返回总和或最大子段和。
+
+\textbf{复杂度：}O(log n)。
+
+\TemplNote{普通数组的叶子设为 s=a[i]、mx=max(0,a[i])。若 s 全为零且 mx 非负，也可用于区间最大值。其他统计应重写 info 的合并和单位元；合并必须满足结合律。下标从 0 开始。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/lazy.cpp}}
+\textbf{通用线段树（带懒标记）}\par
 \TemplUsage{默认维护区间和，下标 1..n，初值全零。递归部分只处理 info，按题目改写信息与标记的运算。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt t; t.setN(n)} 初始化。
-\item \texttt{upd(i,v)} 单点赋值；\texttt{ask(l,r)} 区间和，\texttt{ask(i)} 单点值。
-\item \texttt{add(i,v)} 单点加，\texttt{add(l,r,v)} 区间加。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 segt t; t.setN(3); t.upd(2,5);
 t.add(1,2,2); assert(t.ask(1,3)==9);
 \end{lstlisting}
-\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。 lazt += lazt 的顺序是旧标记后接新标记；info += lazt 负责作用标记，区间长度等元数据由 info 保存。不能仅因支持单点加，就直接认为相同统计能支持区间加。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/merge.cpp}}
-\textbf{可合并的多棵线段树}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void set(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；set(L,R) 建非空闭区间，全部叶子初值 0；setN(n)=set(1,n)。这里 n>=1。
 
+\textbf{复杂度：}O(R-L+1) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll v); void add(int i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}upd 把第 i 项赋成 v；add 给它加 v。i 必须在当前域中。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r); ll ask(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效非空闭区间的和；单参数重载返回该点值。查询不会修改逻辑上的数组内容。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int l,int r,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}给闭区间各项加 v；普通用法保证区间有效且非空。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+int find_first(ll x); int find_last(ll x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}所有叶子非负且 0<x<=总和。find\_first 找从左累加首次达到 x 的位置；find\_last 从右累加首次达到 x 的位置。不存在答案会触发断言，没有失败哨兵。前两份通用结构由 USE\_COMPARE 控制是否编译。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+info / lazt
+\end{lstlisting}
+\textbf{参数、效果与返回：}改题时修改 info 的空值、叶子构造和合并，保持结合律；再改公开 upd/add/ask 的参数转换与答案提取。懒标记类型实际名为 lazt，须同步修改标记复合与其作用于 info 的逻辑。二分比较也须与新信息的单调性一致，不能只换 s 的含义。
+
+\textbf{复杂度：}每次合并/标记按 O(1) 设计。
+
+\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。 lazt += lazt 的顺序是旧标记后接新标记；info += lazt 负责作用标记，区间长度等元数据由 info 保存。不能仅因支持单点加，就直接认为相同统计能支持区间加。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/merge.cpp}}
+\textbf{可合并的多棵线段树}\par
 \TemplUsage{维护多棵互不共享节点的树，值域 0..n。当前权值设计用于统计所有键 y>=x 的 (y-x)*权值。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt\_merge t; t.setN(n)} 初始化池，外部根变量设为 0。
-\item \texttt{add(rt,y,w)} 给键 y 加权 w，根按引用更新。
-\item \texttt{ask(rt,x)} 返回 sum\_\{y>=x\}(y-x)*w[y]。
-\item \texttt{merge(a,b)} 把 b 合入 a 并把 b 置零。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 segt_merge t; t.setN(10); int a=0,b=0;
 t.add(a,5,2); t.add(b,8,1); t.merge(a,b);
 assert(b==0 && t.ask(a,3)==9);
 \end{lstlisting}
-\TemplNote{这是破坏性合并，不是可持久化。合并后不能再使用旧根副本。单点操作 O(log V)，合并成本取决于重叠节点数；若想查询普通权值和，要改 info/query 的对外接口。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/point.cpp}}
-\textbf{通用线段树（不带懒标记）}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空节点池，值域为 0..n，包含 n。调用者为每棵树保存 int rt=0；所有旧根失效。
 
+\textbf{复杂度：}O(旧节点数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int &rt,int x,int o)
+\end{lstlisting}
+\textbf{参数、效果与返回：}在 x 处增加权重/次数 o，并通过引用更新根。可用负 o 减少；内部维护权重和与 x*权重和。
+
+\textbf{复杂度：}O(log(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int &rt,int x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 sum\_\{v>=x\}(v-x)*cnt[v]，不是区间和。空树返回 0；x 在 0..n。
+
+\textbf{复杂度：}O(log(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void merge(int &x,int &y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}把 y 合入 x，逐位置权重相加，令 y=0；两个根须独立，不能共享节点，也不能传同一个根变量。合并后只用 x。
+
+\textbf{复杂度：}O(访问的重叠节点数+1)。
+
+\TemplNote{这是破坏性合并，不是可持久化。合并后不能再使用旧根副本。单点操作 O(log V)，合并成本取决于重叠节点数；若想查询普通权值和，要改 info/query 的对外接口。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/point.cpp}}
+\textbf{通用线段树（不带懒标记）}\par
 \TemplUsage{默认维护区间和，下标 1..n，初值全零。递归部分只处理 info，按题目改写信息与标记的运算。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt t; t.setN(n)} 初始化。
-\item \texttt{upd(i,v)} 单点赋值；\texttt{ask(l,r)} 区间和，\texttt{ask(i)} 单点值。
-\item \texttt{add(i,v)} 单点加，不支持区间加。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 segt t; t.setN(3); t.upd(2,5);
 t.add(2,2); assert(t.ask(1,3)==7);
 \end{lstlisting}
-\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void set(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；set(L,R) 建非空闭区间，全部叶子初值 0；setN(n)=set(1,n)。这里 n>=1。
 
+\textbf{复杂度：}O(R-L+1) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll v); void add(int i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}upd 把第 i 项赋成 v；add 给它加 v。i 必须在当前域中。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r); ll ask(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效非空闭区间的和；单参数重载返回该点值。查询不会修改逻辑上的数组内容。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int find_first(ll x); int find_last(ll x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}所有叶子非负且 0<x<=总和。find\_first 找从左累加首次达到 x 的位置；find\_last 从右累加首次达到 x 的位置。不存在答案会触发断言，没有失败哨兵。前两份通用结构由 USE\_COMPARE 控制是否编译。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+info
+\end{lstlisting}
+\textbf{参数、效果与返回：}改题时修改 info 的空值、叶子构造和合并，保持结合律；再改公开 upd/add/ask 的参数转换与答案提取。二分比较也须与新信息的单调性一致，不能只换 s 的含义。
+
+\textbf{复杂度：}每次合并/标记按 O(1) 设计。
+
+\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。}
+\end{minipage}\par\vspace{0.4em}
+\Needspace{8\baselineskip}
 \textbf{改写示例：单点加、区间最大子段和（非空）}
 删除顶部的 \texttt{\#define USE\_COMPARE}，把 info 替换为下面这段；区间 ask 的返回字段从 s 改为 mx，其他部分不改。len=0 的参数表示单点增量，len=1 表示叶子；合并的左右区间均非空。
 \begin{lstlisting}
@@ -496,111 +1663,252 @@ struct info{
 	inline info operator +(const info &y)const{return info(*this)+=y;}
 };
 \end{lstlisting}
-\end{minipage}\par\vspace{1.2em}
-\noindent\begin{minipage}{\textwidth}
+\clearpage
 \subsection{\texttt{data-structure/segment-tree/range-add-max.cpp}}
-\textbf{区间加、区间最大值}
-
+\textbf{区间加、区间最大值}\par
 \TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 MaxAdd_segt t; t.setN(3);
 t.upd(2,5); t.add(1,2,2);
 assert(t.ask(1,3)==7);
 \end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/range-add-min.cpp}}
-\textbf{区间加、区间最小值}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void set(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；set(L,R) 建非空闭区间，全部叶子初值 0；setN(n)=set(1,n)。这里 n>=1。
 
+\textbf{复杂度：}O(R-L+1) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll v); void add(int i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}upd 把第 i 项赋成 v；add 给它加 v。i 必须在当前域中。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r); ll ask(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效非空闭区间的最大值；单参数重载返回该点值。查询不会修改逻辑上的数组内容。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int l,int r,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}给闭区间各项加 v；普通用法保证区间有效且非空。
+
+\textbf{复杂度：}O(log n)。
+
+\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/range-add-min.cpp}}
+\textbf{区间加、区间最小值}\par
 \TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 MinAdd_segt t; t.setN(3);
 t.upd(2,5); t.add(1,2,2);
 assert(t.ask(1,3)==0);
 \end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/segment-tree/range-add-sum.cpp}}
-\textbf{区间加、区间和}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void set(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；set(L,R) 建非空闭区间，全部叶子初值 0；setN(n)=set(1,n)。这里 n>=1。
 
+\textbf{复杂度：}O(R-L+1) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll v); void add(int i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}upd 把第 i 项赋成 v；add 给它加 v。i 必须在当前域中。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r); ll ask(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效非空闭区间的最小值；单参数重载返回该点值。查询不会修改逻辑上的数组内容。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int l,int r,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}给闭区间各项加 v；普通用法保证区间有效且非空。
+
+\textbf{复杂度：}O(log n)。
+
+\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/segment-tree/range-add-sum.cpp}}
+\textbf{区间加、区间和}\par
 \TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\item \texttt{find\_first(k)} 从左累计达到 k 的位置；\texttt{find\_last(k)} 从右累计达到 k 的位置。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 AddSum_segt t; t.setN(3);
 t.upd(2,5); t.add(1,2,2);
 assert(t.ask(1,3)==9);
 \end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。区间长度由递归参数计算，不存入节点；ask 和二分携带祖先标记，不下传、不改树。使用二分查询时所有点值必须非负，且 1<=k<=总和；k 参数为 ll。三个类名不同，可以组合粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{data-structure/sparse-table.cpp}}
-\textbf{静态区间最值}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void set(int L,int R); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；set(L,R) 建非空闭区间，全部叶子初值 0；setN(n)=set(1,n)。这里 n>=1。
 
+\textbf{复杂度：}O(R-L+1) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void upd(int i,ll v); void add(int i,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}upd 把第 i 项赋成 v；add 给它加 v。i 必须在当前域中。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll ask(int l,int r); ll ask(int i)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回有效非空闭区间的和；单参数重载返回该点值。查询不会修改逻辑上的数组内容。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int l,int r,ll v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}给闭区间各项加 v；普通用法保证区间有效且非空。
+
+\textbf{复杂度：}O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+int find_first(ll x); int find_last(ll x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}所有叶子非负且 0<x<=总和。find\_first 找从左累加首次达到 x 的位置；find\_last 从右累加首次达到 x 的位置。不存在答案会触发断言，没有失败哨兵。
+
+\textbf{复杂度：}O(log n)。
+
+\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。区间长度由递归参数计算，不存入节点；ask 和二分携带祖先标记，不下传、不改树。使用二分查询时所有点值必须非负，且 1<=k<=总和；k 参数为 ll。三个类名不同，可以组合粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{data-structure/sparse-table.cpp}}
+\textbf{静态区间最值}\par
 \TemplUsage{数组不修改、需要多次查询闭区间最大值时使用。预处理 O(n log n)，查询 O(1)，空间 O(n log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{ST\_table t; t.setN(n)} 分配下标 1..n，要求 n>=1。
-\item 填入 \texttt{t.a[0][i]} 后调用 \texttt{t.build()}。
-\item \texttt{t.ask(l,r)} 返回最大值；要维护最小值，先把 \texttt{chk} 改成 \texttt{min}。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 ST_table t; t.setN(3);
 t.a[0][1]=4; t.a[0][2]=1; t.a[0][3]=8;
 t.build(); assert(t.ask(1,2)==4);
 \end{lstlisting}
-\TemplNote{修改原数组后必须重新 build。文件末尾已有全局对象 \texttt{S}，可以直接用它，也可以另建局部对象。}
-\end{minipage}\par\vspace{1.2em}
-\section{图论 / graph}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/block-cut-tree.cpp}}
-\textbf{点双连通分量与圆方树}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); a[0][i]; void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}n>=1，先 setN，再填写 a[0][1..n]，最后 build。再次修改底层值后须重建。自带全局对象 S。
 
+\textbf{复杂度：}O(n log n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int chk(const int &x,const int &y); int ask(int l,int r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}chk 默认 max，可改成 min 等幂等合并。ask 返回 1 起有效闭区间答案；普通求和不满足幂等条件，不能直接换成加法。
+
+\textbf{复杂度：}ask O(1)。
+
+\TemplNote{修改原数组后必须重新 build。文件末尾已有全局对象 \texttt{S}，可以直接用它，也可以另建局部对象。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{图论 / graph}
+\subsection{\texttt{graph/block-cut-tree.cpp}}
+\textbf{点双连通分量与圆方树}\par
 \TemplUsage{无向图的点双分解，支持非连通图和重边，不支持自环。构建时间 O(n+m)。}
-\TemplApi{\begin{itemize}
-\item \texttt{block\_cut g; g.setN(n)} 后 add\_edge，再 build。
-\item 原点仍为 1..n，方点为 n+1..scc，tr 是圆方森林邻接表。
-\item 第 k 个方点 n+k 的原图边存在 ec[k] 中。ff、dep 是森林上的父亲和深度。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 block_cut g; g.setN(3);
 g.add_edge(1,2); g.add_edge(2,3); g.build();
 assert(g.scc==5 && g.tr[2].size()==2);
 \end{lstlisting}
-\TemplNote{scc 是最终最大节点编号，不是分量个数，方点数应为 scc-n。割点可以属于多个点双，不能像 SCC 一样给每个原点分配唯一块号。递归深度可能达到 O(n)。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/chordal.cpp}}
-\textbf{弦图判定与完美消除序列}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空并建 1..n 无向图；逐条加边，自环禁止，允许重边。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}重建整个圆方森林，支持原图不连通，可重复调用；不需要自行调用 tarjan/dfs。
+
+\textbf{复杂度：}O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+tr; ec; scc; ff; dep
+\end{lstlisting}
+\textbf{参数、效果与返回：}圆点为 1..n，方点为 n+1..scc。tr 是森林邻接表；ec[k] 为第 k 个点双的原图边，对应方点 n+k。孤立点仍是单独圆点。ff/dep 是森林父亲及深度；点双数量=scc-n。
+
+\textbf{复杂度：}读取 O(1)，遍历 O(n+m)。
+
+\TemplNote{scc 是最终最大节点编号，不是分量个数，方点数应为 scc-n。割点可以属于多个点双，不能像 SCC 一样给每个原点分配唯一块号。当前构建使用显式栈；后续对圆方森林的遍历仍须考虑长链。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/chordal.cpp}}
+\textbf{弦图判定与完美消除序列}\par
 \TemplUsage{判断无向图中是否不存在长度至少为 4 的无弦诱导环。如果是弦图，返回一个完美消除序列。}
-\TemplApi{\begin{itemize}
-\item \texttt{Chordal g; g.setN(n)}，点下标 1..n；\texttt{g.add\_edge(u,v)} 加无向边。自环忽略，重边在求解时去重。
-\item \texttt{bool ok=g.solve()}。成功时 \texttt{peo[0..n-1]} 按从前到后给出消除顺序，\texttt{rk[u]} 是 u 在序列中的 1 下标位置。
-\item 依次消除 peo 中的点时，每个点尚未消除的邻居构成团。不要把 MCS 的选点顺序直接作为消除顺序，两者相反。
-\item 失败时清空 peo、rk。空图和非连通图均支持；可以继续加边再求解。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Chordal g; g.setN(4);
 g.add_edge(1,2); g.add_edge(2,3);
@@ -610,38 +1918,75 @@ g.add_edge(1,3); assert(g.solve());
 assert(g.peo.size()==4);
 for(int i=0;i<4;i++)assert(g.rk[g.peo[i]]==i+1);
 \end{lstlisting}
-\TemplNote{时间、空间均为 $O(n+m)$，m 为输入边数。MCS 用桶维护已选邻居数；验证时把结点按最靠前的后继邻居分组，统一检查后继邻居的包含关系，避免对每个邻域两两枚举。返回 false 时只给出判定，不构造无弦环证据。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/dijkstra.cpp}}
-\textbf{非负权单源最短路}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空、建立 1..n 无向图、加边。自环忽略，重复边由 solve 归并。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool solve(); peo; rk
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回是否弦图；成功 peo[0..n-1] 为完美消除序列，rk[u] 是 1 起位置，满足 peo[rk[u]-1]=u。失败清空两数组；空图成功。
+
+\textbf{复杂度：}O(n+m)。
+
+\TemplNote{时间、空间均为 $O(n+m)$，m 为输入边数。MCS 用桶维护已选邻居数；验证时把结点按最靠前的后继邻居分组，统一检查后继邻居的包含关系，避免对每个邻域两两枚举。返回 false 时只给出判定，不构造无弦环证据。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/dijkstra.cpp}}
+\textbf{非负权单源最短路}\par
 \TemplUsage{堆优化 Dijkstra，有向图，复杂度 O((n+m) log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{graph\_SSSP g; g.setN(n); g.setS(s)} 设置图和源点。
-\item \texttt{add\_edge(u,v,w)} 要求 w>=0；无向图要加两个方向。
-\item \texttt{SSSP()} 返回长度 n+1 的距离数组，0 号不用，不可达为 10\textasciicircum{}18。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 graph_SSSP g; g.setN(3); g.setS(1);
 g.add_edge(1,2,4); g.add_edge(2,3,6);
 auto d=g.SSSP(); assert(d[3]==10);
 \end{lstlisting}
-\TemplNote{有限最短路必须小于不可达哨兵 10\textasciicircum{}18，边权相加不能溢出。不支持负权；不会返回具体路径。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/directed-mst.cpp}}
-\textbf{指定根的最小树形图}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); int new_node(); void setS(int s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}setN 清图并取消源点；new\_node 保留图并返回新点编号；setS 指定已有源点。
 
+\textbf{复杂度：}setN O(n)，加点均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add_edge(int u,int v,ll w)
+\end{lstlisting}
+\textbf{参数、效果与返回：}加有向边 u->v，w>=0；无向边需调用两次。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+vector<ll> SSSP()
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 d[0..n]，d[s]=0，1..n 为顶点答案，不可达为 1e18；所有有限距离必须小于 1e18。不提供路径恢复。
+
+\textbf{复杂度：}O((n+m) log(n+m+1))，空间 O(n+m)。
+
+\TemplNote{有限最短路必须小于不可达哨兵 10\textasciicircum{}18，边权相加不能溢出。不支持负权；不会返回具体路径。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/directed-mst.cpp}}
+\textbf{指定根的最小树形图}\par
 \TemplUsage{在带权有向图中，以 S 为根，选取 n-1 条边，使 S 能沿选边到达每个点，且总权最小。每个非根点恰有一条入边。}
-\TemplApi{\begin{itemize}
-\item \texttt{Directed\_MST g; g.setN(n)}；\texttt{id=g.add\_edge(u,v,w)} 加入 u 指向 v 的边，w 为 ll，返回从 1 开始的边编号。
-\item \texttt{auto a=g.solve(S)} 返回 \texttt{result}。\texttt{a.ok=false} 表示不存在以 S 为根的生成树形图，此时 id 为空。
-\item 有解时 \texttt{a.cost} 为总权，\texttt{a.id[v]} 为 v 的入边编号，\texttt{a.id[S]=0}；遍历所有非根点即可得到实际边集，父亲是 \texttt{g.e[a.id[v]].u}。
-\item 点和 id 数组均为 1 下标。n=1 时有解、总权为 0；要求 $1\le S\le n$。允许负权、重边、自环；同端点只保留最小权，平权保留较早加入的边。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Directed_MST g; g.setN(4);
 g.add_edge(1,2,5); g.add_edge(1,3,8);
@@ -652,19 +1997,43 @@ assert(a.ok && a.cost==4 && a.id[1]==0);
 assert(a.id[2]==1 && a.id[3]==3 && a.id[4]==5);
 assert(!g.solve(4).ok);
 \end{lstlisting}
-\TemplNote{设 n 为点数、m 为输入边数，时间 $O((n+m)\log(n+1))$，空间 $O(n+m)$；任意显式图至少需要 $O(m)$ 读边，只有稀疏图才能写成 n 乘多对数。使用左偏堆、可回退并查集缩环并恢复选边。中间权值和 cost 都是 \texttt{\_\_int128}；输出总权时先抄 \texttt{basic/fast-io.cpp}，不要直接强转 ll。solve 不修改原图，可更换根重新求解。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/edge-biconnected.cpp}}
-\textbf{边双连通分量及桥森林}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); int add_edge(int u,int v,ll w)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空或建 1..n 有向图；加边返回 1 起边 id，可有负权、重边和自环。目标是从根向外到达所有点的树形图。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+result solve(int S) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 ok、cost、id。ok=false 表示无解；成功 cost 是 \_\_int128 总权，id[v] 是 v 的入边 id，id[S]=0。不会修改原图，可换根求解。
+
+\textbf{复杂度：}O((n+m) log(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+e; result::id
+\end{lstlisting}
+\textbf{参数、效果与返回：}e[id] 读取该边 u/v/w；通过结果入边编号可恢复树。无解时不要读取 cost/id 作为答案。
+
+\textbf{复杂度：}O(n) 恢复。
+
+\TemplNote{设 n 为点数、m 为输入边数，时间 $O((n+m)\log(n+1))$，空间 $O(n+m)$；任意显式图至少需要 $O(m)$ 读边，只有稀疏图才能写成 n 乘多对数。使用左偏堆、可回退并查集缩环并恢复选边。中间权值和 cost 都是 \texttt{\_\_int128}；输出总权时先抄 \texttt{basic/fast-io.cpp}，不要直接强转 ll。solve 不修改原图，可更换根重新求解。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/edge-biconnected.cpp}}
+\textbf{边双连通分量及桥森林}\par
 \TemplUsage{无向图删除桥后缩点，支持重边和非连通图。时间 O(n+m)。}
-\TemplApi{\begin{itemize}
-\item \texttt{bi\_edge g; g.setN(n)} 后加边。
-\item \texttt{auto e=g.build()} 返回连接不同分量的边表；每端是分量编号。
-\item \texttt{bel[u]} 表示点所属分量，分量编号 1..scnt。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 bi_edge g; g.setN(3);
 g.add_edge(1,2); g.add_edge(1,2); g.add_edge(2,3);
@@ -672,78 +2041,232 @@ auto e=g.build();
 assert(g.bel[1]==g.bel[2] && g.bel[2]!=g.bel[3]);
 assert(e.size()==1);
 \end{lstlisting}
-\TemplNote{桥森林的顶点是分量，不是原图点。与圆方树分别处理边双、点双，不能互换。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/flow/max-flow-hlpp.cpp}}
-\textbf{HLPP 最大流}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空并建 1..n 无向图，允许不连通、自环、重边；每条无向边只调用一次。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<array<int,2>> build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}分解边双，返回缩点森林边 \{分量编号,分量编号\}，不是原点端点，也不是边 id。可重复调用。
+
+\textbf{复杂度：}O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+bel; scnt
+\end{lstlisting}
+\textbf{参数、效果与返回：}bel[u] 为顶点 u 所属边双编号 1..scnt；原边两端 bel 不同就是桥。build 后使用。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{桥森林的顶点是分量，不是原图点。与圆方树分别处理边双、点双，不能互换。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/flow/max-flow-hlpp.cpp}}
+\textbf{HLPP 最大流}\par
 \TemplUsage{有向容量图的最大流。使用 HLPP：优先处理最高标号的活跃点，配合反向 BFS 全局重标号、当前弧和 gap 剪枝。邻接边编号连续存储，整个算法不使用递归。不能到达汇点的多余预流会退回源点，因此返回的边流量满足流量守恒。}
-\TemplApi{\begin{itemize}
-\item \texttt{Flow\_Graph g; g.setN(n); g.setST(s,t)} 初始化，点编号 1..n，源汇必须不同。
-\item \texttt{id=g.add\_edge(u,v,cap)} 只添加一条有向边，自动生成反向残量边。
-\item \texttt{max\_flow()} 返回累计最大流值；\texttt{edge\_flow(id)} 查看返回的正向边上的流量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Flow_Graph g; g.setN(3); g.setST(1,3);
 int id=g.add_edge(1,2,5); g.add_edge(2,3,3);
 assert(g.max_flow()==3 && g.edge_flow(id)==3);
 assert(g.max_flow()==3);
 \end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空图、源汇及答案；setN 再建立 1..n。多个测试用例必须重置。
+
+\textbf{复杂度：}O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void setST(int S,int T); int new_node()
+\end{lstlisting}
+\textbf{参数、效果与返回：}S、T 为不同正编号；setST 必要时扩展点数。new\_node 保留旧边，返回新增点编号。改变源汇会恢复原容量；源汇不变可继续增广。
+
+\textbf{复杂度：}setST 最坏 O(n+m)，加点均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int add_edge(int u,int v,ll cap)
+\end{lstlisting}
+\textbf{参数、效果与返回：}加有向容量边，cap>=0，返回正向边 id，保存用于 edge\_flow。允许重边/自环；无向独立容量须加两次。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll edge_flow(int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}查询最近求解后该原边的流量；参数必须用 add\_edge 的返回值。图修改后先重新求解再读最终方案。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+ll max_flow()
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回总最大流，不是本次新增流量。未修改图时重复调用返回缓存；加边后从已有可行流继续求解。容量及总流量须能存入 ll。
+
+\textbf{复杂度：}推送重标号；保守最坏 O(n\textasciicircum{}2*m)，空间 O(n+m)。
+
 \TemplNote{重复求流返回总流量，不是新增流量；添加边后继续增广。setN 清空图，new\_node 保留旧图添加点。无向容量边需要根据建模显式加边。每条边容量和总流量须能用 ll 表示，预流余量使用 \texttt{\_\_int128}，源点出边容量之和可以超过 ll。更换源汇后从原始容量重算；设置相同源汇保留已有流。不同图上不保证比 Dinic 更快。}
-\end{minipage}\par\vspace{1.2em}
-\noindent\begin{minipage}{\textwidth}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{graph/flow/min-cost-flow-isap.cpp}}
-\textbf{最小费用最大流：Dijkstra + ISAP 备份}
-
+\textbf{最小费用最大流：Dijkstra + ISAP 备份}\par
 \TemplUsage{作为网络单纯形版的替代实现。初始 SPFA 求势能，每轮 Dijkstra 求最短路，再在零约化费用子图上用非递归 ISAP 批量增广，包含反向 BFS、当前弧和 gap 剪枝。两份模板均使用 \texttt{Cost\_Flow\_Graph}，接口相同，选一份粘贴即可。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n); setST(s,t)} 初始化，点编号 1..n；\texttt{set()} 清空。
-\item \texttt{add\_edge(u,v,cap,cost)} 添加有向边并返回正向边编号。
-\item \texttt{min\_cost\_flow()} 返回总流量、总费用；\texttt{edge\_flow(id)} 查询边流量。
-\item \texttt{new\_node()} 保留已有边并新增一个点。编辑图后再次求解会从原始容量重算。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Cost_Flow_Graph g; g.setN(3); g.setST(1,3);
 int id=g.add_edge(1,2,2,-1); g.add_edge(2,3,2,3);
 auto [f,c]=g.min_cost_flow();
 assert(f==2 && c==4 && g.edge_flow(id)==2);
 \end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空图、源汇及答案；setN 再建立 1..n。多个测试用例必须重置。
+
+\textbf{复杂度：}O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void setST(int S,int T); int new_node()
+\end{lstlisting}
+\textbf{参数、效果与返回：}S、T 为不同正编号；setST 必要时扩展点数。new\_node 保留旧边，返回新增点编号。修改源汇后下次从头求解。
+
+\textbf{复杂度：}setST 最坏 O(n+m)，加点均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int add_edge(int u,int v,ll cap,ll cost)
+\end{lstlisting}
+\textbf{参数、效果与返回：}加有向容量边，cap>=0，返回正向边 id，保存用于 edge\_flow。允许重边/自环；无向独立容量须加两次。费用可负但不能 LLONG\_MIN，要求输入无负费用环。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll edge_flow(int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}查询最近求解后该原边的流量；参数必须用 add\_edge 的返回值。图修改后先重新求解再读最终方案。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+pair<ll,ll> min_cost_flow()
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 \{最大流,其最小总费用\}；加边、加点或设置源汇后，下次从原容量重新计算。无改动重复调用返回缓存。流量/答案须在 ll 范围内。
+
+\textbf{复杂度：}首次势能最坏 O(n*m)；每个费用阶段保守 O(n\textasciicircum{}2*m+(n+m)log(n+m+2))。
+
 \TemplNote{允许负费用边，但整个输入图不能有负费用环。容量、总流量及增广过程中的总费用须能用 ll 表示；距离使用 \texttt{\_\_int128}。初始 SPFA 最坏 $O(nm)$；设最短路费用阶段数为 $R$，每阶段保守上界为 $O(n^2m+(n+m)\log(n+m+2))$，总耗时还需乘阶段数并加初始化开销，不是总计 $O(nm)$。空间 $O(n+m)$。}
-\end{minipage}\par\vspace{1.2em}
-\noindent\begin{minipage}{\textwidth}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{graph/flow/min-cost-flow-simplex.cpp}}
-\textbf{最小费用最大流}
-
+\textbf{最小费用最大流}\par
 \TemplUsage{先求最大可行流量，再在最大流中最小化费用。使用网络单纯形：先建立残量生成森林，再通过环增广和生成树换基调整流量，复用未受换基影响的势能缓存。直接在原图残量边上计算，不设强制重启阈值，不使用递归。人工边费用取原图边权绝对值之和加一；证明势能运算不会溢出时使用 ll，否则使用 \texttt{\_\_int128}。}
-\TemplApi{\begin{itemize}
-\item \texttt{Cost\_Flow\_Graph g; g.setN(n); g.setST(s,t)} 初始化。
-\item \texttt{add\_edge(u,v,cap,cost)} 添加有向边并返回正向边编号。
-\item \texttt{min\_cost\_flow()} 返回 \{总流量,总费用\}；\texttt{edge\_flow(id)} 查询流量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Cost_Flow_Graph g; g.setN(3); g.setST(1,3);
 int id=g.add_edge(1,2,2,-1); g.add_edge(2,3,2,3);
 auto [f,c]=g.min_cost_flow();
 assert(f==2 && c==4 && g.edge_flow(id)==2);
 \end{lstlisting}
-\TemplNote{允许负费用边，但输入图不能有负费用环。没有指定流量参数；要限制流量，增加一个容量为上限的新源边。更改图后从原始容量重算，不改图返回缓存。容量、总流量和费用答案须能用 ll 表示；只汇总原图边费用，避免人工边的大费用参与乘法累加。每条边流量均可查询。运行时间取决于换基次数，退化数据仍可能较慢；空间为 $O(n+m)$。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/matching/bipartite.cpp}}
-\textbf{二分图最大匹配}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空图、源汇及答案；setN 再建立 1..n。多个测试用例必须重置。
 
+\textbf{复杂度：}O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void setST(int S,int T); int new_node()
+\end{lstlisting}
+\textbf{参数、效果与返回：}S、T 为不同正编号；setST 必要时扩展点数。new\_node 保留旧边，返回新增点编号。修改源汇后下次从头求解。
+
+\textbf{复杂度：}setST 最坏 O(n+m)，加点均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int add_edge(int u,int v,ll cap,ll cost)
+\end{lstlisting}
+\textbf{参数、效果与返回：}加有向容量边，cap>=0，返回正向边 id，保存用于 edge\_flow。允许重边/自环；无向独立容量须加两次。费用可负但不能 LLONG\_MIN，要求输入无负费用环。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll edge_flow(int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}查询最近求解后该原边的流量；参数必须用 add\_edge 的返回值。图修改后先重新求解再读最终方案。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+pair<ll,ll> min_cost_flow()
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 \{最大流,其最小总费用\}；加边、加点或设置源汇后，下次从原容量重新计算。无改动重复调用返回缓存。流量/答案须在 ll 范围内。
+
+\textbf{复杂度：}网络单纯形，最坏不保证多项式时间；空间 O(n+m)。
+
+\TemplNote{允许负费用边，但输入图不能有负费用环。没有指定流量参数；要限制流量，增加一个容量为上限的新源边。更改图后从原始容量重算，不改图返回缓存。容量、总流量和费用答案须能用 ll 表示；只汇总原图边费用，避免人工边的大费用参与乘法累加。每条边流量均可查询。运行时间取决于换基次数，退化数据仍可能较慢；空间为 $O(n+m)$。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/matching/bipartite.cpp}}
+\textbf{二分图最大匹配}\par
 \TemplUsage{给定左右两部，多次加边后求最大基数匹配，返回匹配的点对。先贪心匹配，再用多源 BFS 记录起点与前驱，遇到未匹配右点就立即增广；整个过程不递归。}
-\TemplApi{\begin{itemize}
-\item \texttt{Bipartite\_Matching g; g.setN(n,m)}，左部下标 1..n，右部下标 1..m；两部编号互不影响。
-\item \texttt{g.add\_edge(u,v)} 加入左点 u 到右点 v 的边；允许重边。
-\item \texttt{auto a=g.solve()} 返回 \texttt{vector<pair<int,int>>}，每个二元组 (u,v) 是一对匹配的左点和右点，按左点递增；\texttt{a.size()} 就是最大匹配数。
-\item 求解后的 \texttt{matchL[u]}、\texttt{matchR[v]} 是对应另一部的点，未匹配为 0。\texttt{set()} 清空，setN 清空并设置两部大小。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Bipartite_Matching g; g.setN(3,3);
 g.add_edge(1,1); g.add_edge(2,1);
@@ -754,19 +2277,43 @@ for(auto [u,v]:a){
     assert(g.matchL[u]==v && g.matchR[v]==u);
 }
 \end{lstlisting}
-\TemplNote{邻接表在 solve 内按左点压成连续存储，保持各点的加边顺序。rt[u] 记录搜索树的未匹配起点，pre[u] 记录增广前驱；某起点完成增广后，跳过该搜索树剩余队列项。一轮允许处理不同长度的增广路。设总点数 V=n+m、边数 E，空间 $O(V+E)$，每轮 $O(n+E)$；保守最坏时间界为 $O((V+E)(\min(n,m)+1))$，不沿用分层 HK 的复杂度保证。空部、空边集允许，返回空匹配。每次 solve 都重新计算；可继续加边再调用。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/matching/general.cpp}}
-\textbf{无权一般图最大匹配}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int L,int R); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空，或建左右两部 1..L、1..R；只从左向右登记边，允许重边。
 
+\textbf{复杂度：}初始化 O(L+R)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<pair<int,int>> solve()
+\end{lstlisting}
+\textbf{参数、效果与返回：}重新求最大匹配，返回匹配端点 \{左点,右点\}，按左点升序。返回 vector 大小就是匹配数，空图可用。
+
+\textbf{复杂度：}每轮多源 BFS O(L+R+m)，最多 min(L,R) 个增广轮次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+matchL; matchR
+\end{lstlisting}
+\textbf{参数、效果与返回：}solve 后双方匹配点，0 表示未匹配。新增边后要再 solve；该接口不承诺增量复杂度。
+
+\textbf{复杂度：}单次读取 O(1)。
+
+\TemplNote{邻接表在 solve 内按左点压成连续存储，保持各点的加边顺序。rt[u] 记录搜索树的未匹配起点，pre[u] 记录增广前驱；某起点完成增广后，跳过该搜索树剩余队列项。一轮允许处理不同长度的增广路。设总点数 V=n+m、边数 E，空间 $O(V+E)$，每轮 $O(n+E)$；保守最坏时间界为 $O((V+E)(\min(n,m)+1))$，不沿用分层 HK 的复杂度保证。空部、空边集允许，返回空匹配。每次 solve 都重新计算；可继续加边再调用。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/matching/general.cpp}}
+\textbf{无权一般图最大匹配}\par
 \TemplUsage{带花树，允许奇环，返回匹配边数，最坏 O(n\textasciicircum{}3)。}
-\TemplApi{\begin{itemize}
-\item \texttt{blossom g; g.setN(n)} 后 add\_edge 添加无向边。
-\item \texttt{solve()} 返回最大匹配的边数；\texttt{match[u]} 为匹配点，未匹配为 0。
-\item \texttt{solve()*2==n} 判定存在完全匹配。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 blossom g; g.setN(4);
 g.add_edge(1,2); g.add_edge(2,3);
@@ -774,20 +2321,33 @@ g.add_edge(3,1); g.add_edge(3,4);
 assert(g.solve()==2);
 assert(g.match[g.match[1]]==1);
 \end{lstlisting}
-\TemplNote{这是无权匹配，不会最小化或最大化边权。点数为奇数时不可能完全匹配。重复 solve 会重新求解。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/matching/regular-bipartite.cpp}}
-\textbf{正则二分图的完美匹配分解}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}建立 1..n 无向图；每条边加一次。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int solve(); match
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回最大匹配边数；match[u] 是配对顶点，0 未匹配。输出边集只取 u<match[u]。完美匹配条件为 2*solve()==n。
+
+\textbf{复杂度：}保守 O(n\textasciicircum{}3)。
+
+\TemplNote{这是无权匹配，不会最小化或最大化边权。点数为奇数时不可能完全匹配。重复 solve 会重新求解。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/matching/regular-bipartite.cpp}}
+\textbf{正则二分图的完美匹配分解}\par
 \TemplUsage{两部各 n 个点，每个点度数均为 d，将全部 nd 条边恰好分成 d 组完美匹配。支持多重边，同一对点之间的边按重数计入分解。}
-\TemplApi{\begin{itemize}
-\item \texttt{Regular\_Bipartite g; g.setN(n)}；\texttt{g.add\_edge(u,v)} 加入左点 u 到右点 v 的边，两部下标均为 1..n。
-\item \texttt{auto a=g.solve()} 返回 \texttt{vector<vector<int>>}，共 d 组。每组长度 n+1，\texttt{a[c][u]} 直接是第 c 组中左点 u 匹配的右点；\texttt{a[c][0]=0} 占位。
-\item 每组的 a[c][1..n] 都是右部点的一个排列。所有组中 (u,v) 出现的总次数等于该边的输入重数。组编号为 0..d-1，组间没有固定的字典序要求。
-\item d 从输入度数推得，solve 用 assert 检查正则条件；d=0 返回空分解。n=0 也返回空分解。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Regular_Bipartite g; g.setN(2);
 g.add_edge(1,1); g.add_edge(1,2);
@@ -800,38 +2360,66 @@ for(auto &match:a){
     assert(match[1]!=match[2]);
 }
 \end{lstlisting}
-\TemplNote{确定性算法，时间 $O(n+nd\log(nd+1))$，包括结果在内空间 $O(n+nd)$。偶数度用欧拉分边；奇数度通过整数重数缩减找完美匹配，再借用已分解的匹配，把另一分支凑成二的幂次度数。无随机失败概率。非正则图不属于此接口，不要关闭断言后直接输入；重复 solve 不修改原边集。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/steiner-tree.cpp}}
-\textbf{最小斯坦纳树}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}建左右各 n 点的二分多重图，两侧顶点都从 1 起。每次 add\_edge 代表独立一条边，重复边保留。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<vector<int>> solve() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}前提：两侧每点度数都是同一 d。返回 d 行，每行 n+1 项，a[c][u] 是第 c 组中左点 u 的右配点；c 从 0 起，第 0 列不用。边按重数恰好用完；d=0 返回空。
+
+\textbf{复杂度：}O(n+nd log(nd+1)) 时间，O(n+nd) 空间。
+
+\TemplNote{确定性算法，时间 $O(n+nd\log(nd+1))$，包括结果在内空间 $O(n+nd)$。偶数度用欧拉分边；奇数度通过整数重数缩减找完美匹配，再借用已分解的匹配，把另一分支凑成二的幂次度数。无随机失败概率。非正则图不属于此接口，不要关闭断言后直接输入；重复 solve 不修改原边集。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/steiner-tree.cpp}}
+\textbf{最小斯坦纳树}\par
 \TemplUsage{无向非负权图中，求连接给定关键点的最小费用子图，允许使用其他点。设关键点去重后有 $k$ 个，子集 DP 加多源 Dijkstra 的时间为 $O(n3^k+m\log(m+2)2^k)$，空间为 $O(n2^k+n+m)$。固定一个关键点作为根，实际只为剩余 $k-1$ 个点开子集状态。}
-\TemplApi{\begin{itemize}
-\item \texttt{Steiner\_Tree g; g.setN(n)} 初始化，下标 1..n；\texttt{set()} 清空。
-\item \texttt{add\_edge(u,v,w)} 添加一条无向边，不要重复添加反向边。
-\item \texttt{solve(s)} 接收关键点的 \texttt{vector<int>}，返回最小费用；不连通返回 -1。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Steiner_Tree g; g.setN(4);
 g.add_edge(1,4,2); g.add_edge(2,4,2); g.add_edge(3,4,2);
 assert(g.solve({1,2,3})==6); // use vertex 4 as a Steiner point
 assert(g.solve({1,1})==0);
 \end{lstlisting}
-\TemplNote{空关键点集或只有一个不同关键点时返回 0，重复关键点自动去重。支持零权、重边和自环，不支持负权。边权和有限答案必须小于 LLONG\_MAX；中间状态超过范围时会被截断，不会有整数加法溢出。只返回费用，不恢复边集。每次 solve 独立计算，可更换关键点或加边后重算；$k$ 较大时，先估算指数级时间和内存。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{graph/two-sat.cpp}}
-\textbf{布尔约束求解}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); void add_edge(int u,int v,ll w)
+\end{lstlisting}
+\textbf{参数、效果与返回：}建立 1..n 无向图；每条边加一次，0<=w<LLONG\_MAX。
 
+\textbf{复杂度：}初始化 O(n)，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+ll solve(vector<int> terminals) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}连通所有终端的最小总边权，允许经过其他点。终端自动去重；0/1 个终端返回 0；无法连通返回 -1。只返回费用，不恢复边集。
+
+\textbf{复杂度：}k 为不同终端数：O(n*3\textasciicircum{}k+m log(m+2)*2\textasciicircum{}k)，空间 O(n*2\textasciicircum{}k+n+m)。
+
+\TemplNote{空关键点集或只有一个不同关键点时返回 0，重复关键点自动去重。支持零权、重边和自环，不支持负权。边权和有限答案必须小于 LLONG\_MAX；中间状态超过范围时会被截断，不会有整数加法溢出。只返回费用，不恢复边集。每次 solve 独立计算，可更换关键点或加边后重算；$k$ 较大时，先估算指数级时间和内存。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{graph/two-sat.cpp}}
+\textbf{布尔约束求解}\par
 \TemplUsage{求满足所有二元或子句的一组赋值，时间与空间 O(n+m)。}
-\TemplApi{\begin{itemize}
-\item \texttt{two\_sat s; s.setN(n)} 初始化 n 个布尔变量，下标 1..n。
-\item \texttt{add(x,a,y,b)} 表示 (变量 x 等于 a) 或 (变量 y 等于 b)，a,b 为 0/1。
-\item \texttt{solve()} 无解返回空 vector，否则 ans[1..n] 为可行赋值。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 two_sat s; s.setN(2);
 s.add(1,1,1,1); // force x1=true
@@ -839,53 +2427,129 @@ s.add(1,0,2,1); // x1 implies x2
 auto ans=s.solve();
 assert(!ans.empty() && ans[1] && ans[2]);
 \end{lstlisting}
-\TemplNote{只有“或”子句接口；例如强制 x=a 可重复同一文字。setN 清空约束。不要把 add 当作直接添加两条蕴含边。}
-\end{minipage}\par\vspace{1.2em}
-\section{树 / tree}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{tree/cartesian-tree.cpp}}
-\textbf{小根堆笛卡尔树}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空或建立 1..n 个 bool 变量，删除旧子句；不是增量扩容。
 
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void add(int x1,int o1,int x2,int o2)
+\end{lstlisting}
+\textbf{参数、效果与返回：}加子句 (x1==o1) OR (x2==o2)，o1/o2 取 0 或 1。强制 x=v 可 add(x,v,x,v)。
+
+\textbf{复杂度：}均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+vector<int> solve()
+\end{lstlisting}
+\textbf{参数、效果与返回：}无解返回空；有解返回 n+1 项，ans[i] 是变量 i 的 0/1 值，第 0 项不用。0 个变量有解返回长度 1。
+
+\textbf{复杂度：}O(n+子句数)。
+
+\TemplNote{只有“或”子句接口；例如强制 x=a 可重复同一文字。setN 清空约束。不要把 add 当作直接添加两条蕴含边。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{树 / tree}
+\subsection{\texttt{tree/cartesian-tree.cpp}}
+\textbf{小根堆笛卡尔树}\par
 \TemplUsage{O(n) 构建，同时满足下标的中序顺序与值的小根堆序，空间 O(n)。}
-\TemplApi{\texttt{auto [ls,rs]=cartesian(a)} 接受从 0 开始的 vector，返回两个同长度 vector，分别为左右儿子下标。无儿子用 -1。相等值保留较早下标在上方。根是原数组中第一个最小值的位置。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 vector<int> a{3,1,2,1};
 auto [ls,rs]=cartesian(a);
 int rt=min_element(a.begin(),a.end())-a.begin();
 assert(rt==1 && ls[rt]==0 && rs[rt]==3 && ls[3]==2);
 \end{lstlisting}
-\TemplNote{空输入返回两个空 vector，此时没有根。构造无递归，单调数组形成长链也可直接构建；后续遍历要自行避免递归爆栈。类型只需支持小于比较。返回值不含原数组或额外哨兵。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{tree/centroid-decomposition.cpp}}
-\textbf{点分治框架}
-
-\TemplUsage{提供寻找重心、递归处理剩余连通块的框架。与 HLD 查询共用 Tree，题目需要的统计尚未实现。}
-\TemplApi{\begin{itemize}
-\item \texttt{Tree t; t.setN(n)} 后加入树边，设置 rt。
-\item 需要 LCA 时先 HLD\_build；DC\_build 从整棵树开始点分治。
-\item 在 get 中收集子树信息，在 DC 中实现合并、统计和清空逻辑。
-\end{itemize}}
-\textbf{粘贴本文件之前：}
+\textbf{1. 声明 / 调用形式}
 \begin{lstlisting}
+pair<vector<int>,vector<int>> cartesian(const vector<T> &a)
 \end{lstlisting}
-\textbf{最小示例（放入 main）：}
+\textbf{参数、效果与返回：}对 0 起数组建小根堆笛卡尔树，返回 ls、rs，缺儿子用 -1；相等时较早下标在上方。根是第一个最小值下标；空数组返回两个空 vector。
+
+\textbf{复杂度：}O(n) 时间/空间。
+
+\TemplNote{空输入返回两个空 vector，此时没有根。构造无递归，单调数组形成长链也可直接构建；后续遍历要自行避免递归爆栈。类型只需支持小于比较。返回值不含原数组或额外哨兵。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{tree/centroid-decomposition.cpp}}
+\textbf{点分治框架}\par
+\TemplUsage{提供寻找重心、递归处理剩余连通块的框架。与 HLD 查询共用 Tree，题目需要的统计尚未实现。}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Tree t; t.setN(3);
 t.add_edge(1,2); t.add_edge(2,3);
 t.HLD_build(); assert(t.dist(1,3)==2);
 t.DC_build(); // traversal only, no problem answer
 \end{lstlisting}
-\TemplNote{本例只演示初始化和遍历，不会输出路径统计答案。不能原样当作“距离为 k 的点对计数”使用。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{tree/divide-combine-tree.cpp}}
-\textbf{析合树：返回完整结构}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void add_edge(int u,int v); int rt
+\end{lstlisting}
+\textbf{参数、效果与返回：}重置后添加无向树边；根默认 1，可直接设 rt。输入须为连通树。与 HLD 文件都叫 Tree，只选一份或改名。
 
+\textbf{复杂度：}初始化 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void HLD_build(); int lca(int u,int v); int dist(int u,int v); int kth_anc(int u,int k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}HLD\_build 在当前根下预处理；LCA/距离/祖先同 HLD，距离为边数，0<=k<dep[u]。
+
+\textbf{复杂度：}建表 O(n log n)，LCA/距离 O(1)，祖先 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void DC_build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}清除分治访问状态，从整棵树开始点分治；调用你填写的 DC/get 逻辑，不直接返回题目答案。
+
+\textbf{复杂度：}框架 O(n log n)，另加题目处理代价。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void get(int u,int fa); void DC(int u)
+\end{lstlisting}
+\textbf{参数、效果与返回：}改写入口：get 收集未删除连通块信息；DC 处理以当前重心为中心的贡献，再递归。按题意做子树贡献排重，不能把空框架当成求解器。
+
+\textbf{复杂度：}由改写逻辑决定。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+vis; cen; csiz; msiz; tsiz; void output(); void solve()
+\end{lstlisting}
+\textbf{参数、效果与返回：}vis 标记已选重心，cen 当前重心，csiz/msiz 是找重心的工作数组，tsiz 当前块大小。output 调试；solve 只是读取父亲列表的示范流程，提交前按题意改写。
+
+\textbf{复杂度：}不作为独立答案接口。
+
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{tree/divide-combine-tree.cpp}}
+\textbf{析合树：返回完整结构}\par
 \TemplUsage{对 1..n 的排列构建析合树。构建时间 O(n log n)，包含四毛子 RMQ、辅助线段树和返回结构在内的空间均为 O(n)。}
-\TemplApi{先粘贴 \texttt{data-structure/linear-rmq.cpp}。\texttt{xihe\_tree tr; auto t=tr.build(a)} 接受不带哨兵的 vector；也可先 setN(n)，填写 tr.a[1..n]，再调用 build()。结果独立持有数据：rt 为根，cnt 为结点数，son[u] 为按位置排序的儿子；typ[u] 为 LEAF/INC/DEC/PRIME；[L[u],R[u]] 为下标闭区间，[mn[u],mx[u]] 为值域闭区间；id[i] 为第 i 项对应的叶子编号。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
 int u=t.rt;
@@ -894,20 +2558,43 @@ assert(t.mn[u]==1 && t.mx[u]==3);
 assert(t.typ[u]==xihe_tree::DEC && t.son[u].size()==2);
 assert(t.mn[t.id[2]]==1);
 \end{lstlisting}
-\TemplNote{输入必须恰为 1..n 的排列，不接受重复值；必要时在外部离散化，但需确认题目是否只关心排名连续。返回的结点编号、下标区间、id 均从 1 开始，0 不使用。n=0 时 rt=cnt=0。INC/DEC 是儿子值域顺序递增/递减的合点，PRIME 是析点。不要假定父编号大于儿子编号；在返回结果上自行遍历、DP，构建器不含 solve。再次 build 或修改构建器不会改变已返回结果。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{tree/heavy-light-decomposition.cpp}}
-\textbf{LCA、祖先和路径分段}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void setN(int n); vector<int> a
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；setN 分配 a[0..n]，填写 a[1..n] 为 1..n 的排列。a[0] 不用；允许 n=0。
 
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+result build() const; result build(const vector<int> &v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}无参版本使用 a[1..n]；带参版本接受没有哨兵的 v，重设 n 后建树。返回值独立拥有结果，外部自行做树上 DP。
+
+\textbf{复杂度：}O(n log n) 时间，O(n) 空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+result::rt; cnt; son; typ; L; R; mn; mx; id
+\end{lstlisting}
+\textbf{参数、效果与返回：}rt 为根，空输入 rt=0；节点编号 1..cnt。son[u] 按原位置排序；typ 为 LEAF/INC/DEC/PRIME。L/R 为 1 起闭区间，mn/mx 为值域端点；id[i] 为原位置 i 对应的叶子。
+
+\textbf{复杂度：}结果总大小 O(n)。
+
+\TemplNote{输入必须恰为 1..n 的排列，不接受重复值；必要时在外部离散化，但需确认题目是否只关心排名连续。返回的结点编号、下标区间、id 均从 1 开始，0 不使用。n=0 时 rt=cnt=0。INC/DEC 是儿子值域顺序递增/递减的合点，PRIME 是析点。不要假定父编号大于儿子编号；在返回结果上自行遍历、DP，构建器不含 solve。再次 build 或修改构建器不会改变已返回结果。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{tree/heavy-light-decomposition.cpp}}
+\textbf{LCA、祖先和路径分段}\par
 \TemplUsage{对一棵连通无向树预处理，支持 O(1) LCA 和 O(log n) 路径分段。}
-\TemplApi{\begin{itemize}
-\item \texttt{Tree t; t.setN(n)} 后加入 n-1 条边；可设置 t.rt，再 build。
-\item \texttt{lca(u,v)}、\texttt{dist(u,v)} 返回最近公共祖先及边数距离；\texttt{kth\_anc(u,k)} 的 k=0 返回自身。
-\item \texttt{in[u]} 是 DFS 编号，\texttt{dfn[i]} 反查原点；子树为 [in[u],out[u]]。
-\item \texttt{index\_of\_path(u,v)} 返回覆盖点路径的一组 DFS 序闭区间。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Tree t; t.setN(3);
 t.add_edge(1,2); t.add_edge(1,3); t.build();
@@ -916,92 +2603,243 @@ int cnt=0;
 for(auto [l,r]:t.index_of_path(2,3))cnt+=r-l+1;
 assert(cnt==3);
 \end{lstlisting}
-\TemplNote{配线段树时，把点 u 的值放在位置 in[u]，不要直接用 u。路径段没有保证从 u 到 v 的方向顺序，只能直接用于可交换聚合。按边统计时要另行排除 LCA。与 DC.cpp 都定义 Tree。}
-\end{minipage}\par\vspace{1.2em}
-\section{字符串 / string}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/aho-corasick.cpp}}
-\textbf{多模式串 AC 自动机}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); void setRt(int r); void add_edge(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}重置树，默认根为 1；setRt 改根；加无向边。输入必须是一棵连通树，n>=1。
 
+\textbf{复杂度：}O(n) 初始化，加边均摊 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}加完边、设置根后调用；计算重链、DFS 序及 LCA 表。改变根或树结构后重建。
+
+\textbf{复杂度：}O(n log n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int lca(int u,int v); int dist(int u,int v); int kth_anc(int u,int k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}LCA 返回最近公共祖先；dist 返回边数；kth\_anc 返回第 k 级祖先，k=0 返回自己，要求 0<=k<dep[u]。
+
+\textbf{复杂度：}lca/dist O(1)，祖先 O(log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+vector<array<int,2>> index_of_path(int u,int v)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回覆盖点路径（含两端）的若干 DFS 序闭区间，区间内左端<=右端；这些段不保证沿 u->v 的方向排序，不能直接用于非交换路径合并。
+
+\textbf{复杂度：}O(log n) 段及时间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+in; out; dfn; ff; dep; siz; hson; top; ed; void output()
+\end{lstlisting}
+\textbf{参数、效果与返回：}in 为点到 DFS 序，dfn 是逆映射；子树为 [in[u],out[u]]；ff 父亲、dep 深度（根为 1）、siz 子树大小、hson 重儿子、ed[u] 是 u 所在重链向下延伸的末点、top 链顶。output 向 cerr 输出调试信息。
+
+\textbf{复杂度：}读取 O(1)，output O(n)。
+
+\TemplNote{配线段树时，把点 u 的值放在位置 in[u]，不要直接用 u。路径段没有保证从 u 到 v 的方向顺序，只能直接用于可交换聚合。按边统计时要另行排除 LCA。与 centroid-decomposition.cpp 都定义 Tree。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{字符串 / string}
+\subsection{\texttt{string/aho-corasick.cpp}}
+\textbf{多模式串 AC 自动机}\par
 \TemplUsage{一次加入多个模式串，再统计它们在文本中的出现次数。允许重叠出现；构建 O(26*节点数)，每次 count 为 O(文本长度+节点数)。}
-\TemplApi{\begin{itemize}
-\item \texttt{AC ac; id=ac.insert(" "+pattern)} 返回该模式串末节点编号。
-\item 插入完所有模式串后调用 build，之后不能再插入，除非 set 清空重建。
-\item \texttt{auto cnt=ac.count(" "+text)}，模式串答案是 cnt[id]。
-\item build 后 ch 是补全后的转移，可直接用于自动机 DP；fail 是失配链接。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 AC ac; int a=ac.insert(" aba"),b=ac.insert(" ba");
 ac.build(); auto cnt=ac.count(" ababa");
 assert(cnt[a]==2 && cnt[b]==2);
 \end{lstlisting}
-\TemplNote{模式和文本都只支持小写字母，前导空格不参加匹配。重复模式串返回同一编号，但它们各自的答案仍是该模式在文本中的出现次数。空模式返回根编号 0，次数为文本长度+1。不同 count 之间不会累计。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/generalized-suffix-automaton.cpp}}
-\textbf{广义后缀自动机}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+AC(); void set(int m=0)
+\end{lstlisting}
+\textbf{参数、效果与返回：}创建空自动机；set 清空，m 为预留节点数量而非字符串长度上限。根为 0。
 
+\textbf{复杂度：}与旧节点数和预留空间相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int insert(const string &s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}s 带前导空格，其后为小写字母；返回该模式串末节点 id，相同模式可能返回同一个 id。必须在 build 前插入。
+
+\textbf{复杂度：}O(|s|)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}建 fail 并补全转移。此后 ch 是自动机转移，不再只是 Trie 儿子；要新增模式请 set 后重建。
+
+\textbf{复杂度：}O(26*节点数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+vector<ll> count(const string &s) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}文本带前导空格、小写；返回按节点编号的出现次数，模式答案取 cnt[insert 返回的 id]，计重叠匹配。
+
+\textbf{复杂度：}O(|s|+节点数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+ch; fail; tot
+\end{lstlisting}
+\textbf{参数、效果与返回：}ch[u][c-'a'] 为转移；扫描文本时从根 0 沿 ch 前进，可结合 fail 树自写处理。tot 为最大节点编号，数组按 0..tot 使用。
+
+\textbf{复杂度：}单次转移 O(1)。
+
+\TemplNote{模式和文本都只支持小写字母，前导空格不参加匹配。重复模式串返回同一编号，但它们各自的答案仍是该模式在文本中的出现次数。空模式返回根编号 0，次数为文本长度+1。不同 count 之间不会累计。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/generalized-suffix-automaton.cpp}}
+\textbf{广义后缀自动机}\par
 \TemplUsage{维护多个小写串的所有子串；出现次数是这些串中次数之和，重复插入的串也重复计数，不允许跨串边界匹配。}
-\TemplApi{\begin{itemize}
-\item \texttt{GSAM t; t.insert(" "+s)} 加入一条字符串，之后 \texttt{t.build()} 累计出现次数。
-\item \texttt{count(" "+p)} 返回模式的总出现次数；\texttt{find(" "+p)} 返回状态编号，不存在为 -1。
-\item \texttt{distinct()} 返回所有插入串合起来的不同非空子串数。
-\item 可继续 insert，但下一次 count 前必须重新 build。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 GSAM t; t.insert(" aba"); t.insert(" bab");
 t.build(); assert(t.count(" ab")==2);
 assert(t.count(" abab")==0 && t.distinct()==6);
 t.insert(" aba"); t.build(); assert(t.count(" aba")==2);
 \end{lstlisting}
-\TemplNote{count 不是“包含该子串的字符串个数”。根为 0，fail[0]=-1；别把普通 SAM 简单重置 lst 的做法当成这里的插入实现。set(m) 的 m 用于预留总字符量级的空间，build 的计数按当前全部插入内容重新计算。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/kmp-z.cpp}}
-\textbf{前缀函数和 Z 函数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+GSAM(); void set(int m=0); int insert(const string &s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空并可预留节点；insert 加入一条带前导空格的小写串，返回末状态。重复插入会重复计数；全部插完再 build。
 
+\textbf{复杂度：}与总串长、自动机状态数相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void build()
+\end{lstlisting}
+\textbf{参数、效果与返回：}沿 suffix link 汇总出现次数，允许重复 build；新插串后计数需重新 build。
+
+\textbf{复杂度：}O(状态数+最长串长)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int find(const string &s) const; ll count(const string &s) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}find 返回匹配状态，找不到 -1；count 返回所有已插串中的总出现次数，找不到 0，须先 build。空模式写成单个空格，count 等于各串的 长度+1 之和。
+
+\textbf{复杂度：}O(|s|)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll distinct() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}所有已插串中不同的非空子串数量，不按出现次数重复计算。
+
+\textbf{复杂度：}O(状态数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+ch; len; fail; siz; tot
+\end{lstlisting}
+\textbf{参数、效果与返回：}根 0；状态 u 代表长度 (len[fail[u]],len[u]] 的同类子串；siz 为 build 后次数。不要直接调用 clone/new\_node 改结构。
+
+\textbf{复杂度：}读取 O(1)。
+
+\TemplNote{count 不是“包含该子串的字符串个数”。根为 0，fail[0]=-1；别把普通 SAM 简单重置 lst 的做法当成这里的插入实现。set(m) 的 m 用于预留总字符量级的空间，build 的计数按当前全部插入内容重新计算。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/kmp-z.cpp}}
+\textbf{前缀函数和 Z 函数}\par
 \TemplUsage{线性时间计算字符串的 border 与各后缀和全串的公共前缀长度。}
-\TemplApi{\begin{itemize}
-\item \texttt{border(" "+s)} 返回 pi，pi[i] 为 s[1..i] 的最长真 border 长度。
-\item \texttt{z\_function(" "+s)} 返回 z，z[i] 为 s[i..n] 与 s[1..n] 的 LCP。
-\item 数组长度 n+1，0 号是占位。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 auto pi=border(" ababa"); auto z=z_function(" ababa");
 assert(pi[5]==3 && z[3]==3);
 \end{lstlisting}
-\TemplNote{这个实现 z[1]=0，而不是全串长度。没有封装“模式串在文本的所有位置”：可自行 KMP 扫描，或拼接 pattern+分隔符+text 后用 Z；分隔符不能出现在两个原串里。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/lyndon.cpp}}
-\textbf{Lyndon 分解}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+vector<int> border(string s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}s 带前导空格。返回 1 起前缀函数，b[i] 为 s[1..i] 的最长真 border 长度。沿 j=b[j] 枚举更短 border。
 
+\textbf{复杂度：}O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<int> z_function(string s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 z[i]=LCP(s[1..n],s[i..n])，下标从 1 起；实现保留 z[1]=0 占位；需要自身 LCP 时自行取 n，第 0 项不用。空内容写成 " "。
+
+\textbf{复杂度：}O(n) 时间/空间。
+
+\TemplNote{这个实现 z[1]=0，而不是全串长度。没有封装“模式串在文本的所有位置”：可自行 KMP 扫描，或拼接 pattern+分隔符+text 后用 Z；分隔符不能出现在两个原串里。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/lyndon.cpp}}
+\textbf{Lyndon 分解}\par
 \TemplUsage{用 Duval 将串唯一分解为字典序不增的 Lyndon 串。Lyndon 串严格小于自己的每个非空真后缀，相同因子可以连续出现。}
-\TemplApi{\texttt{auto a=lyndon(s)}；s 带前导空格。返回 \texttt{vector<pair<int,int>>}，各项为一个因子的 1 下标闭区间 [l,r]，按原串从左到右排列且恰好覆盖全串。需要内容时用 \texttt{s.substr(l,r-l+1)}。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 string s=" ababab"; auto a=lyndon(s);
 assert((a==vector<pair<int,int>>{{1,2},{3,4},{5,6}}));
 assert((lyndon(" cba")==vector<pair<int,int>>{{1,1},{2,2},{3,3}}));
 assert(lyndon(" ").empty());
 \end{lstlisting}
-\TemplNote{时间 $O(n)$，除返回区间外额外空间 $O(1)$。比较按 unsigned char 的字节顺序，可处理任意字节；不要求小写字母。同样的因子不会合并，ababab 分为三个 ab，而 aaaa 分为四个 a。空串返回空向量。本接口是整串分解，不是每个位置的最长 Lyndon 前缀数组。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/manacher.cpp}}
-\textbf{Manacher 回文半径}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+vector<pair<int,int>> lyndon(const string &s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}带前导空格；返回从左到右的 Lyndon 因子闭区间 \{l,r\}，覆盖 1..n，因子按字典序非增。用 s.substr(l,r-l+1) 取内容。空内容返回空。
 
+\textbf{复杂度：}O(n) 时间，除输出外 O(1) 空间。
+
+\TemplNote{时间 $O(n)$，除返回区间外额外空间 $O(1)$。比较按 unsigned char 的字节顺序，可处理任意字节；不要求小写字母。同样的因子不会合并，ababab 分为三个 ab，而 aaaa 分为四个 a。空串返回空向量。本接口是整串分解，不是每个位置的最长 Lyndon 前缀数组。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/manacher.cpp}}
+\textbf{Manacher 回文半径}\par
 \TemplUsage{线性求出所有奇数、偶数长度回文的最大半径，并以 $O(1)$ 判断某个子串是否回文。}
-\TemplApi{\begin{itemize}
-\item \texttt{Manacher t; t.build(s)}；s 带前导空格，实际下标 1..n；\texttt{set()} 清空。
-\item \texttt{d1[i]} 包含中心字符：最长奇回文为 [i-d1[i]+1,i+d1[i]-1]，长度 2*d1[i]-1。
-\item \texttt{d2[i]} 的中心在 i-1 与 i 之间：最长偶回文为 [i-d2[i],i+d2[i]-1]，长度 2*d2[i]，半径可以为 0。
-\item \texttt{ask(l,r)} 判断非空闭区间是否回文，要求 $1\le l\le r\le n$。所有回文出现次数为各位置 d1+d2 的总和，不是不同回文数。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Manacher t; t.build(" abba");
 assert(t.d2[3]==2 && t.d1[2]==1);
@@ -1011,20 +2849,43 @@ long long cnt=0;
 for(int i=1;i<=t.n;i++)cnt+=t.d1[i]+t.d2[i];
 assert(cnt==6);
 \end{lstlisting}
-\TemplNote{时间、空间均为 $O(n)$；不插入分隔字符，可处理任意字节。奇偶半径含义不同，不能直接把 d1 当成回文长度。空串允许 build，但没有可查询的非空区间。求最长回文取所有 2*d1[i]-1 与 2*d2[i] 的最大值，空串答案为 0。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/palindromic-automaton.cpp}}
-\textbf{回文自动机}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void set(); void build(const string &s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空；build 接受前导空格字符串，重建两种回文半径。内容可为空。
 
+\textbf{复杂度：}O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+d1; d2
+\end{lstlisting}
+\textbf{参数、效果与返回：}奇回文中心 i 的区间 [i-d1[i]+1,i+d1[i]-1]；偶回文中心在 i-1 与 i 之间，区间 [i-d2[i],i+d2[i]-1]。点编号 1..n。
+
+\textbf{复杂度：}读取 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+bool ask(int l,int r) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}判断非空有效闭区间 [l,r] 是否回文；须先 build。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{时间、空间均为 $O(n)$；不插入分隔字符，可处理任意字节。奇偶半径含义不同，不能直接把 d1 当成回文长度。空串允许 build，但没有可查询的非空区间。求最长回文取所有 2*d1[i]-1 与 2*d2[i] 的最大值，空串答案为 0。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/palindromic-automaton.cpp}}
+\textbf{回文自动机}\par
 \TemplUsage{在线维护不同回文子串、最长回文后缀及回文出现次数。字符集为小写字母，建树与空间均为 $O(n)$。}
-\TemplApi{\begin{itemize}
-\item \texttt{PAM p; p.build(s)} 从整串重建；s 带前导空格。也可 \texttt{p.set(n)} 预留容量，再逐字 \texttt{p.extend(c)}，返回当前最长回文后缀结点。
-\item 0 是长度 0 的根，1 是长度 -1 的根；真正的回文结点为 2..tot，不同回文数为 tot-1。\texttt{lst} 是当前最长回文后缀。
-\item \texttt{len[u]} 为长度，\texttt{fail[u]} 为最长真回文后缀；\texttt{num[u]} 为该回文的非空回文后缀个数。因此每次加入后的 \texttt{num[lst]} 是当前前缀末尾的回文数。
-\item \texttt{pos[u]} 为首次出现的右端点，首次区间是 [pos[u]-len[u]+1,pos[u]]。\texttt{cnt=p.count()} 返回每个回文的总出现次数，可重叠；根的次数置 0。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 PAM p; p.build(" ababa");
 auto cnt=p.count();
@@ -1034,34 +2895,105 @@ int u=p.ch[1]['a'-'a']; assert(cnt[u]==3);
 p.extend('b'); cnt=p.count(); // still safe after count()
 assert(p.len[p.lst]==5 && cnt[u]==3);
 \end{lstlisting}
-\TemplNote{\texttt{siz} 只记录结点作为最长后缀的次数，不能直接作为总出现次数。count 在副本上沿 fail 累加，单次 $O(n)$，可以重复调用，也能继续 extend；不要每加入一个字符都调用 count。所有回文出现次数之和用 ll 保存。空串写作一个空格。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/rolling-hash.cpp}}
-\textbf{双模前缀哈希}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+PAM(); void set(int m=0); void build(string s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空、预留容量；build 自动重置并逐字符加入，s 为带前导空格的小写串。
 
+\textbf{复杂度：}O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int extend(char c)
+\end{lstlisting}
+\textbf{参数、效果与返回：}在当前串尾追加一个小写字母，返回当前最长回文后缀节点；可 set 后在线逐个调用。不是任意位置插入。
+
+\textbf{复杂度：}总计线性，单次可能沿 fail 跳多次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+vector<int> count() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回每个真实回文节点的出现次数，包含重叠出现；可反复调用，不会重复累加内部计数。
+
+\textbf{复杂度：}O(节点数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+len; fail; num; pos; lst; tot; ch
+\end{lstlisting}
+\textbf{参数、效果与返回：}0/1 是虚根，真实节点 2..tot；len 是回文长度，fail 是最长真回文后缀，num 是不同回文后缀数量，pos 是首次出现右端点。lst 当前最长后缀；共有 tot-1 种非空回文。
+
+\textbf{复杂度：}单次读取 O(1)。
+
+\TemplNote{\texttt{siz} 只记录结点作为最长后缀的次数，不能直接作为总出现次数。count 在副本上沿 fail 累加，单次 $O(n)$，可以重复调用，也能继续 extend；不要每加入一个字符都调用 count。所有回文出现次数之和用 ll 保存。空串写作一个空格。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/rolling-hash.cpp}}
+\textbf{双模前缀哈希}\par
 \TemplUsage{提供子串指纹与拼接，不是无碰撞的字符串判等。构建前缀数组 O(n)，常规子串取值 O(1)。}
-\TemplApi{\begin{itemize}
-\item \texttt{auto h=Hash\_of(" "+s)} 产生前缀哈希。
-\item 子串 [l,r] 为 h[r]-h[l-1]。
-\item \texttt{a+b} 拼接两段，\texttt{h.v()} 打包哈希值；\texttt{.l} 是长度。
-\item \texttt{init\_hash(n)} 可预留幂次；实际操作也会自动扩容。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 auto h=Hash_of(" ababa");
 auto a=h[3]-h[0],b=h[5]-h[2];
 assert(a.l==b.l && a.v()==b.v());
 \end{lstlisting}
-\TemplNote{比较子串时同时比较长度和哈希。底数每个进程随机，不能把数值用于跨进程永久存储。减法只表示删去前缀，不是任意删除；Hash 对象应使用 \{\} 零初始化。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/runs.cpp}}
-\textbf{Runs 极大周期子串}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void init_hash(int n=0); vector<Hash> Hash_of(const string &s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}init\_hash 扩展幂表，可预处理最大长度；Hash\_of 接受前导空格串，返回 H[0..n]，H[0] 为空串。底数在程序启动时随机选定，不随 init\_hash 改变。
 
+\textbf{复杂度：}预处理 O(n)，建前缀 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+Hash{}; Hash operator+(const Hash &a,const Hash &b); Hash operator-(const Hash &a,const Hash &b)
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认空串；a+b 拼接；a-b 删除 a 的前缀 b，调用者须保证 b 确为前缀。子串 [l,r] 为 H[r]-H[l-1]。
+
+\textbf{复杂度：}幂表就绪后 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+h+x; h+=x
+\end{lstlisting}
+\textbf{参数、效果与返回：}x 为字符/非负整数编码时追加一个符号；x 为 Hash 时拼接整段。保持编码可在两个模数下安全计算，普通字符串已按 unsigned char 处理。
+
+\textbf{复杂度：}单符号 O(1)，拼接可能扩展幂表。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int Hash::l; ll Hash::v() const; h1; h2
+\end{lstlisting}
+\textbf{参数、效果与返回：}l 为长度，v 打包双模哈希。比较内容先比较长度，再比较 v()；哈希可能碰撞，不是确定性相等判定。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{比较子串时同时比较长度和哈希。底数每个进程随机，不能把数值用于跨进程永久存储。减法只表示删去前缀，不是任意删除；Hash 对象应使用 \{\} 零初始化。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/runs.cpp}}
+\textbf{Runs 极大周期子串}\par
 \TemplUsage{枚举所有长度至少为最小周期两倍、且不能保持该周期向左或向右扩展的子串。返回若干三元组 $(l,r,p)$，其中 p 必须是最小周期。}
-\TemplApi{先抄 \texttt{data-structure/linear-rmq.cpp}，再抄 \texttt{string/suffix-array.cpp}，再抄本文件。调用 \texttt{Runs t; auto a=t.build(s)}，返回 \texttt{vector<array<int,3>>}，依次为 l、r、p。输入有前导空格，区间为 1 下标闭区间，结果按三元组字典序排序并去重。空串、单字符及无重复的串返回空向量。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Runs t; auto a=t.build(" ababab");
 assert((a==vector<array<int,3>>{{1,6,2}}));
@@ -1069,21 +3001,23 @@ a=t.build(" aabaa");
 assert((a==vector<array<int,3>>{{1,2,1},{4,5,1}}));
 assert(t.build(" abc").empty());
 \end{lstlisting}
-\TemplNote{实际字符限字节 1..255，0 留给 SA 哨兵。采用两种字母序下的最长 Lyndon 前缀，加 SA\_LCP、SA\_LCS 向两侧扩展；LCP 使用四毛子，不使用哈希。源码版时间 $O(n\log n)$（最后排序），空间 $O(n)$；考场倍增 SA 也满足此界。Runs 不包括所有周期区间，只给出极大区间；长度不必是 p 的倍数，例如 ababa 返回 (1,5,2)。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/suffix-array.cpp}}
-\textbf{后缀数组、LCP 与 LCS}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+vector<array<int,3>> Runs::build(const string &s) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}s 有前导空格，字符编码 1..255。返回排序去重后的 \{l,r,p\}：1 起闭区间 [l,r]，最小周期 p，长度>=2p，左右都不能保持该周期继续扩展。空/单字符串返回空。
 
+\textbf{复杂度：}O(n log n) 时间，O(n) 空间。
+
+\TemplNote{实际字符限字节 1..255，0 留给 SA 哨兵。采用两种字母序下的最长 Lyndon 前缀，加 SA\_LCP、SA\_LCS 向两侧扩展；LCP 使用四毛子，不使用哈希。源码版时间 $O(n\log n)$（最后排序），空间 $O(n)$；考场倍增 SA 也满足此界。Runs 不包括所有周期区间，只给出极大区间；长度不必是 p 的倍数，例如 ababa 返回 (1,5,2)。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/suffix-array.cpp}}
+\textbf{后缀数组、LCP 与 LCS}\par
 \TemplUsage{先粘贴 data-structure/linear-rmq.cpp。SA-IS 构建后缀排序，SA\_LCP 用 height 和线性 RMQ 查询后缀公共前缀；SA\_LCS 在反串上查询两个前缀的公共后缀。}
-\TemplApi{\begin{itemize}
-\item \texttt{SA sa; sa.build(" "+s)} 输入前面补一个占位空格，真实字符下标 1..n。
-\item \texttt{sa.sa[r]} 是排名第 r 的后缀起点；\texttt{sa.rk[i]} 是后缀 i 的排名。
-\item \texttt{SA\_LCP l; l.build(sa)}，然后 \texttt{l.lcp(i,j)} 或 \texttt{l.ask(i,j)} 查询，i,j 是原串位置。
-\item 也可 \texttt{l.build(" "+s)} 直接建。height[r] 为排名 r 与 r-1 的后缀 LCP，height[1]=0。
-\item \texttt{SA\_LCS r; r.build(sa)} 或 \texttt{r.build(" "+s)}；\texttt{r.lcs(i,j)} / \texttt{r.ask(i,j)} 查询以 i、j 结尾的最长公共后缀，允许 i 或 j 为 0，此时返回 0。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 SA sa; sa.build(" banana");
 assert(sa.sa[1]==6);
@@ -1094,19 +3028,73 @@ SA_LCS r; r.build(sa);
 assert(r.lcs(4,6)==3); // bana / banana
 assert(r.lcs(0,6)==0);
 \end{lstlisting}
-\TemplNote{SA、LCP、LCS 均 O(n) 构建和空间，查询 O(1)。LCS 参数是原串前缀的右端点。不要把后缀排名传给 lcp。默认字符编码范围 1..127，任意非零字节传 M=256；不支持串内零字节。修改原串后须重建相关结构。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{string/suffix-automaton.cpp}}
-\textbf{单串后缀自动机}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void SA::set(); void SA::build(string s,int M=128)
+\end{lstlisting}
+\textbf{参数、效果与返回：}清空或构建 SA；s 必须有前导空格，正文每个字节属于 [1,M)，一般字节串可传 M=256。正文为空合法；0 字节不能出现。
 
+\textbf{复杂度：}O(n+M) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+SA::sa; rk; n; void output()
+\end{lstlisting}
+\textbf{参数、效果与返回：}sa[1..n] 为按字典序排列的后缀起点；rk[i] 是 suf\_i 排名。满足 sa[rk[i]]=i。output 输出调试数组；solve 为示例流程而非额外算法接口。
+
+\textbf{复杂度：}读取 O(1)，output O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+void SA_LCP::build(const SA &sa); void SA_LCP::build(const string &s,int M=128)
+\end{lstlisting}
+\textbf{参数、效果与返回：}从已建 SA 或字符串建 height 与线性 RMQ；对象保存自己的查询数据，不依赖传入 SA 后续存活。
+
+\textbf{复杂度：}O(n+M) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+int SA_LCP::lcp(int i,int j) const; int ask(int i,int j) const; height
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 suf\_i 与 suf\_j 的最长公共前缀，i/j 是原串位置 1..n，不是排名；ask 同义。height[r] 是排名 r-1/r 两后缀的 LCP，height[1]=0。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+void SA_LCS::build(const SA &sa); void SA_LCS::build(string s,int M=128)
+\end{lstlisting}
+\textbf{参数、效果与返回：}反转原内容后建查询结构。前缀下标仍按原串，不需要调用者自行反转。
+
+\textbf{复杂度：}O(n+M) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+int SA_LCS::lcs(int i,int j) const; int ask(int i,int j) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回原串前缀 s[1..i] 与 s[1..j] 的最长公共后缀；0<=i,j<=n，0 表示空前缀。ask 同义。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{SA、LCP、LCS 均 O(n) 构建和空间，查询 O(1)。LCS 参数是原串前缀的右端点。不要把后缀排名传给 lcp。默认字符编码范围 1..127，任意非零字节传 M=256；不支持串内零字节。修改原串后须重建相关结构。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{string/suffix-automaton.cpp}}
+\textbf{单串后缀自动机}\par
 \TemplUsage{构建单个小写字母串的子串状态图，并统计每个状态对应子串的出现次数。时间及空间 O(n)，字母表固定 26。}
-\TemplApi{\begin{itemize}
-\item \texttt{SAM t; t.build(" "+s)} 每次重新构建。
-\item 根为 0；\texttt{ch[u][c]} 为字符 c 的转移，0 表示不存在。
-\item 状态 u 对应长度区间 (len[fail[u]],len[u]]，同一状态内的子串出现次数均为 siz[u]。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 SAM t; t.build(" ababa");
 int u=0; for(char c:string("aba"))u=t.ch[u][c-'a'];
@@ -1115,20 +3103,54 @@ ll distinct=0;
 for(int i=1;i<=t.tot;i++)distinct+=t.len[i]-t.len[t.fail[i]];
 assert(distinct==9);
 \end{lstlisting}
-\TemplNote{匹配模式串时遇到不存在转移应立即判定不出现。build 内已累计 siz，不能再次累计。裸调用 extend 不会自动维护整套出现次数；多串应用请用 GSAM。solve 是“重复子串长度乘次数最大值”的特定示例，不是通用查询。}
-\end{minipage}\par\vspace{1.2em}
-\section{数学 / math}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/big-int.cpp}}
-\textbf{高精度有符号整数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+SAM(); void set(int m=0); void extend(char c)
+\end{lstlisting}
+\textbf{参数、效果与返回：}set 清空并预留容量，根 0；extend 追加小写字母，构建状态和 fail。仅 extend 尚未得到汇总出现次数。
 
+\textbf{复杂度：}总体 O(n)，单次可能多次跳 fail。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+void build(string s)
+\end{lstlisting}
+\textbf{参数、效果与返回：}s 是带前导空格的小写串；自动重置、构建并沿 fail 树汇总 siz。需要统计出现次数时用完整 build。
+
+\textbf{复杂度：}O(n) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ch; len; fail; siz; tot; lst
+\end{lstlisting}
+\textbf{参数、效果与返回：}ch 转移，len 最大长度，fail 后缀链接，siz 为完整 build 后的出现次数；tot 最大状态编号，lst 整串末状态。状态 u 对应长度 (len[fail[u]],len[u]]。
+
+\textbf{复杂度：}读取 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+void output(); void solve()
+\end{lstlisting}
+\textbf{参数、效果与返回：}output 调试；solve 是文件内演示入口，需要按题意改写。new\_node/clone/dfs 是构建内部步骤，不应在 build 之后手动再汇总 siz。
+
+\textbf{复杂度：}output O(状态数)。
+
+\TemplNote{匹配模式串时遇到不存在转移应立即判定不出现。build 内已累计 siz，不能再次累计。裸调用 extend 不会自动维护整套出现次数；多串应用请用 GSAM。solve 是“重复子串长度乘次数最大值”的特定示例，不是通用查询。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{数学 / math}
+\subsection{\texttt{math/big-int.cpp}}
+\textbf{高精度有符号整数}\par
 \TemplUsage{十进制大整数，vector 按 10\textasciicircum{}9 分块。加减 O(n)，普通乘法及长除法最坏 O(nm)，n、m 是分块数。}
-\TemplApi{\begin{itemize}
-\item \texttt{BigInt x=123} 从 long long 构造；更长整数用流读入。
-\item 支持 \texttt{+ - * / \%}、复合赋值和比较。
-\item \texttt{a.divmod(b)} 同时返回商和余数，避免分别执行除法与取模。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 BigInt a,b;
 istringstream in("-12345678901234567890 100");
@@ -1138,38 +3160,185 @@ assert(q*b+r==a);
 ostringstream out; out << q << ' ' << r;
 assert(out.str()=="-123456789012345678 -90");
 \end{lstlisting}
-\TemplNote{除法向零取整，余数与被除数同号；除数不能为零。这不是 FFT 高精度乘法，也不支持小数。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/dynamic-mod-int.cpp}}
-\textbf{运行时模数及组合数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+BigInt(ll x=0); cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}任意精度有符号整数，默认 0；用流读取/输出十进制，字符串允许正负号。非法输入置 failbit。若超过 ll，不能先用 ll 保存再构造。
 
+\textbf{复杂度：}O(十进制位数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+a+b; a-b; a*b; a/b; a%b; -a
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回新的 BigInt。除法向零截断，余数与被除数同号，满足 a=(a/b)*b+a\%b；除数不得为零。
+
+\textbf{复杂度：}d/e 为内部位数：加减 O(d+e)，乘除最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+a+=b; a-=b; a*=b; a/=b; a%=b
+\end{lstlisting}
+\textbf{参数、效果与返回：}原地四则/取余，返回 a 的引用；允许整数隐式转换为 BigInt。
+
+\textbf{复杂度：}同对应非原地运算。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+a==b; a!=b; a<b; a<=b; a>b; a>=b; bool(a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}比较有符号数值，bool 检查非零；不要把内部 base=1e9 分块数组当十进制位。
+
+\textbf{复杂度：}比较最坏 O(d+e)，bool O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+pair<BigInt,BigInt> divmod(const BigInt &b) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}同时返回 \{商,余数\}，避免分别 / 和 \% 重复计算。
+
+\textbf{复杂度：}最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+int cmp(const BigInt &b) const; int cmp_abs(const BigInt &b) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}比较数值/绝对值，返回 -1、0、1；无需先构造两个绝对值副本。
+
+\textbf{复杂度：}O(d+e)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+BigInt mul(int x) const; BigInt operator+() const; void trim()
+\end{lstlisting}
+\textbf{参数、效果与返回：}mul 返回乘以非负小整数 x 的结果，0<=x<1e9；一元 + 返回副本；trim 删除最高零分块并规范零的符号，正常运算已自动调用。
+
+\textbf{复杂度：}O(d)。
+
+\TemplNote{除法向零取整，余数与被除数同号；除数不能为零。这不是 FFT 高精度乘法，也不支持小数。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/dynamic-mod-int.cpp}}
+\textbf{运行时模数及组合数}\par
 \TemplUsage{同一份程序需要选定不同模数时使用。设置模数后再创建该轮使用的值。}
-\TemplApi{\begin{itemize}
-\item \texttt{mint::setM(p)} 修改模数。
-\item \texttt{init\_fact(n)} 重建 0..n 阶乘、逆阶乘，要求 n! 可逆。
-\item \texttt{C(k,n)} / \texttt{binom(n,k)} 查询前必须已预处理到 n。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 mint::setM(101); init_fact(10);
 assert(C(2,5).x==10);
 mint a=100; assert((a+2).x==1);
 \end{lstlisting}
-\TemplNote{修改模数不会转换已有 mint 变量；丢弃旧值并重建阶乘。与固定模数版、各多项式版本的 mint / fac 等全局名字冲突。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/gaussian-elimination.cpp}}
-\textbf{线性方程组与行列式}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+static void mint::setM(unsigned M)
+\end{lstlisting}
+\textbf{参数、效果与返回：}设运行时模数，2<=M<=INT\_MAX；在构造值之前调用，改模后旧值失效。不会自动重建阶乘表。
 
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+mint(); mint(int); mint(unsigned); mint(ll); mint(ull); x
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认 0；整数构造自动归一化，可处理负数。x 为 [0,模数) 的值，只读，不要直接写越界数。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+a+b; a-b; a*b; a/b; a+=b; a-=b; a*=b; a/=b
+\end{lstlisting}
+\textbf{参数、效果与返回：}模运算，支持左右两侧混合整数；复合运算改左值并返回引用。除法等价乘逆元，除数必须与模数互质。
+
+\textbf{复杂度：}加减乘 O(1)，除 O(log 模数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
++a; -a; ++a; --a; a==b; a!=b; bool(a); !a
+\end{lstlisting}
+\textbf{参数、效果与返回：}一元正负、前置增减、相等/非等及非零判断；没有数值大小比较。前置增减返回自身引用。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint pow(ll k) const; mint inv() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}a.pow(k) 返回 a\textasciicircum{}k；k<0 时先求逆，要求 a 可逆。a.inv() 同样要求 gcd(a.x,模数)=1；0 不可逆。
+
+\textbf{复杂度：}O(log(|k|+1)) / O(log 模数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}按 ll 范围读取十进制后归一化，输出非负标准余数；流式运算返回流引用。
+
+\textbf{复杂度：}O(字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+mint C(int k,int n); mint binom(int n,int k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回从 n 个中选 k 个，即通常写的 C(n,k)。本库 C 的参数顺序相反；k<0 或 k>n 返回 0。
+
+\textbf{复杂度：}表已就绪时 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}fac[i]=i!，ifac[i]=1/i!，inv[i]=1/i，inv[0] 仅占位。只能读预处理范围内的项。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+void init_fact(int n=0)
+\end{lstlisting}
+\textbf{参数、效果与返回：}完全重建 0..n 的 fac/ifac/inv；0<=n<M 且 n! 与 M 互质。调用 C 前须显式预处理到 n，改模后必须重做。
+
+\textbf{复杂度：}O(n+log M) 时间，O(n) 空间。
+
+\TemplNote{修改模数不会转换已有 mint 变量；丢弃旧值并重建阶乘。与固定模数版、各多项式版本的 mint / fac 等全局名字冲突。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/gaussian-elimination.cpp}}
+\textbf{线性方程组与行列式}\par
 \TemplUsage{用消元求 Ax=b 的一组解，或计算方阵行列式。支持质数模数下的 mint 以及浮点类型；不能用 int/ll 实例化。}
-\TemplApi{\begin{itemize}
-\item \texttt{Gauss<T> g; res=g.solve(a,m)}，a 是 n 行 m+1 列的增广矩阵，最后一列为 b。
-\item 返回 -1 无解（x 被清空），0 多解，1 唯一解；解存 g.x，长度 m，下标 0..m-1。
-\item 多解时自由变量取 0；g.rank 是系数矩阵秩，where[j]=-1 表示自由变量。
-\item \texttt{g.det(a)} 接受 n*n 方阵，返回 T，不改变 x/rank。空方阵行列式为 1。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Gauss<long double> g;
 // x+y=3, 2x-y=0
@@ -1178,13 +3347,63 @@ assert(res==1 && abs(g.x[0]-1)<1e-9L);
 assert(abs(g.x[1]-2)<1e-9L);
 assert(abs(g.det({{1,2},{3,4}})+2)<1e-9L);
 \end{lstlisting}
-\TemplNote{Gauss<mint> 需要先粘贴 ModInt 或一个内置 mint 的多项式文件。浮点使用最大绝对值选主元和绝对阈值 eps（默认 1e-12），尺度差异大或病态方程需要自行缩放并检查残差。方阵时间 O(n\textasciicircum{}3)，复制矩阵后原输入保持不变；多个 RHS 要自行扩展。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Gauss<T>; long double eps
+\end{lstlisting}
+\textbf{参数、效果与返回：}T 取 mint 等域类型，或 double/long double；不接受整数。浮点判零为 abs(v)<=eps，默认 1e-12，可在求解前改；模数应为质数。
+
+\textbf{复杂度：}判零 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int solve(vector<vector<T>> a,int m)
+\end{lstlisting}
+\textbf{参数、效果与返回：}a 是 n 行 m+1 列增广矩阵，最后一列常数项；按值传入，不改调用者矩阵。返回 -1 无解、0 多解、1 唯一解。
+
+\textbf{复杂度：}O(n*m*min(n,m))，另含拷贝 O(n*m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+x; rank; where
+\end{lstlisting}
+\textbf{参数、效果与返回：}有解时 x[0..m-1] 为一组解，自由变量取 0；无解 x 为空。rank 为系数矩阵秩；where[j] 为该列主元行，-1 表示自由列。
+
+\textbf{复杂度：}读取 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+T det(vector<vector<T>> a) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}输入方阵，返回行列式，空矩阵返回 1；不改变上一次 solve 的 x/rank/where。浮点结果受 eps 与数值误差影响。
+
+\textbf{复杂度：}O(n\textasciicircum{}3)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+bool zero(const T &v) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}按本对象的判零规则测试 v；浮点 abs(v)<=eps，精确域判断是否为零，可用于核对残差。
+
+\textbf{复杂度：}O(1)。
+
+\TemplNote{Gauss<mint> 需要先粘贴 ModInt 或一个内置 mint 的多项式文件。浮点使用最大绝对值选主元和绝对阈值 eps（默认 1e-12），尺度差异大或病态方程需要自行缩放并检查残差。方阵时间 O(n\textasciicircum{}3)，复制矩阵后原输入保持不变；多个 RHS 要自行扩展。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{math/linear-basis/field-prefix.cpp}}
-\textbf{前缀模意义线性基}
-\TemplApi{先抄 ModInt。\texttt{Prefix\_Linear\_Basis<mint> B; B.setN(n)}，依次 \texttt{insert(x,id)}。id 必须为严格递增的正整数；增秩返回 0，否则返回最早可替换元素的编号。规则与前缀异或版相同，只是异或消元换成域上的线性消元。}
-\textbf{最小示例（放入 main）：}
+\textbf{前缀模意义线性基}\par
+\TemplUsage{}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Prefix_Linear_Basis<mint> B; B.setN(2);
 assert(B.insert({1,0},1)==0);
@@ -1195,13 +3414,43 @@ assert(B.get_rank(3)==2 && B.contains({1,0},3));
 assert(!B.contains({1,0},4));
 assert(B.insert({0,0},5)==5);
 \end{lstlisting}
-\TemplNote{处理到编号 r 时，\texttt{get\_rank(l)} 查询 [l,r] 的秩，\texttt{contains(x,l)} 判断 x 是否在该区间张成空间中。l 默认 1，超出 r 时为空基。插入和可表示性查询 O(n²)，秩查询 O(n)，空间 O(n²)。只用于精确域，通常用质数模数 mint；setN 清空所有状态。pos 保留原编号，a 是消元后的向量。不是任意删除或持久化结构。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); rank
+\end{lstlisting}
+\textbf{参数、效果与返回：}设向量维数并清空，坐标 0..n-1；rank 为当前秩。T 必须是精确域，如质数模数 mint；不接受浮点与内置整数。
+
+\textbf{复杂度：}清空 O(旧存储+n)，最多 O(n\textasciicircum{}2) 空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int insert(vector<T> x,int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}id 为严格递增正整数，x 长度 n。增秩返回 0；否则返回可剔除的最早编号，可能就是当前 id。内部留下适合后缀查询的基，不保存原始向量副本。
+
+\textbf{复杂度：}O(n\textasciicircum{}2) 次域运算。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int get_rank(int l=1) const; bool contains(vector<T> x,int l=1) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}只用已插入且编号>=l 的向量，求秩/是否张成 x。查询历史区间 [l,r] 须在只插到 r 时调用，或自己保存快照；不是任意 r 查询。
+
+\textbf{复杂度：}get\_rank O(n)，contains O(n\textasciicircum{}2)。
+
+\TemplNote{处理到编号 r 时，\texttt{get\_rank(l)} 查询 [l,r] 的秩，\texttt{contains(x,l)} 判断 x 是否在该区间张成空间中。l 默认 1，超出 r 时为空基。插入和可表示性查询 O(n²)，秩查询 O(n)，空间 O(n²)。只用于精确域，通常用质数模数 mint；setN 清空所有状态。pos 保留原编号，a 是消元后的向量。不是任意删除或持久化结构。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \subsection{\texttt{math/linear-basis/field.cpp}}
-\textbf{模意义线性基}
-\TemplApi{先抄一份 ModInt；\texttt{Linear\_Basis<mint> B; B.setN(n)} 设置向量维数。\texttt{insert(x)} 返回是否增秩；\texttt{contains(x)} 判断 x 是否在张成空间中；\texttt{rank} 是当前秩。输入 vector 长度必须为 n，坐标下标 0..n-1。}
-\textbf{最小示例（放入 main）：}
+\textbf{模意义线性基}\par
+\TemplUsage{}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Linear_Basis<mint> B; B.setN(2);
 assert(B.insert({1,0}) && B.insert({0,1}));
@@ -1209,14 +3458,33 @@ assert(!B.insert({2,3}) && B.rank==2);
 assert(B.contains({7,9}));
 B.setN(2); assert(!B.contains({1,0}));
 \end{lstlisting}
-\TemplNote{T 要求精确域上的运算，通常使用质数模数 mint；不支持普通 int/ll、合数模数或浮点数。插入和查询 O(n²)，空间 O(n²)，占用的主元行按实际长度存储。n=0 允许，空向量不增秩。只维护张成空间，不返回具体线性组合系数。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/linear-basis/xor-prefix.cpp}}
-\textbf{前缀异或线性基}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setN(int n); rank
+\end{lstlisting}
+\textbf{参数、效果与返回：}设向量维数并清空，坐标 0..n-1；rank 为当前秩。T 必须是精确域，如质数模数 mint；不接受浮点与内置整数。
 
-\TemplApi{\texttt{Prefix\_Xor\_Basis B; B.setM(m)} 设置位数并清空，默认 64 位，允许 0 至 64 位。按加入顺序调用 \texttt{insert(x,id)}，id 必须为严格递增的正整数，可不连续。增秩返回 0，否则返回本次相关关系中最早且可删除的元素编号；零向量返回自身编号。\texttt{set()} 保留位数，清空并重置编号；\texttt{setM(m)} 同时重设位数和编号。}
-\textbf{最小示例（放入 main）：}
+\textbf{复杂度：}清空 O(旧存储+n)，最多 O(n\textasciicircum{}2) 空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool insert(vector<T> x); bool contains(vector<T> x) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}输入长度必须恰好 n；insert 增秩返回 true，否则 false；contains 判断是否在张成空间，不修改基。
+
+\textbf{复杂度：}O(n\textasciicircum{}2) 次域运算。
+
+\TemplNote{T 要求精确域上的运算，通常使用质数模数 mint；不支持普通 int/ll、合数模数或浮点数。插入和查询 O(n²)，空间 O(n²)，占用的主元行按实际长度存储。n=0 允许，空向量不增秩。只维护张成空间，不返回具体线性组合系数。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/linear-basis/xor-prefix.cpp}}
+\textbf{前缀异或线性基}\par
+\TemplUsage{}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Prefix_Xor_Basis B; B.setM(2); // bits 0..1
 assert(B.insert(1,1)==0 && B.insert(2,2)==0);
@@ -1226,14 +3494,43 @@ assert(B.get_rank(3)==2 && B.contains(1,3));
 assert(!B.contains(1,4) && B.ask(0,4)==3);
 assert(B.insert(0,5)==5);
 \end{lstlisting}
-\TemplNote{处理到右端点 r 后，\texttt{get\_rank(l)}、\texttt{contains(x,l)}、\texttt{ask(x,l)} 分别查询编号 [l,r] 的秩、可表示性和最大异或值。l 默认 1；l 大于 r 时视为空基。\texttt{rank} 是全部已插入元素的秩。pos 中的正编号是保留的原元素编号，a 是消元后的基。插入值必须满足 $x<2^m$（m=64 时允许任意 ull）。单次 O(m)，空间 O(m)；查询历史右端点须离线按 r 扫描或自己保存副本，没有持久化。\texttt{contains(x,l)} 对超范围高位返回 false，\texttt{ask(x,l)} 保留 x 的高位。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/linear-basis/xor.cpp}}
-\textbf{异或线性基}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setM(int m); void set(); rank
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认 64 位，setM 设置 0..64 位并清空，使用位 0..m-1；set 保留 m 清空。rank 是当前秩；插入值不得有 m 以上的 1。
 
-\TemplApi{维护 m 位无符号整数的异或张成空间，默认 m=64；\texttt{setM(m)} 设置位数并清空，$0\le m\le64$，使用位 0..m-1。\texttt{Xor\_Basis B} 默认空基；\texttt{set()} 清空并保留位数，\texttt{insert(x)} 返回是否增秩，\texttt{rank} 为当前秩。\texttt{contains(x)} 判断能否异或得到 x；\texttt{ask(x=0)} 返回 x 与基中任意子集异或的最大值，允许空集。}
-\textbf{最小示例（放入 main）：}
+\textbf{复杂度：}O(m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+int insert(ull x,int id)
+\end{lstlisting}
+\textbf{参数、效果与返回：}id 正且严格递增。增秩返回 0，否则返回此次相关关系中被剔除的最早可替换编号；x=0 返回本次 id。set/setM 也清空编号进度。
+
+\textbf{复杂度：}O(m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int get_rank(int l=1) const; bool contains(ull x,int l=1) const; ull ask(ull x=0,int l=1) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}只考虑已插入且编号>=l 的元素，分别求秩、能否表示 x、最大 x xor 子集值。查询 [l,r] 时处理到 r 即查询，继续插入后不能直接指定过去的 r。
+
+\textbf{复杂度：}O(m)。
+
+\TemplNote{处理到右端点 r 后，\texttt{get\_rank(l)}、\texttt{contains(x,l)}、\texttt{ask(x,l)} 分别查询编号 [l,r] 的秩、可表示性和最大异或值。l 默认 1；l 大于 r 时视为空基。\texttt{rank} 是全部已插入元素的秩。pos 中的正编号是保留的原元素编号，a 是消元后的基。插入值必须满足 $x<2^m$（m=64 时允许任意 ull）。单次 O(m)，空间 O(m)；查询历史右端点须离线按 r 扫描或自己保存副本，没有持久化。\texttt{contains(x,l)} 对超范围高位返回 false，\texttt{ask(x,l)} 保留 x 的高位。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/linear-basis/xor.cpp}}
+\textbf{异或线性基}\par
+\TemplUsage{}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Xor_Basis B; B.setM(3); // bits 0..2
 assert(B.insert(1) && B.insert(2));
@@ -1241,34 +3538,156 @@ assert(!B.insert(3) && B.rank==2);
 assert(B.contains(3) && !B.contains(4));
 assert(B.ask()==3 && B.ask(4)==7);
 \end{lstlisting}
-\TemplNote{插入、查询均 O(m)，空间 O(m)。插入值必须满足 $x<2^m$，m=64 时允许任意 ull。\texttt{contains(x)} 对带有超范围高位的 x 返回 false；\texttt{ask(x)} 允许这样的 x，高位保持不变。输入按无符号大小比较；m=64 时第 63 位可用，m=0 时只能插入零。零向量不增秩。a 中存的是消元后的向量，不是原输入元素。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/mod-int.cpp}}
-\textbf{固定模数及组合数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setM(int m); void set(); rank
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认 64 位，setM 设置 0..64 位并清空，使用位 0..m-1；set 保留 m 清空。rank 是当前秩；插入值不得有 m 以上的 1。
 
+\textbf{复杂度：}O(m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool insert(ull x); bool contains(ull x) const; ull ask(ull x=0) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}insert 增秩返回 true；contains 判断是否能异或得到 x；ask 最大化 x xor 子集异或和，允许空集。ask 的高于 m 位保持原样。
+
+\textbf{复杂度：}O(m)。
+
+\TemplNote{插入、查询均 O(m)，空间 O(m)。插入值必须满足 $x<2^m$，m=64 时允许任意 ull。\texttt{contains(x)} 对带有超范围高位的 x 返回 false；\texttt{ask(x)} 允许这样的 x，高位保持不变。输入按无符号大小比较；m=64 时第 63 位可用，m=0 时只能插入零。零向量不增秩。a 中存的是消元后的向量，不是原输入元素。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/mod-int.cpp}}
+\textbf{固定模数及组合数}\par
 \TemplUsage{默认模数 998244353。模数写在源码中的 \texttt{MOD}；阶乘表按需扩容。}
-\TemplApi{\begin{itemize}
-\item \texttt{mint} 支持四则、\texttt{pow(k)}、\texttt{inv()}；除数必须可逆。
-\item \texttt{init(n)} 保证 fac、ifac、inv 覆盖到 n，组合数调用会自动预处理。
-\item \texttt{C(k,n)} 和 \texttt{binom(n,k)} 都表示从 n 个中选 k 个；这里 C 的参数顺序与常见记法相反。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 init(10);
 assert(C(2,5).x==10 && binom(5,2).x==10);
 mint a=3; assert((a*a.inv()).x==1);
 assert(a.pow(4).x==81);
 \end{lstlisting}
-\TemplNote{阶乘方案用于质数模数且 n<MOD；比较时可读 \texttt{.x}，此版未定义 mint 的 ==。输入运算符直接读 \texttt{.x}，读负数或未归一化数据时先读 long long 再构造 mint。避免 \texttt{pow(LLONG\_MIN)}。多项式文件已内置本类，不要重复粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/rational.cpp}}
-\textbf{有理数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+ModInt<unsigned M>; using mint=ModInt<MOD>
+\end{lstlisting}
+\textbf{参数、效果与返回：}编译期模数类型，默认 MOD=998244353。四则可用合数模，但阶乘表的递推按质数模数使用；换模要改 MOD。
 
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+mint(); mint(int); mint(unsigned); mint(ll); mint(ull); x
+\end{lstlisting}
+\textbf{参数、效果与返回：}默认 0；整数构造自动归一化，可处理负数。x 为 [0,模数) 的值，只读，不要直接写越界数。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+a+b; a-b; a*b; a/b; a+=b; a-=b; a*=b; a/=b
+\end{lstlisting}
+\textbf{参数、效果与返回：}模运算，支持左右两侧混合整数；复合运算改左值并返回引用。除法等价乘逆元，除数必须与模数互质。
+
+\textbf{复杂度：}加减乘 O(1)，除 O(log 模数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
++a; -a; ++a; --a; a==b; a!=b; bool(a); !a
+\end{lstlisting}
+\textbf{参数、效果与返回：}一元正负、前置增减、相等/非等及非零判断；没有数值大小比较。前置增减返回自身引用。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint pow(ll k) const; mint inv() const
+\end{lstlisting}
+\textbf{参数、效果与返回：}a.pow(k) 返回 a\textasciicircum{}k；k<0 时先求逆，要求 a 可逆。a.inv() 同样要求 gcd(a.x,模数)=1；0 不可逆。
+
+\textbf{复杂度：}O(log(|k|+1)) / O(log 模数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}按 ll 范围读取十进制后归一化，输出非负标准余数；流式运算返回流引用。
+
+\textbf{复杂度：}O(字符数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+mint C(int k,int n); mint binom(int n,int k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回从 n 个中选 k 个，即通常写的 C(n,k)。本库 C 的参数顺序相反；k<0 或 k>n 返回 0。
+
+\textbf{复杂度：}表已就绪时 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}fac[i]=i!，ifac[i]=1/i!，inv[i]=1/i，inv[0] 仅占位。只能读预处理范围内的项。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+mint operator++(int); mint operator--(int)
+\end{lstlisting}
+\textbf{参数、效果与返回：}a++/a-- 返回修改前副本；此重载是本文件的接口，动态模数版未提供后置形式。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n=0)
+\end{lstlisting}
+\textbf{参数、效果与返回：}扩展阶乘/逆阶乘/逆元表到至少 n；0<=n<MOD，要求 MOD 为质数。C 会自动调用，重复小范围 init 无额外扩展。
+
+\textbf{复杂度：}扩表 O(n)，空间 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+mint Apple_in_Box(int n,int m); mint Apple_in_Box(int n,int m,int k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}n 个相同球放入 m 个有标号盒；两参要求每盒非空，三参要求前 k 盒非空，其余可空，0<=k<=m。使用 m>=1，n 及组合数上界须可预处理。
+
+\textbf{复杂度：}扩表后 O(1)。
+
+\TemplNote{阶乘表要求质数模数且 n<MOD。当前实现支持 ==/!=、负整数输入归一化与 pow(LLONG\_MIN)，负幂仍要求底数可逆。C(k,n) 的参数顺序不要用反。多项式文件已内置 mint，不要重复粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/rational.cpp}}
+\textbf{有理数}\par
 \TemplUsage{用 ll 分子 p、分母 q 表示精确有理数，适合需要精确比较和运算的斜率、比例等。构造和运算后自动约分，分母保持正数，零统一为 0/1。比较 O(1)，运算的约分需要一次辗转相除。}
-\TemplApi{\texttt{Rat a(p,q)}，默认值为 0，\texttt{Rat(p)} 表示整数；支持四则运算、复合赋值、取负、六种比较及 ostream 输出。可以和整数直接运算，输出始终为 p/q。读取成员 a.p、a.q 可取得最简形式，不要直接修改。}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Rat a(1,2),b(2,3);
 assert(a+b==Rat(7,6) && a*b==Rat(1,3));
@@ -1278,21 +3697,53 @@ ostringstream out; out<<a;
 assert(out.str()=="7/6");
 assert(Rat(2,-4)==Rat(-1,2));
 \end{lstlisting}
-\TemplNote{依赖公共底稿中的 ll。分母及除数不能为零；初始分子、分母和约分后的分子、正分母必须能存入 ll。中间交叉乘法及加减使用 \_\_int128，因此允许中间值超出 ll 后约分回来，但最终溢出会触发 assert。没有浮点转换，也不表示无穷大。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{math/xor-equations.cpp}}
-\textbf{XOR 方程组}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Rat(); Rat(ll p,ll q=1); static Rat make(__int128 p,__int128 q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}构造最简有理数，默认 0/1；分母不可为零，符号归到分子。make 允许 128 位中间参数，但约分后的 p/q 必须能用 ll 存储且 q>0。
 
+\textbf{复杂度：}O(log 数值范围)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+p; q; a+b; a-b; a*b; a/b; -a
+\end{lstlisting}
+\textbf{参数、效果与返回：}p/q 可读取，不要直接改；四则和取负返回约分后的 Rat，允许与整数混用。除数不可为 0；约分后的结果须在 ll 范围内。
+
+\textbf{复杂度：}每次 O(log 数值范围)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+a+=b; a-=b; a*=b; a/=b
+\end{lstlisting}
+\textbf{参数、效果与返回：}原地运算，返回 a 引用，其余条件同四则。
+
+\textbf{复杂度：}O(log 数值范围)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+a==b; a!=b; a<b; a<=b; a>b; a>=b; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}比较使用精确交叉乘积；输出始终为 p/q，包括整数如 2/1。没有输入 >> 重载，先读 p、q 再构造。
+
+\textbf{复杂度：}比较 O(1)，输出 O(位数)。
+
+\TemplNote{依赖公共底稿中的 ll。分母及除数不能为零；初始分子、分母和约分后的分子、正分母必须能存入 ll。中间交叉乘法及加减使用 \_\_int128，因此允许中间值超出 ll 后约分回来，但最终溢出会触发 assert。没有浮点转换，也不表示无穷大。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{math/xor-equations.cpp}}
+\textbf{XOR 方程组}\par
 \TemplUsage{解若干条形如 $x_0\mathbin{\oplus}x_2=k$ 的方程。每个未知数是一个 ll，系数只决定该未知数是否参加异或；对系数 bitset 做消元时，同时异或整个右端 ll，一次处理全部 64 位。支持负数右端，按其位模式参与异或。}
-\TemplApi{\begin{itemize}
-\item \texttt{Xor\_Gauss<N> g}：N 是 bitset 的编译期容量，默认有 N 个变量。
-\item \texttt{setN(n)} 设置实际变量数，要求 $0\le n\le N$，同时清空方程；\texttt{set()} 清空方程但保留 n。
-\item \texttt{add(a,b)}：a 为 \texttt{bitset<N>}，b 为 ll。a[i]=1 表示该行包含变量 x[i]，下标 0..n-1；更高的位必须为 0。返回整个方程组是否仍有解。
-\item \texttt{solve()} 返回 -1 无解、0 多解、1 唯一解。答案放在 \texttt{x[0..n-1]}，自由变量取 0；无解时 x 为空。
-\item 有解时 \texttt{rank} 为系数矩阵的秩，自由变量数为 n-rank。添加方程会清空旧答案，需要重新 solve。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 Xor_Gauss<3> g;
 g.add(bitset<3>(0b011),5); // x[0] ^ x[1] = 5
@@ -1304,110 +3755,215 @@ assert(g.x==vector<ll>({7,2,1}));
 assert(!g.add(bitset<3>(),1)); // 0 = 1
 assert(g.solve()==-1);
 \end{lstlisting}
-\TemplNote{bitset 的最低位对应 x[0]；同一个变量在一条方程中出现两次会抵消，构造时可用 flip(i)。零系数行右端非零即矛盾。本模板使用 GNU bitset 的置位遍历接口。设 $W=\lceil N/64\rceil$，每次插入最坏 $O((n+1)(W+1))$，回代 $O(n(n+W+1))$，存储上界 $O(N(W+1))$。N 与 n 同阶时可按常规 bitset 消元估算开销。}
-\end{minipage}\par\vspace{1.2em}
-\section{数论 / number-theory}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/dujiao-sieve.cpp}}
-\textbf{\ensuremath{\mu}、\ensuremath{\varphi} 前缀和}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Xor_Gauss<N>; void set(); void setN(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}N 是编译期 bitset 容量，默认 n=N；set 清空方程保留 n，setN 设 0<=n<=N 再清空。变量从 0 起，值为 ll。
 
+\textbf{复杂度：}O(n*ceil(N/64))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool add(bitset<N> v,ll w)
+\end{lstlisting}
+\textbf{参数、效果与返回：}添加 XOR\_\{i:v[i]=1\} x[i]=w，n 以上的系数必须为零。返回加入后整个系统是否相容，不是是否增秩。不相容后持续 false，需 set 才重置。
+
+\textbf{复杂度：}O((n+1)*(ceil(N/64)+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+int solve(); x; rank; ok
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 -1 无解、0 多解、1 唯一；有解 x[0..n-1] 是一组 ll 解，自由变量取零。rank 是系数秩，ok 是相容标志。可继续加方程后再次 solve。
+
+\textbf{复杂度：}O(n*(n+ceil(N/64)+1))。
+
+\TemplNote{bitset 的最低位对应 x[0]；同一个变量在一条方程中出现两次会抵消，构造时可用 flip(i)。零系数行右端非零即矛盾。本模板使用 GNU bitset 的置位遍历接口。设 $W=\lceil N/64\rceil$，每次插入最坏 $O((n+1)(W+1))$，回代 $O(n(n+W+1))$，存储上界 $O(N(W+1))$。N 与 n 同阶时可按常规 bitset 消元估算开销。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{数论 / number-theory}
+\subsection{\texttt{number-theory/dujiao-sieve.cpp}}
+\textbf{\ensuremath{\mu}、\ensuremath{\varphi} 前缀和}\par
 \TemplUsage{预筛小范围并缓存整除分块递归，分别查询 sum \ensuremath{\mu}(i)、sum \ensuremath{\varphi}(i)，i=1..n。}
-\TemplApi{\begin{itemize}
-\item \texttt{du\_jiao d; d.init\_mu(B)} 后调用 sum\_mu(n)，返回 ll。
-\item \texttt{init\_phi(B)} 后调用 sum\_phi(n)，返回 \_\_int128。
-\item B>=1，n>=0；两个初始化和缓存相互独立，可只使用一个。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 du_jiao d; d.init_mu(3);
 assert(d.sum_mu(10)==-1);
 d.init_phi(3); assert(d.sum_phi(10)==32);
 assert(d.sum_mu(0)==0 && d.sum_phi(0)==0);
 \end{lstlisting}
-\TemplNote{必须先初始化对应函数。B 是预处理上界而非查询上限，常从 n\textasciicircum{}(2/3) 附近结合内存选择；预筛 O(B)，递归性能随 B 和查询集改变。重复初始化会清空该项缓存。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/floor-sum.cpp}}
-\textbf{类欧几里得整除求和}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void init_mu(int B); void init_phi(int B)
+\end{lstlisting}
+\textbf{参数、效果与返回：}B>=1；分别预处理 mu/phi 的前缀数组并清空对应记忆化缓存。两个独立，只初始化需要的一种即可；数组 mu[i]/phi[i] 已是前缀和，不是单点函数值。
 
+\textbf{复杂度：}O(B) 时间/空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+ll sum_mu(ll n); __int128 sum_phi(ll n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}n>=0，分别返回 [1,n] 上的函数和，n=0 返回 0；调用前须完成对应 init。区间 [l,r] 用 sum(r)-sum(l-1)。phi 结果不要转回 ll。
+
+\textbf{复杂度：}B 取约 n\textasciicircum{}(2/3) 时整体 O(n\textasciicircum{}(2/3))；缓存命中 O(1) 期望。
+
+\TemplNote{必须先初始化对应函数。B 是预处理上界而非查询上限，常从 n\textasciicircum{}(2/3) 附近结合内存选择；预筛 O(B)，递归性能随 B 和查询集改变。重复初始化会清空该项缓存。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{number-theory/floor-sum.cpp}}
+\textbf{类欧几里得整除求和}\par
 \TemplUsage{计算闭区间 i=l..r 上 floor((a*i+b)/c) 的和，时间 O(log c)，返回 \_\_int128。}
-\TemplApi{\begin{itemize}
-\item \texttt{floor\_sum(l,r,a,b,c)} 参数都是 ll。
-\item l,r,a,b 均非负，c>0；l>r 返回 0。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 auto ans=floor_sum(1,4,3,1,2);
 assert(ans==16); // 2+3+5+6
 \end{lstlisting}
-\TemplNote{不能直接处理负系数或负下标。输出可配 int128\_IO；不要先在 ll 中计算 a*l。答案和内部累计值须在有符号 128 位范围内。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/linear-sieve.cpp}}
-\textbf{线性筛素数}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+__int128 floor_sum(ll l,ll r,ll a,ll b,ll c)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 sum\_\{i=l\}\textasciicircum{}r floor((a*i+b)/c)。要求 l,r,a,b>=0、c>0；中间计算和答案须在 \_\_int128 内。取模前先用此类型接返回值；可用 FastIO 输出。 l>r 时返回 0。
 
+\textbf{复杂度：}类欧几里得 O(log(c+1)) 轮。
+
+\TemplNote{不能直接处理负系数或负下标。输出可配 basic/fast-io.cpp；不要先在 ll 中计算 a*l。答案和内部累计值须在有符号 128 位范围内。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{number-theory/linear-sieve.cpp}}
+\textbf{线性筛素数}\par
 \TemplUsage{O(n) 时间和空间，适合需要枚举范围内全部素数。}
-\TemplApi{\begin{itemize}
-\item \texttt{init(n)} 重建范围 0..n，n>=1。
-\item \texttt{is\_prime[x]} 判断 x 是否为素数；\texttt{prime[1..m]} 为升序素数，prime[0] 是占位。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 init(20);
 assert(m==8 && prime[1]==2 && prime[m]==19);
 assert(is_prime[17] && !is_prime[1]);
 \end{lstlisting}
-\TemplNote{不是任意大整数判素接口，不能访问 n 以外。全局 init、m、is\_prime 名字较通用，与其他模板组合时应检查冲突。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/modular-arithmetic.cpp}}
-\textbf{模逆元和扩展 CRT}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n); is_prime; prime; m
+\end{lstlisting}
+\textbf{参数、效果与返回：}n>=1。重建 0..n 素数表，is\_prime[x] 判断素数；prime[1..m] 是递增素数，第 0 项占位，m 为素数数目。超出 n 不能直接查表。
 
+\textbf{复杂度：}O(n) 时间/空间。
+
+\TemplNote{不是任意大整数判素接口，不能访问 n 以外。全局 init、m、is\_prime 名字较通用，与其他模板组合时应检查冲突。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{number-theory/modular-arithmetic.cpp}}
+\textbf{模逆元和扩展 CRT}\par
 \TemplUsage{提供 gcd、lcm、逆元与不要求模数互素的同余方程合并。}
-\TemplApi{\begin{itemize}
-\item \texttt{inv(a,m)} 要求 m>0 且 gcd(a,m)=1。
-\item \texttt{COE(r,m)} 表示 x=r (mod m)，a+b 或 a+=b 合并两个方程。
-\item 结果 empty() 为 true 表示无解；否则 r 是标准余数、M 是合并模数，accept(x) 判断满足性。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 COE a(2,3),b(3,5); auto c=a+b;
 assert(!c.empty() && c.r==8 && c.M==15);
 assert(c.accept(23) && inv(3,11)==4);
 assert((COE(0,2)+COE(1,2)).empty());
 \end{lstlisting}
-\TemplNote{合并后的模数须能放入 ll，内部乘法虽提升到 \_\_int128，但结果不是任意精度。inv 函数会与部分模数模板的全局 inv 数组重名，需要按实际组合改名。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/pollard-rho.cpp}}
-\textbf{大整数判素与质因数分解}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+ull gcd(ull x,ull y); ull lcm(ull x,ull y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}非负整数最大公约/最小公倍数，gcd(0,0)=0，任一为零则 lcm=0；lcm 结果须在 ull 范围内。
 
+\textbf{复杂度：}O(log(max(x,y)+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+ll inv(ll x,ll M)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回标准余数形式的 x 逆元，M>0，允许 x 为负；要求 gcd(x,M)=1，否则断言失败。
+
+\textbf{复杂度：}O(log M)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+COE(); COE(ll r,ll M); r; M
+\end{lstlisting}
+\textbf{参数、效果与返回：}表示同余 x=r (mod M)，M>0；构造归一化 r。默认 0 mod 1 表示全部整数。结果 r 是最小非负解，M 为合并后模数。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+COE a+b; COE& a+=b; bool empty() const; bool accept(ll x) const
+\end{lstlisting}
+\textbf{参数、效果与返回：}+ 合并两同余，可非互质；无解时 M=-1，empty 为 true。accept 判断整数是否满足当前同余，无解恒 false。合并后 lcm 必须能存 ll。
+
+\textbf{复杂度：}合并 O(log 模数)，判定 O(1)。
+
+\TemplNote{合并后的模数须能放入 ll，内部乘法虽提升到 \_\_int128，但结果不是任意精度。inv 函数会与部分模数模板的全局 inv 数组重名，需要按实际组合改名。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{number-theory/pollard-rho.cpp}}
+\textbf{大整数判素与质因数分解}\par
 \TemplUsage{Miller-Rabin 配合 Pollard-Rho，适用于范围内不适合筛到上界的整数。随机算法的运行时间依赖输入。}
-\TemplApi{\begin{itemize}
-\item \texttt{is\_prime(n)} 判断素数。
-\item \texttt{factor(n)} 返回升序质因子，含重数；n=1 返回空。
-\item \texttt{pollard\_rho(n)} 提供一个因子，素数时返回自身。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 auto f=factor(360);
 assert((f==vector<ull>{2,2,2,3,3,5}));
 assert(is_prime(1000000007ULL));
 \end{lstlisting}
-\TemplNote{factor 的输入要求 1<=n<2\textasciicircum{}62，不能传 0。不是完整 uint64 范围版本。判素函数与线性筛的 is\_prime 数组同名，不能原样同贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{number-theory/stern-brocot.cpp}}
-\textbf{有理数二分}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+bool is_prime(ull n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}对模板允许的 n 范围作素性判定，小于 2 返回 false。使用固定 Miller-Rabin 底数；本实现要求 n<2\textasciicircum{}62，不能按完整 ull 范围调用。
 
+\textbf{复杂度：}O(log n) 次模乘（固定底数个数）。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+ull pollard_rho(ull n); vector<ull> factor(ull n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}factor 要求 n>=1，pollard\_rho 要求 n>=2；统一限制 n<2\textasciicircum{}62。pollard\_rho 找因子，素数返回自身；factor 返回递增质因子列表，按重数重复，factor(1) 为空。不允许 factor(0)。
+
+\textbf{复杂度：}随机化算法，运行时间与因子大小有关，不保证固定多项式最坏界。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ull rho_gcd(ull x,ull y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}非负整数二进制 gcd，任一为零时返回另一项；用于需要避免与其他 gcd 重名的调用。
+
+\textbf{复杂度：}O(log(max(x,y)+1))。
+
+\TemplNote{factor 的输入要求 1<=n<2\textasciicircum{}62，不能传 0。不是完整 uint64 范围版本。判素函数与线性筛的 is\_prime 数组同名，不能原样同贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{number-theory/stern-brocot.cpp}}
+\textbf{有理数二分}\par
 \TemplUsage{在 $0\le p\le M,\ 1\le q\le M$ 的最简分数中寻找目标或目标两侧相邻分数。先粘贴 math/rational.cpp。沿 Stern--Brocot 树倍增跳步，再二分跳步长度；询问次数及本地计算量均为 $O(\log(M+1))$，额外空间 O(1)，不计判定函数内部开销。}
-\TemplApi{\begin{itemize}
-\item \texttt{SBT t; t.setM(M)} 清空并开始搜索，$1\le M\le\mathrm{LLONG\_MAX}$。
-\item 在 \texttt{!t.done()} 时调用 \texttt{Rat x=t.ask()} 获取分数，然后 \texttt{t.tell(res)}：-1 表示 x 偏小，0 表示恰好，1 表示 x 偏大。反复 ask 不推进搜索。
-\item \texttt{done()} 表示搜索结束。若 \texttt{found()} 为真，\texttt{l==r} 是答案；否则 l 是最大的偏小候选，r 是最小的偏大候选。
-\item l、r 为 \texttt{pair<ll,ll>}，分别保存分子、分母。\texttt{\{-1,0\}} 表示没有偏小候选，\texttt{\{1,0\}} 表示没有偏大候选；这两个哨兵不能构造 Rat。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 SBT t; t.setM(100); Rat target(2,3);
 while(!t.done()){
@@ -1424,24 +3980,54 @@ while(!t.done()){
 assert(!t.found());
 assert(t.l==make_pair(7ll,5ll) && t.r==make_pair(10ll,7ll));
 \end{lstlisting}
-\textbf{为什么只有一个 log：}一段倍增加二分确定跳步长度 k，花费 $O(\log(k+1))$ 次询问。设两端的“分子加分母”为 u、v；完整一段后变为 $u+kv$、$u+(k+1)v$（或交换），乘积至少放大 k+1 倍。该乘积从 1 开始，始终不超过 $4M^2$，所以各段 $\log(k+1)$ 之和为 $O(\log M)$；最后提前终止的一段也只需 $O(\log M)$。查询分数天然最简，无需每次求 gcd。
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void setM(ll M)
+\end{lstlisting}
+\textbf{参数、效果与返回：}M>=1，重置搜索域：最简分数 0<=p<=M、1<=q<=M。只搜非负有理数；先粘贴 Rat。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+bool done() const; Rat ask() const; void tell(int res)
+\end{lstlisting}
+\textbf{参数、效果与返回：}循环 while(!done())\{Rat x=ask();tell(cmp(x));\}。res=-1 表示刚问的 x 太小，+1 太大，0 相等；问后反馈一次，反馈必须与数轴顺序一致。done 后不可再 ask/tell。
+
+\textbf{复杂度：}整次搜索 O(log(M+1)) 交互，空间 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+bool found() const; pair<ll,ll> l,r
+\end{lstlisting}
+\textbf{参数、效果与返回：}结束后 found=true 表示反馈了相等，l==r 是答案；否则 l/r 是阈值左右相邻候选。l=(-1,0) 表示无下界候选，r=(1,0) 表示无上界候选，不能构造成 Rat。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+tell(x<target?-1:1)
+\end{lstlisting}
+\textbf{参数、效果与返回：}只有 < 与 >= 时这样反馈：结束得到最大的 <target 候选 l、最小的 >=target 候选 r，found 不会为真。若目标可能不在候选集中，这仍是边界搜索而非精确等值定位。
+
+\textbf{复杂度：}同上。
 
 \TemplNote{反馈必须对应同一个目标或单调分界，符号描述的是当前询问值，不能反过来。目标可以不在候选集合，也可以小于零或大于 M。若只提供 -1 和 1，则搜索最终返回分界两侧候选，不会报告 found；对“< 与 >=”判定，l 是最大的 < 候选，r 是最小的 >= 候选，r 可以恰好等于目标。没有有限上界时 r 为 1/0；目标小于零时 l 为 -1/0，r 为 0/1。}
-\end{minipage}\par\vspace{1.2em}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
 \section{多项式 / polynomial}
-\noindent\begin{minipage}{\textwidth}
 \subsection{\texttt{polynomial/fwt.cpp}}
-\textbf{按位 AND / OR / XOR 卷积}
-
+\textbf{按位 AND / OR / XOR 卷积}\par
 \TemplUsage{求 $c_k=\sum_{i\mathbin{\mathrm{op}}j=k}a_i b_j$，其中 op 为按位 AND、OR 或 XOR。长度 $n=2^k$，每次变换 $O(n\log n)$，额外空间 $O(1)$。}
-\TemplApi{\begin{itemize}
-\item \texttt{convolution\_and(a,b)}、\texttt{convolution\_or(a,b)}、\texttt{convolution\_xor(a,b)} 直接返回对应卷积，不修改传入数组。支持长度不同、非二次幂长度；任一输入为空则返回空数组，否则结果长度为不小于两者最大长度的最小二次幂。
-\item \texttt{fwt\_and(a)}、\texttt{fwt\_or(a)}、\texttt{fwt\_xor(a)} 原地正变换；第二个参数传 \texttt{true} 做逆变换。
-\item 支持 \texttt{vector<int>}、\texttt{vector<ll>} 和 \texttt{vector<mint>}。mint 需先抄模整数定义，FWT 本身不依赖多项式文件。
-\item 两个数组补零到相同的非零二次幂长度 n，使 n 大于最大下标；不必补到两者长度之和。
-\item 两边做同一种正变换，逐点相乘，再做对应逆变换，即得卷积。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 vector<int> a{1,2},b{3,4};
 auto c=convolution_and(a,b); assert((c==vector<int>{13,8}));
@@ -1449,20 +4035,43 @@ c=convolution_or(a,b); assert((c==vector<int>{3,18}));
 c=convolution_xor(a,b); assert((c==vector<int>{11,10}));
 // vector<mint> works with the same interfaces.
 \end{lstlisting}
-\TemplNote{下标从 0 开始。int/ll 表示普通整数运算，不会自动取模，正变换和逐点乘法的中间值也必须不溢出。整数 XOR 逆变换逐层除以 2，要求每步可整除，不能把任意整数数组当成合法频域数据。XOR 模运算要求 2 可逆，通常使用奇数模数；AND/OR 无此限制。不需要归一化第二次。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{polynomial/integer.cpp}}
-\textbf{整数卷积与递推第 i 项}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+void fwt_and(vector<T> &a,bool inverse=false); fwt_or(...); fwt_xor(...)
+\end{lstlisting}
+\textbf{参数、效果与返回：}T 可为 int、ll 或 mint。原地变换，长度必须为正的 2 次幂；false 正变换，true 逆变换。不改变 vector 长度。
 
+\textbf{复杂度：}O(n log n)，额外空间 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+vector<T> convolution_and(vector<T> a,vector<T> b); convolution_or(...); convolution_xor(...)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 c[k]=sum\_\{i OP j=k\} a[i]*b[j]，OP 对应 \&、竖线或 \textasciicircum{}。自动把两输入补到不小于 max 长度的 2 次幂；任一输入空则返回空。调用者原 vector 不改。
+
+\textbf{复杂度：}O(n log n) 时间，O(n) 空间。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+XOR 逆变换的除法
+\end{lstlisting}
+\textbf{参数、效果与返回：}整数版本需输入确实来自整数变换/卷积，使除以 2 精确；mint 要求 2 可逆。所有整数中间结果也须不溢出，不能只看最终答案范围。
+
+\textbf{复杂度：}每层 O(n)。
+
+\TemplNote{下标从 0 开始。int/ll 表示普通整数运算，不会自动取模，正变换和逐点乘法的中间值也必须不溢出。整数 XOR 逆变换逐层除以 2，要求每步可整除，不能把任意整数数组当成合法频域数据。XOR 模运算要求 2 可逆，通常使用奇数模数；AND/OR 无此限制。不需要归一化第二次。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{polynomial/integer.cpp}}
+\textbf{整数卷积与递推第 i 项}\par
 \TemplUsage{需要精确 long long 答案时使用。内部在三个质数下计算并通过 CRT 恢复有符号整数，不设置目标模数，也不使用浮点 FFT。递推仅要求返回项能存入 ll，中间生成函数的整数系数可以超过 ll。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly} / \texttt{Poly} 为 \texttt{vector<ll>}。\texttt{f*g} 返回普通整数卷积，支持负数；任一输入为空则返回空向量。
-\item \texttt{recurrence(a,c,i)}：已知 d 个初值和 d 个系数，$a_n=\sum_{j=0}^{d-1}c_j a_{n-1-j}$，返回第 i 项。两个向量等长，i 从 0 开始；空向量表示零数列。
-\item \texttt{FSPE(F,G,i)} 返回生成函数 F/G 的第 i 项，要求 G 非空且 G[0] 为 1 或 -1，F 可以为空。
-\item \texttt{RSPE(a,i)} 从样本推断递推再求第 i 项。必须已知数列满足 d 阶整数系数齐次线性递推，提供至少 2d 个连续初始项；空样本约定为零数列。i 在样本范围内直接返回该项。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,-2,3},g{4,5};
 assert((f*g==poly{4,-3,2,15}));
@@ -1475,23 +4084,53 @@ assert(recurrence({1,1},{LLONG_MAX,1-LLONG_MAX},
 // A genuinely signed 64-bit result.
 assert((poly{LLONG_MIN}*poly{1}==poly{LLONG_MIN}));
 \end{lstlisting}
-\TemplNote{真实卷积的每个系数、递推的返回项必须在 ll 范围内。CRT 可在这个范围内唯一恢复答案；断言能发现部分越界，但不能作为任意大结果的溢出检测器。单次卷积结果长度不超过 $2^{23}$；递推阶数 $d<2^{22}$，其他生成函数查询也须满足每次内部卷积的长度限制。卷积 O(n log n)，已知递推的查询 $O(d\log(d+1)\log(i+1))$，RSPE 的推断另需 O(sd)，s 为样本数。有限样本不能证明某个递推对所有后续项成立，不要用于任意数列外推。本文件自带全部实现，不依赖 mint，也不要与其他定义 poly 的文件同时粘贴。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{polynomial/mtt.cpp}}
-\textbf{非 NTT 模数下的多项式}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+using poly=vector<ll>; using Poly=poly; poly operator*(const poly &f,const poly &g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}0 起下标为次数，精确有符号整数卷积，不取模；允许负系数。空输入返回空，非空结果长度 n+m-1，须<=2\textasciicircum{}23。
 
+\textbf{复杂度：}O(N log N)，N 为补齐长度。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+ll FSPE(const poly &f,const poly &g,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回形式级数 [x\textasciicircum{}k]f/g，k>=0，g 非空且 g[0]=1 或 -1。中间多项式可超出 ll，但真实返回项必须在 ll 范围内。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))，d 取输入规模。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+ll recurrence(const poly &a,const poly &c,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}a 是 d 个初值，c 是 d 个系数，a[t]=sum\_\{j=0\}\textasciicircum{}\{d-1\} c[j]*a[t-1-j]；0 起第 k 项。a/c 长度相等；明确知道递推时优先用此接口。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+ll RSPE(const poly &a,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}从样本推断整数系数线性递推，再求第 k 项。已知阶数 d 时至少给 2d 项；不能把任意数列前缀当作确定递推。真实结果须能存 ll，CRT 不能检测所有溢出。
+
+\textbf{复杂度：}推断 O(样本数*d)，再加推项复杂度。
+
+\TemplNote{真实卷积的每个系数、递推的返回项必须在 ll 范围内。CRT 可在这个范围内唯一恢复答案；断言能发现部分越界，但不能作为任意大结果的溢出检测器。单次卷积结果长度不超过 $2^{23}$；递推阶数 $d<2^{22}$，其他生成函数查询也须满足每次内部卷积的长度限制。卷积 O(n log n)，已知递推的查询 $O(d\log(d+1)\log(i+1))$，RSPE 的推断另需 O(sd)，s 为样本数。有限样本不能证明某个递推对所有后续项成立，不要用于任意数列外推。本文件自带全部实现，不依赖 mint，也不要与其他定义 poly 的文件同时粘贴。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{polynomial/mtt.cpp}}
+\textbf{非 NTT 模数下的多项式}\par
 \TemplUsage{目标模数运行时设置，三模 NTT 后 CRT 还原。卷积支持 2 至 INT\_MAX 之间的任意模数，包括合数；常用 FPS 功能与 ntt-fast 对齐。}
-\TemplApi{\begin{itemize}
-\item 先调用 \texttt{mint::setM(mod)}，再创建多项式。切换模数会清空 fac/ifac/inv，旧 mint 和 poly 值失效；同一时刻使用一个目标模数。
-\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须在目标模数下可逆。
-\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
-\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
-\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
-\item \texttt{Poly} 与 \texttt{poly} 是同一个类型；\texttt{lagrange(xs,ys)} 支持互异取值点，包括零点，返回次数小于点数的插值多项式。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 mint::setM(1000000007);
 poly f{1,1,0,0};
@@ -1503,21 +4142,153 @@ assert(FSPE({0,1},{1,-1,-1},10).x==55);
 auto p=lagrange({0,1,2},{1,4,9});
 assert(p[0].x==1 && p[1].x==2 && p[2].x==1);
 \end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度 n 还要小于模数，且 1..n-1 均可逆。init(n) 要求 n! 可逆，integ(f) 要求 1..f.size() 可逆；使用质数模数且次数小于模数即可满足这些条件。BM、递推求值和插值中的除数也必须可逆；合数模数下仅仅非零或取值点互异不足以保证这一点。没有 poly-new 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{polynomial/ntt-fast.cpp}}
-\textbf{998244353 下的常用多项式}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+static void mint::setM(unsigned mod)
+\end{lstlisting}
+\textbf{参数、效果与返回：}2<=mod<=INT\_MAX；先设置再创建值，改模使旧值失效并清空 fac/ifac/inv。卷积支持合数；FPS/递推/插值中的所有除数必须是单位元。卷积长度<=2\textasciicircum{}23，FPS 输入<=2\textasciicircum{}22。
 
+\textbf{复杂度：}O(旧表大小)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+poly; Poly; f[i]; f.resize(n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；Poly 是 poly 别名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
+
+\textbf{复杂度：}resize 与新增项数相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(const poly &f,const poly &g); f+g; f-g; f+=g; f-=g
+\end{lstlisting}
+\textbf{参数、效果与返回：}* 为卷积；+/- 按次数相加减并扩展至较长长度；复合加减原地修改。空输入的卷积为空。
+
+\textbf{复杂度：}乘 O(N log N)，加减 O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,mint x); poly operator*(mint x,poly f); poly operator/(poly f,poly g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}数乘逐项乘；f/g 是相关运算，结果第 i 项=sum\_j f[i+j]*g[j]，不是多项式长除或 FPS 相除。
+
+\textbf{复杂度：}数乘 O(n)，相关 O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint value(const poly &f,mint x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Horner 法求 f(x)，空多项式返回 0；不修改 f。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+poly Inv(const poly &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回长度 n 的 1/f mod x\textasciicircum{}n；要求非空且 f[0] 可逆。FPS 相除用 f*Inv(g) 后 resize 到目标长度。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+poly diff(poly f); poly integ(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}求导返回 n-1 项（空输入返回空）；积分返回 n+1 项，常数为零。integ 要求 1..n 的逆元存在。
+
+\textbf{复杂度：}O(n)，积分可能扩展逆元表。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+poly Ln(const poly &f); poly Exp(const poly &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Ln 要求 f[0]=1，Exp 要求 f[0]=0；输入非空，返回同长度。计算涉及的整数分母均须可逆。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+poly BM(poly a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+
+\textbf{复杂度：}O(样本数*d)，最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+mint FSPE(poly F,poly G,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 [x\textasciicircum{}k]F/G，k>=0，G 非空、G[0] 可逆；F 可为空，返回 0。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+mint RSPE(poly samples,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+
+\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+poly lagrange(const vector<mint> &xs,const vector<mint> &ys)
+\end{lstlisting}
+\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+
+\textbf{复杂度：}O(n\textasciicircum{}2)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+mint; mint::pow(ll k); mint::inv(); x; cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}内置 mint，不再粘贴其他模整数文件。构造、四则/复合四则、正负号、前置增减、==/!=、bool/!、输入输出的用法同模整数；负指数要求可逆。这里未提供后置 ++/--。
+
+\textbf{复杂度：}基本运算 O(1)，逆元/幂 O(log 参数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{14. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}预处理阶乘等表，C(k,n) 与 binom(n,k) 返回 n 选 k，越界 k 返回 0；C 会扩表。直接读表前先 init。
+
+\textbf{复杂度：}扩表 O(n)，表就绪查询 O(1)。
+
+\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度 n 还要小于模数，且 1..n-1 均可逆。init(n) 要求 n! 可逆，integ(f) 要求 1..f.size() 可逆；使用质数模数且次数小于模数即可满足这些条件。BM、递推求值和插值中的除数也必须可逆；合数模数下仅仅非零或取值点互异不足以保证这一点。没有 ntt 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{polynomial/ntt-fast.cpp}}
+\textbf{998244353 下的常用多项式}\par
 \TemplUsage{适用于固定模数下的大规模卷积与形式幂级数。卷积 O(n log n)，BM 和普通插值为二次复杂度。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
-\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
-\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
-\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,1,0,0};
 auto g=Inv(f); auto h=f*g; h.resize(4);
@@ -1526,42 +4297,163 @@ auto e=Exp(Ln(f));
 for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
 assert(FSPE({0,1},{1,-1,-1},10).x==55);
 \end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 NTT 长度不超过 2\textasciicircum{}23，Inv/Ln/Exp 的中间卷积也计入这个限制。lagrange(x,y) 要求取值点互异，允许零点。}
-\end{minipage}\par\vspace{1.2em}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{polynomial/ntt-int64.cpp}}
-\textbf{ll 系数的旧版多项式}
-
-\TemplUsage{保留旧题适配接口，系数类型为 ll，默认 MOD=998244353。新题优先用 poly-fast 或 MTT。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly} 实际是 vector<long long>，输入系数应先归一化到 [0,MOD)。
-\item \texttt{f*g} 为卷积，\texttt{inv/ln/exp/sqrt} 使用小写命名。
-\item \texttt{init(n)} 准备 fac、ifac、Inv 表；注意 Inv 是整数逆元数组，inv 才是幂级数求逆函数。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\textbf{1. 声明 / 调用形式}
 \begin{lstlisting}
-init(10); poly f{1,2},g{3,4}; auto h=f*g;
-assert(h[0]==3 && h[1]==10 && h[2]==8);
-poly a{1,1,0,0}; auto b=inv(a);
-assert(b[0]==1 && b[1]==MOD-1);
+MOD=998244353; FFT_MAX=23
 \end{lstlisting}
-\TemplNote{不要根据其他版本的接口大小写直接替换。旧版保留许多历史实现，本手册的可运行示例验证乘法和求逆；做递推推项优先选已核对接口的 MTT/poly-fast，避免依赖旧示例 solve。文件含 poly、LL、MP 等宏，组合时应留意污染。}
-\end{minipage}\par\vspace{1.2em}
-\noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{polynomial/ntt.cpp}}
-\textbf{带长除、多点求值的多项式}
+\textbf{参数、效果与返回：}固定模数；实际变换长度必须是 <=2\textasciicircum{}23 的 2 次幂，FPS 的中间卷积也算在内。不要只根据最终返回长度判断可用范围。
 
+\textbf{复杂度：}不适用。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+poly; f[i]; f.resize(n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；本文件只有小写 poly 类型名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
+
+\textbf{复杂度：}resize 与新增项数相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,poly g); f+g; f-g; f+=g; f-=g
+\end{lstlisting}
+\textbf{参数、效果与返回：}* 为卷积；+/- 按次数相加减并扩展至较长长度；复合加减原地修改。空输入的卷积为空。
+
+\textbf{复杂度：}乘 O(N log N)，加减 O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,mint x); poly operator*(mint x,poly f); poly operator/(poly f,poly g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}数乘逐项乘；f/g 是相关运算，结果第 i 项=sum\_j f[i+j]*g[j]，不是多项式长除或 FPS 相除。
+
+\textbf{复杂度：}数乘 O(n)，相关 O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint value(const poly &f,mint x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Horner 法求 f(x)，空多项式返回 0；不修改 f。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+poly Inv(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回长度 n 的 1/f mod x\textasciicircum{}n；要求非空且 f[0] 可逆。FPS 相除用 f*Inv(g) 后 resize 到目标长度。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+poly diff(poly f); poly integ(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}求导返回 n-1 项（空输入返回空）；积分返回 n+1 项，常数为零。integ 要求 1..n 的逆元存在。
+
+\textbf{复杂度：}O(n)，积分可能扩展逆元表。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+poly Ln(poly f); poly Exp(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Ln 要求 f[0]=1，Exp 要求 f[0]=0；输入非空，返回同长度。计算涉及的整数分母均须可逆。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+poly BM(poly a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+
+\textbf{复杂度：}O(样本数*d)，最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+mint FSPE(poly F,poly G,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 [x\textasciicircum{}k]F/G，k>=0，G 非空、G[0] 可逆；F 可为空，返回 0。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+mint RSPE(poly samples,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+
+\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+poly lagrange(vector<mint> xs,vector<mint> ys)
+\end{lstlisting}
+\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+
+\textbf{复杂度：}O(n\textasciicircum{}2)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+mint; mint::pow(ll k); mint::inv(); x; cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}内置 mint，不再粘贴其他模整数文件。构造、四则/复合四则、正负号、前置增减、==/!=、bool/!、输入输出的用法同模整数；负指数要求可逆。这里未提供后置 ++/--。
+
+\textbf{复杂度：}基本运算 O(1)，逆元/幂 O(log 参数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{14. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}预处理阶乘等表，C(k,n) 与 binom(n,k) 返回 n 选 k，越界 k 返回 0；C 会扩表。直接读表前先 init。
+
+\textbf{复杂度：}扩表 O(n)，表就绪查询 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{15. 声明 / 调用形式}
+\begin{lstlisting}
+void fft(mint *a,int n); void invFft(mint *a,int n); void fft(poly &a); void invFft(poly &a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，逆变换已经乘 n 的逆元。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
+
+\textbf{复杂度：}O(n log n)。
+
+\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 NTT 长度不超过 2\textasciicircum{}23，Inv/Ln/Exp 的中间卷积也计入这个限制。lagrange(x,y) 要求取值点互异，允许零点。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\subsection{\texttt{polynomial/ntt.cpp}}
+\textbf{带长除、多点求值的多项式}\par
 \TemplUsage{同样固定模数 998244353，提供常用幂级数和 Sqrt、Div、Eval 等接口。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
-\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
-\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
-\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
-\item \texttt{Sqrt(f)} 当前仅接受 f[0]=1，取常数项为 1 的根。
-\item \texttt{Div(f,g,q,r)} 得到多项式长除的商与余式，g 最高次系数非零。\texttt{Eval(f,xs)} 返回各取值点的函数值。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,1,0,0};
 auto g=Inv(f); auto h=f*g; h.resize(4);
@@ -1574,29 +4466,349 @@ assert(q.size()==2 && q[0].x==1 && q[1].x==1);
 auto v=Eval({1,2,1},{0,1,2});
 assert(v[0].x==1 && v[1].x==4 && v[2].x==9);
 \end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
-\end{minipage}\par\vspace{1.2em}
-\section{计算几何 / geometry}
+\subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
-\subsection{\texttt{geometry/geometry-2d.cpp}}
-\textbf{整数二维几何基础}
-
-\TemplUsage{点坐标和叉积均为 ll，提供凸包、面积与基本相交判断；需要另定义 ld=long double。}
-\TemplApi{\begin{itemize}
-\item \texttt{Point(x,y)}；点向量加减；\texttt{a*b} 是叉积，\texttt{a\textasciicircum{}b} 是点积。
-\item \texttt{convex(points)} 求凸包，\texttt{convec\_area(hull)} 返回两倍面积。
-\item \texttt{on\_segment}、strict\_intersect、nonstrict\_intersect 分别判断在线段上、严格相交、含端点相交。
-\end{itemize}}
-\textbf{粘贴本文件之前：}
+\textbf{1. 声明 / 调用形式}
 \begin{lstlisting}
-using ld=long double;
+MOD=998244353; FFT_MAX=23
 \end{lstlisting}
-\textbf{最小示例（放入 main）：}
+\textbf{参数、效果与返回：}固定模数；实际变换长度必须是 <=2\textasciicircum{}23 的 2 次幂，FPS 的中间卷积也算在内。不要只根据最终返回长度判断可用范围。
+
+\textbf{复杂度：}不适用。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+poly; f[i]; f.resize(n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；本文件只有小写 poly 类型名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
+
+\textbf{复杂度：}resize 与新增项数相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,poly g); f+g; f-g; f+=g; f-=g
+\end{lstlisting}
+\textbf{参数、效果与返回：}* 为卷积；+/- 按次数相加减并扩展至较长长度；复合加减原地修改。空输入的卷积为空。
+
+\textbf{复杂度：}乘 O(N log N)，加减 O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,mint x); poly operator*(mint x,poly f); poly operator/(poly f,poly g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}数乘逐项乘；f/g 是相关运算，结果第 i 项=sum\_j f[i+j]*g[j]，不是多项式长除或 FPS 相除。
+
+\textbf{复杂度：}数乘 O(n)，相关 O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint value(const poly &f,mint x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Horner 法求 f(x)，空多项式返回 0；不修改 f。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+poly Inv(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回长度 n 的 1/f mod x\textasciicircum{}n；要求非空且 f[0] 可逆。FPS 相除用 f*Inv(g) 后 resize 到目标长度。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+poly diff(poly f); poly integ(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}求导返回 n-1 项（空输入返回空）；积分返回 n+1 项，常数为零。integ 要求 1..n 的逆元存在。
+
+\textbf{复杂度：}O(n)，积分可能扩展逆元表。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+poly Ln(poly f); poly Exp(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Ln 要求 f[0]=1，Exp 要求 f[0]=0；输入非空，返回同长度。计算涉及的整数分母均须可逆。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+poly BM(poly a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+
+\textbf{复杂度：}O(样本数*d)，最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+mint FSPE(poly F,poly G,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 [x\textasciicircum{}k]F/G，k>=0，G 非空、G[0] 可逆；F 可为空，返回 0。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+mint RSPE(poly samples,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+
+\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+poly lagrange(vector<mint> xs,vector<mint> ys)
+\end{lstlisting}
+\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+
+\textbf{复杂度：}O(n\textasciicircum{}2)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+mint; mint::pow(ll k); mint::inv(); x; cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}内置 mint，不再粘贴其他模整数文件。构造、四则/复合四则、正负号、前置增减、==/!=、bool/!、输入输出的用法同模整数；负指数要求可逆。这里未提供后置 ++/--。
+
+\textbf{复杂度：}基本运算 O(1)，逆元/幂 O(log 参数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{14. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}预处理阶乘等表，C(k,n) 与 binom(n,k) 返回 n 选 k，越界 k 返回 0；C 会扩表。直接读表前先 init。
+
+\textbf{复杂度：}扩表 O(n)，表就绪查询 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{15. 声明 / 调用形式}
+\begin{lstlisting}
+void fft(mint *a,int n); void invFft(mint *a,int n); void fft(poly &a); void invFft(poly &a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，逆变换已经乘 n 的逆元。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{16. 声明 / 调用形式}
+\begin{lstlisting}
+poly Sqrt(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}仅支持 f[0]=1，返回同长度且常数项为 1 的形式平方根；不是任意模平方根。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{17. 声明 / 调用形式}
+\begin{lstlisting}
+void Div(poly f,poly g,poly &q,poly &r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}多项式长除，g 非空且末项非零；写出商 q、余式 r，满足 f=q*g+r，余式次数低于 g。与运算符 / 完全不同。
+
+\textbf{复杂度：}O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{18. 声明 / 调用形式}
+\begin{lstlisting}
+poly Eval(poly f,poly xs)
+\end{lstlisting}
+\textbf{参数、效果与返回：}批量求 f(xs[i])，返回与 xs 等长，顺序不变，允许重复点。
+
+\textbf{复杂度：}保守 O((n+m) log\textasciicircum{}2(n+m+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{19. 声明 / 调用形式}
+\begin{lstlisting}
+poly to_ex(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 f(e\textasciicircum{}x) 的前 n 项，n=f.size()；第 k 项为 sum\_j f[j]*j\textasciicircum{}k/k!。这不是 Exp(f)，不是 e\textasciicircum{}\{f(x)\}。
+
+\textbf{复杂度：}O(n log\textasciicircum{}2(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{20. 声明 / 调用形式}
+\begin{lstlisting}
+poly S2line(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回第二类 Stirling 数 S(n,0..n)，长度 n+1；n>=0 且阶乘表范围有效。
+
+\textbf{复杂度：}O(n log(n+1))。
+
+\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
+\end{minipage}\par\vspace{0.4em}
+\clearpage
+\section{计算几何 / geometry}
+\subsection{\texttt{geometry/geometry-2d.cpp}}
+\textbf{整数二维几何基础}\par
+\TemplUsage{点坐标和叉积均为 ll，提供凸包、面积与基本相交判断；需要另定义 ld=long double。}
+\subsubsection*{最小示例}
 \begin{lstlisting}
 vector<Point> a{{0,0},{2,0},{2,2},{0,2}};
 auto h=convex(a); assert(convec_area(h)==8);
 assert(on_segment(Point(1,0),Point(0,0),Point(2,0)));
 \end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+Point(ll x=0,ll y=0); x; y; cin>>P; cout<<P; void output(string tag="")
+\end{lstlisting}
+\textbf{参数、效果与返回：}整数点，流读写两个坐标；output 使用 cerr 调试。坐标及点积、叉积等中间结果须在 ll 范围内。另需 using ld=long double。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+P+Q; P-Q; P+=Q; P-=Q; P*k; k*P; P*=k
+\end{lstlisting}
+\textbf{参数、效果与返回：}向量加减及整数数乘，返回点；复合运算修改点。没有点除法与一元负号，取负用 -1*P。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+P*Q; P^Q; P==Q; P!=Q; P<Q
+\end{lstlisting}
+\textbf{参数、效果与返回：}点乘点的 * 是叉积，\textasciicircum{} 才是点积；< 按 x 再 y 排序，不是极角序。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+double Point::arg(); int sgn(ll x); int sgn(const Point &P); bool cmp(const Point &P,const Point &Q)
+\end{lstlisting}
+\textbf{参数、效果与返回：}arg 为 atan2(y,x) 弧度；sgn(ll) 返回 -1/0/1。sgn(Point) 是极角分区辅助，cmp 是极角比较；极角排序应排除零向量。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+ll area(const Point &A,const Point &B,const Point &C); ld dist(const Point &P); ll dist2(const Point &P)
+\end{lstlisting}
+\textbf{参数、效果与返回：}area 返回三角形面积的两倍且非负；dist/dist2 是向量长度及平方，两点距离用 dist(A-B)。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+int dir(const Point &A,const Point &B,const Point &C); int pre(int i,int n); int suf(int i,int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}dir 是连续向量 AB 与 BC 的叉积符号，正为左转，负为右转，零共线。pre/suf 是 0..n-1 环形下标前后继。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+vector<Point> convex(vector<Point> a); ll convec_area(const vector<Point> &h)
+\end{lstlisting}
+\textbf{参数、效果与返回：}convex 去重并返回凸包边界，去掉边上的共线中间点；不修改原 a。convec\_area 返回按环序凸多边形面积两倍，勿传任意乱序点集。
+
+\textbf{复杂度：}凸包 O(n log n)，面积 O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+bool on_segment(X,A,B); bool strict_intersect(A,B,C,D); bool nonstrict_intersect(A,B,C,D)
+\end{lstlisting}
+\textbf{参数、效果与返回：}判断 X 在闭线段 AB 上；strict 是线段内部真交，不含端点/共线；nonstrict 包含接触、共线重叠。参数均为 Point。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+bool parallel(Point A,Point B,Point C,Point D)
+\end{lstlisting}
+\textbf{参数、效果与返回：}判断 AB 与 CD 平行且不共线；共线返回 false。不是单纯方向叉积为零的判定，使用非退化直线。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+bool ray_intersect(Point A,Point B,Point C,Point D)
+\end{lstlisting}
+\textbf{参数、效果与返回：}判断从 A 沿 AB、从 C 沿 CD 的闭射线相交，含起点；方向为零按单点处理。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+bool in_triangle(P,A,B,C)
+\end{lstlisting}
+\textbf{参数、效果与返回：}P 是否在闭三角形内，含边界；退化三角形按三条闭边的并处理。
+
+\textbf{复杂度：}O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+int convex_min(int n,F val)
+\end{lstlisting}
+\textbf{参数、效果与返回：}在满足凸多边形线性目标对应环形单峰结构的 val(0..n-1) 上找一个最小值下标，n>0。不是任意数组求最小值函数。
+
+\textbf{复杂度：}O(log n) 次 val 调用。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+ll min_cross(const vector<Point> &h,Point X); ld min_cross(const vector<Point> &h,ld x,ld y)
+\end{lstlisting}
+\textbf{参数、效果与返回：}h 为非空、按环序且无共线中间点的凸包；第一重载最小化 h[i]*X（叉积），第二重载最小化 h[i].x*x+h[i].y*y（点积）。名称相同但目标不同。
+
+\textbf{复杂度：}O(log n)。
+
 \TemplNote{convex 自动排序去重。min\_cross 要求顶点按凸包环序排列且没有共线中间点，支持旋转起点、顺逆时针，O(log n)。射线包含端点，零方向按单点处理；退化三角形按三条边处理。坐标叉积、点积仍须保证不溢出 ll。Point 输出两个坐标，中间有空格；output 用于调试。}
-\end{minipage}\par\vspace{1.2em}
+\end{minipage}\par\vspace{0.4em}
 \end{document}
