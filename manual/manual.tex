@@ -4068,49 +4068,46 @@ XOR 逆变换的除法
 \TemplNote{下标从 0 开始。int/ll 表示普通整数运算，不会自动取模，正变换和逐点乘法的中间值也必须不溢出。整数 XOR 逆变换逐层除以 2，要求每步可整除，不能把任意整数数组当成合法频域数据。XOR 模运算要求 2 可逆，通常使用奇数模数；AND/OR 无此限制。不需要归一化第二次。}
 \end{minipage}\par\vspace{0.4em}
 \clearpage
-\subsection{\texttt{polynomial/integer.cpp}}
-\textbf{整数卷积与递推第 i 项}\par
-\TemplUsage{需要精确 long long 答案时使用。内部在三个质数下计算并通过 CRT 恢复有符号整数，不设置目标模数，也不使用浮点 FFT。递推仅要求返回项能存入 ll，中间生成函数的整数系数可以超过 ll。}
+\subsection{\texttt{polynomial/int64.cpp}}
+\textbf{模 $2^{64}$ 卷积与递推}\par
+\TemplUsage{使用 ull 自然溢出，所有加减乘均按模 $2^{64}$ 计算。卷积拆为四个 16 位段，在两个 NTT 质数下精确恢复各段的贡献，再合并为 ull；不依赖浮点精度。}
 \subsubsection*{最小示例}
 \begin{lstlisting}
-poly f{1,-2,3},g{4,5};
-assert((f*g==poly{4,-3,2,15}));
+poly f{1,0ull-2,3},g{4,5};
+assert((f*g==poly{4,0ull-3,2,15}));
+assert((poly{~0ull}*poly{~0ull}==poly{1}));
 assert(recurrence({0,1},{1,1},10)==55);
-assert(FSPE({0,1},{1,-1,-1},10)==55);
-assert(RSPE({0,1,1,2,3,5,8,13},92)==7540113804746346429LL);
-// Large intermediate coefficients, constant answer.
-assert(recurrence({1,1},{LLONG_MAX,1-LLONG_MAX},
-                  1000000000000000000LL)==1);
-// A genuinely signed 64-bit result.
-assert((poly{LLONG_MIN}*poly{1}==poly{LLONG_MIN}));
+assert(FSPE({0,1},{1,~0ull,~0ull},10)==55);
+assert(RSPE({0,2,2,4,6,10,16,26},10)==110);
 \end{lstlisting}
 \subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
 \textbf{1. 声明 / 调用形式}
 \begin{lstlisting}
-using poly=vector<ll>; using Poly=poly; poly operator*(const poly &f,const poly &g)
+using poly=vector<ull>; using Poly=poly;
+poly operator*(const poly &f,const poly &g)
 \end{lstlisting}
-\textbf{参数、效果与返回：}0 起下标为次数，精确有符号整数卷积，不取模；允许负系数。空输入返回空，非空结果长度 n+m-1，须<=2\textasciicircum{}23。
+\textbf{参数、效果与返回：}0 起下标为次数；非空结果长 n+m-1，须不超过 $2^{23}$。空输入返回空。负数写成 0ull-x，结果始终以无符号整数表示。
 
-\textbf{复杂度：}O(N log N)，N 为补齐长度。
+\textbf{复杂度：}O(N log N) 时间、O(N) 空间，N 为补齐长度。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
 \textbf{2. 声明 / 调用形式}
 \begin{lstlisting}
-ll FSPE(const poly &f,const poly &g,ll k)
+ull FSPE(poly f,poly g,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回形式级数 [x\textasciicircum{}k]f/g，k>=0，g 非空且 g[0]=1 或 -1。中间多项式可超出 ll，但真实返回项必须在 ll 范围内。
+\textbf{参数、效果与返回：}返回 $[x^k]f/g$；k>=0，g 非空且 g[0] 为奇数（无需等于 1）。空 f 返回 0。
 
-\textbf{复杂度：}O(d log(d+1) log(k+1))，d 取输入规模。
+\textbf{复杂度：}O(d log(d+1) log(k+1))，d 为输入规模。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
 \textbf{3. 声明 / 调用形式}
 \begin{lstlisting}
-ll recurrence(const poly &a,const poly &c,ll k)
+ull recurrence(const poly &a,const poly &c,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}a 是 d 个初值，c 是 d 个系数，a[t]=sum\_\{j=0\}\textasciicircum{}\{d-1\} c[j]*a[t-1-j]；0 起第 k 项。a/c 长度相等；明确知道递推时优先用此接口。
+\textbf{参数、效果与返回：}a、c 等长 d，给出 d 个初值及递推系数；a[t]=sum c[j]*a[t-1-j]，返回 0 起第 k 项，k>=0。计算中和返回时都允许自然溢出。已知递推式时优先使用。
 
 \textbf{复杂度：}O(d log(d+1) log(k+1))。
 
@@ -4118,14 +4115,14 @@ ll recurrence(const poly &a,const poly &c,ll k)
 \noindent\begin{minipage}{\textwidth}
 \textbf{4. 声明 / 调用形式}
 \begin{lstlisting}
-ll RSPE(const poly &a,ll k)
+ull RSPE(const poly &a,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}从样本推断整数系数线性递推，再求第 k 项。已知阶数 d 时至少给 2d 项；不能把任意数列前缀当作确定递推。真实结果须能存 ll，CRT 不能检测所有溢出。
+\textbf{参数、效果与返回：}从样本猜最短递推，再求 0 起第 k 项。必须已知这是某个 d 阶递推的前缀，并给至少 2d 项；有限样本不能证明任意数列的后续规律。内部按 2 的幂次选择主元消元，允许全偶数样本；不使用有限域 BM。
 
-\textbf{复杂度：}推断 O(样本数*d)，再加推项复杂度。
+\textbf{复杂度：}s 个样本的推断最坏 O($s^3$ log(s+1)) 时间、O($s^2$) 空间，再加推项代价。这比质数模数的 BM 慢，只建议小规模猜递推。
 
-\TemplNote{真实卷积的每个系数、递推的返回项必须在 ll 范围内。CRT 可在这个范围内唯一恢复答案；断言能发现部分越界，但不能作为任意大结果的溢出检测器。单次卷积结果长度不超过 $2^{23}$；递推阶数 $d<2^{22}$，其他生成函数查询也须满足每次内部卷积的长度限制。卷积 O(n log n)，已知递推的查询 $O(d\log(d+1)\log(i+1))$，RSPE 的推断另需 O(sd)，s 为样本数。有限样本不能证明某个递推对所有后续项成立，不要用于任意数列外推。本文件自带全部实现，不依赖 mint，也不要与其他定义 poly 的文件同时粘贴。}
 \end{minipage}\par\vspace{0.4em}
+\TemplNote{本文件不是有符号精确整数版本；输出是模 $2^{64}$ 的无符号代表元。FSPE 的分母常数必须是奇数。每次内部卷积结果长度不超过 $2^{23}$；已知递推式时用 recurrence 避免消元。不依赖 mint，不与其他 poly 实现同时粘贴。}
 \clearpage
 \subsection{\texttt{polynomial/mtt.cpp}}
 \textbf{非 NTT 模数下的多项式}\par
@@ -4286,8 +4283,8 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 \end{minipage}\par\vspace{0.4em}
 \clearpage
 \subsection{\texttt{polynomial/ntt-fast.cpp}}
-\textbf{998244353 下的常用多项式}\par
-\TemplUsage{适用于固定模数下的大规模卷积与形式幂级数。卷积 O(n log n)，BM 和普通插值为二次复杂度。}
+\textbf{998244353 快速多项式}\par
+\TemplUsage{固定模数 998244353；两层蝶形合并与 Shoup 模乘加速 NTT，求逆只补新增系数，Exp、Sqrt 同时维护逆级数并复用变换。不要求 AVX2，GNU C++17/20 均可使用。}
 \subsubsection*{最小示例}
 \begin{lstlisting}
 poly f{1,1,0,0};
@@ -4296,6 +4293,10 @@ assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
 auto e=Exp(Ln(f));
 for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
 assert(FSPE({0,1},{1,-1,-1},10).x==55);
+poly q,r; Div({1,2,1},{1,1},q,r);
+assert(q.size()==2 && q[0].x==1 && q[1].x==1);
+auto v=Eval({1,2,1},{0,1,2});
+assert(v[0].x==1 && v[1].x==4 && v[2].x==9);
 \end{lstlisting}
 \subsubsection*{接口参考}
 \noindent\begin{minipage}{\textwidth}
@@ -4311,9 +4312,9 @@ MOD=998244353; FFT_MAX=23
 \noindent\begin{minipage}{\textwidth}
 \textbf{2. 声明 / 调用形式}
 \begin{lstlisting}
-poly; f[i]; f.resize(n)
+poly; Poly; f[i]; f.resize(n)
 \end{lstlisting}
-\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；本文件只有小写 poly 类型名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
+\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；Poly 是 poly 的别名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
 
 \textbf{复杂度：}resize 与新增项数相关。
 
@@ -4443,11 +4444,61 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 \begin{lstlisting}
 void fft(mint *a,int n); void invFft(mint *a,int n); void fft(poly &a); void invFft(poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，逆变换已经乘 n 的逆元。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
+\textbf{参数、效果与返回：}原地 NTT/逆 NTT，n 正且为 2 次幂，频域按位逆序，逆变换已经乘 n 的逆元。旋转因子缓存占 O(N) 空间，N 为调用过的最大长度。vector 重载用 size；不自动补零。通常直接用卷积，无需手调底层变换。
 
 \textbf{复杂度：}O(n log n)。
 
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 NTT 长度不超过 2\textasciicircum{}23，Inv/Ln/Exp 的中间卷积也计入这个限制。lagrange(x,y) 要求取值点互异，允许零点。}
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{16. 声明 / 调用形式}
+\begin{lstlisting}
+poly Sqrt(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}仅支持 f[0]=1，返回同长度且常数项为 1 的形式平方根；不是任意模平方根。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{17. 声明 / 调用形式}
+\begin{lstlisting}
+void Div(poly f,poly g,poly &q,poly &r)
+\end{lstlisting}
+\textbf{参数、效果与返回：}多项式长除，g 非空且末项非零；写出商 q、余式 r，满足 f=q*g+r，余式次数低于 g。与运算符 / 完全不同。
+
+\textbf{复杂度：}O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{18. 声明 / 调用形式}
+\begin{lstlisting}
+poly Eval(poly f,poly xs)
+\end{lstlisting}
+\textbf{参数、效果与返回：}批量求 f(xs[i])，返回与 xs 等长，顺序不变，允许重复点。
+
+\textbf{复杂度：}保守 O((n+m) log\textasciicircum{}2(n+m+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{19. 声明 / 调用形式}
+\begin{lstlisting}
+poly to_ex(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 f(e\textasciicircum{}x) 的前 n 项，n=f.size()；第 k 项为 sum\_j f[j]*j\textasciicircum{}k/k!。这不是 Exp(f)，不是 e\textasciicircum{}\{f(x)\}。
+
+\textbf{复杂度：}O(n log\textasciicircum{}2(n+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{20. 声明 / 调用形式}
+\begin{lstlisting}
+poly S2line(int n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回第二类 Stirling 数 S(n,0..n)，长度 n+1；n>=0 且阶乘表范围有效。
+
+\textbf{复杂度：}O(n log(n+1))。
+
+\TemplNote{Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
 \end{minipage}\par\vspace{0.4em}
 \clearpage
 \subsection{\texttt{polynomial/ntt.cpp}}

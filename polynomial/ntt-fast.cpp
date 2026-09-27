@@ -1,10 +1,9 @@
 ////////////////////////////////////////////////////////////////
 //
-// template for ModInt
-// version 3.0 (Last Update Jun 15th, 2026)
+// template for polynomial modulo 998244353
 //
 // usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
-//   init(n); C(n,k); BM(a);
+//   Sqrt(f); Div(f,g,q,r); Eval(f,x); FSPE(f,g,k);
 //
 ////////////////////////////////////////////////////////////////
 template<unsigned _M>
@@ -97,160 +96,108 @@ inline mint C(int x,int y){
 inline mint binom(int y,int x){return C(x,y);}
 
 
-////////////////////////////////////////////////////////////////
-//
-// template for polynomial
-// version 7.0 (Last Update Jun 15th, 2026)
-// NTT core replaced with the faster version
-//
-////////////////////////////////////////////////////////////////
-
-using ll=long long;
+// Newton transform reuse follows QedDust413 & Killer_joke.
 using poly=vector<mint>;
+using Poly=poly;
 
 constexpr unsigned MO=998244353U;
 constexpr unsigned MO2=2U*MO;
 constexpr int FFT_MAX=23;
-constexpr array<mint,FFT_MAX+1> FFT_ROOTS={
-	1U,998244352U,911660635U,372528824U,929031873U,452798380U,922799308U,
-	781712469U,476477967U,166035806U,258648936U,584193783U,63912897U,
-	350007156U,666702199U,968855178U,629671588U,24514907U,996173970U,
-	363395222U,565042129U,733596141U,267099868U,15311432U
-};
-constexpr array<mint,FFT_MAX+1> INV_FFT_ROOTS={
-	1U,998244352U,86583718U,509520358U,337190230U,87557064U,609441965U,
-	135236158U,304459705U,685443576U,381598368U,335559352U,129292727U,
-	358024708U,814576206U,708402881U,283043518U,3707709U,121392023U,
-	704923114U,950391366U,428961804U,382752275U,469870224U
-};
-constexpr array<mint,FFT_MAX> FFT_RATIOS={
-	911660635U,509520358U,369330050U,332049552U,983190778U,123842337U,
-	238493703U,975955924U,603855026U,856644456U,131300601U,842657263U,
-	730768835U,942482514U,806263778U,151565301U,510815449U,503497456U,
-	743006876U,741047443U,56250497U,867605899U
-};
-constexpr array<mint,FFT_MAX> INV_FFT_RATIOS={
-	86583718U,372528824U,373294451U,645684063U,112220581U,692852209U,155456985U,
-	797128860U,90816748U,860285882U,927414960U,354738543U,109331171U,
-	293255632U,535113200U,308540755U,121186627U,608385704U,438932459U,
-	359477183U,824071951U,103369235U
-};
-
-// as[rev(i)] <- \sum_j \zeta^(ij) as[j]
-void fft(mint *as,int n){
-	assert(!(n&(n-1)));
-	assert(1<=n);
-	assert(n<=1<<FFT_MAX);
-	int m=n;
-	if(m>>=1){
-		for(int i=0;i<m;++i){
-			const unsigned x=as[i+m].x;
-			as[i+m].x=as[i].x+MO-x;
-			as[i].x+=x;
-		}
+struct NTT{
+struct Root{
+	unsigned x,y;
+	Root(unsigned v=1):x(v),y((1ull*v<<32)/MO){}
+	unsigned mul(unsigned v)const{
+		return v*x-unsigned((1ull*v*y)>>32)*MO;
 	}
-	if(m>>=1){
-		mint prod=1U;
-		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
-			for(int i=i0;i<i0+m;++i){
-				const unsigned x=(prod*as[i+m]).x;
-				as[i+m].x=as[i].x+MO-x;
-				as[i].x+=x;
-			}
-			prod*=FFT_RATIOS[__builtin_ctz(++h)];
+};
+vector<Root>w{1,1},iw{1,1};
+static unsigned norm(unsigned x){return x>=MO2?x-MO2:x;}
+void setN(int n){
+	for(int k=w.size();k<n;k<<=1){
+		w.resize(k*2);iw.resize(k*2);
+		mint x=mint(3).pow((MO-1)/(k*2)),y=x.inv();
+		for(int i=k/2;i<k;i++){
+			w[i*2]=w[i];w[i*2+1]=Root((mint(w[i].x)*x).x);
+			iw[i*2]=iw[i];iw[i*2+1]=Root((mint(iw[i].x)*y).x);
 		}
-	}
-	for(;m;){
-		if(m>>=1){
-			mint prod=1U;
-			for(int h=0,i0=0;i0<n;i0+=(m<<1)){
-				for(int i=i0;i<i0+m;++i){
-					const unsigned x=(prod*as[i+m]).x;
-					as[i+m].x=as[i].x+MO-x;
-					as[i].x+=x;
-				}
-				prod*=FFT_RATIOS[__builtin_ctz(++h)];
-			}
-		}
-		if(m>>=1){
-			mint prod=1U;
-			for(int h=0,i0=0;i0<n;i0+=(m<<1)){
-				for(int i=i0;i<i0+m;++i){
-					const unsigned x=(prod*as[i+m]).x;
-					as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
-					as[i+m].x=as[i].x+MO-x;
-					as[i].x+=x;
-				}
-				prod*=FFT_RATIOS[__builtin_ctz(++h)];
-			}
-		}
-	}
-	for(int i=0;i<n;++i){
-		as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
-		as[i].x=(as[i].x>=MO)?(as[i].x-MO):as[i].x;
 	}
 }
-
-// as[i] <- (1/n) \sum_j \zeta^(-ij) as[rev(j)]
-void invFft(mint *as,int n){
-	assert(!(n&(n-1)));
-	assert(1<=n);
-	assert(n<=1<<FFT_MAX);
-	int m=1;
-	if(m<n>>1){
-		mint prod=1U;
-		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
-			for(int i=i0;i<i0+m;++i){
-				const unsigned long long y=as[i].x+MO-as[i+m].x;
-				as[i].x+=as[i+m].x;
-				as[i+m].x=(prod.x*y)%MO;
-			}
-			prod*=INV_FFT_RATIOS[__builtin_ctz(++h)];
-		}
-		m<<=1;
-	}
-	for(;m<n>>1;m<<=1){
-		mint prod=1U;
-		for(int h=0,i0=0;i0<n;i0+=(m<<1)){
-			for(int i=i0;i<i0+(m>>1);++i){
-				const unsigned long long y=as[i].x+MO2-as[i+m].x;
-				as[i].x+=as[i+m].x;
-				as[i].x=(as[i].x>=MO2)?(as[i].x-MO2):as[i].x;
-				as[i+m].x=(prod.x*y)%MO;
-			}
-			for(int i=i0+(m>>1);i<i0+m;++i){
-				const unsigned long long y=as[i].x+MO-as[i+m].x;
-				as[i].x+=as[i+m].x;
-				as[i+m].x=(prod.x*y)%MO;
-			}
-			prod*=INV_FFT_RATIOS[__builtin_ctz(++h)];
+// DIF/DIT, two stages per pass; Shoup products stay below 2*MOD.
+void fft(mint *a,int n){
+	setN(n);
+	int len=n;
+	for(;len>=4;len>>=2){
+		int k=len>>2;
+		for(int l=0;l<n;l+=len)for(int j=0;j<k;j++){
+			unsigned x=a[l+j].x,y=a[l+j+k].x;
+			unsigned z=a[l+j+2*k].x,t=a[l+j+3*k].x;
+			unsigned u=norm(x+z),v=norm(y+t);
+			x=w[2*k+j].mul(x+MO2-z);
+			y=w[3*k+j].mul(y+MO2-t);
+			a[l+j].x=norm(u+v);
+			a[l+j+k].x=w[k+j].mul(u+MO2-v);
+			a[l+j+2*k].x=norm(x+y);
+			a[l+j+3*k].x=w[k+j].mul(x+MO2-y);
 		}
 	}
-	if(m<n){
-		for(int i=0;i<m;++i){
-			const unsigned y=as[i].x+MO2-as[i+m].x;
-			as[i].x+=as[i+m].x;
-			as[i+m].x=y;
+	if(len==2)for(int i=0;i<n;i+=2){
+		unsigned x=a[i].x,y=a[i+1].x;
+		a[i].x=norm(x+y);a[i+1].x=norm(x+MO2-y);
+	}
+	for(int i=0;i<n;i++)if(a[i].x>=MO)a[i].x-=MO;
+}
+void invFft(mint *a,int n){
+	setN(n);
+	int len=1;
+	if(__builtin_ctz(unsigned(n))&1){
+		for(int i=0;i<n;i+=2){
+			unsigned x=a[i].x,y=a[i+1].x;
+			a[i].x=x+y;a[i+1].x=x+MO-y;
+		}
+		len=2;
+	}
+	for(;len<n;len<<=2){
+		int k=len;
+		for(int l=0;l<n;l+=k*4)for(int j=0;j<k;j++){
+			unsigned x=a[l+j].x,y=iw[k+j].mul(a[l+j+k].x);
+			unsigned z=a[l+j+2*k].x,t=iw[k+j].mul(a[l+j+3*k].x);
+			unsigned u=norm(x+y),v=norm(x+MO2-y);
+			x=iw[2*k+j].mul(norm(z+t));
+			y=iw[3*k+j].mul(norm(z+MO2-t));
+			a[l+j].x=norm(u+x);a[l+j+2*k].x=norm(u+MO2-x);
+			a[l+j+k].x=norm(v+y);a[l+j+3*k].x=norm(v+MO2-y);
 		}
 	}
-	const mint invN=mint(n).inv();
-	for(int i=0;i<n;++i){
-		as[i]*=invN;
+	Root v(mint(n).inv().x);
+	for(int i=0;i<n;i++){
+		unsigned x=v.mul(a[i].x);
+		a[i].x=x>=MO?x-MO:x;
 	}
 }
-
-void fft(poly &as){
-	fft(as.data(),as.size());
+};
+NTT ntt;
+// Nonempty power-of-two length, <=2^23; spectrum uses bit-reversed order.
+void fft(mint *a,int n){
+	assert(n>0&&!(n&(n-1))&&n<=(1<<FFT_MAX));
+	ntt.fft(a,n);
 }
-void invFft(poly &as){
-	invFft(as.data(),as.size());
+void invFft(mint *a,int n){
+	assert(n>0&&!(n&(n-1))&&n<=(1<<FFT_MAX));
+	ntt.invFft(a,n);
 }
-
-// ----------------------------------------------------------------
+void fft(poly &a){fft(a.data(),a.size());}
+void invFft(poly &a){invFft(a.data(),a.size());}
 
 poly operator*(poly f,poly g){
 	if(f.empty()||g.empty())return{};
 	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
+	if(min(f.size(),g.size())<=32){
+		poly h(f.size()+g.size()-1);
+		for(int i=0;i<(int)f.size();i++)
+			for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
+		return h;
+	}
 	int n=f.size()+g.size();
 	int l=0;
 	while((1<<l)<n-1)++l;
@@ -303,22 +250,22 @@ mint value(const poly &f,mint x){
 
 // Formal inverse; constant term must be invertible.
 poly Inv(poly f){
-	assert(!f.empty()&&f[0]);
+	assert(!f.empty()&&f[0]&&f.size()<=(1<<FFT_MAX));
 	int n=f.size();
-	int l=0;
-	while((1<<l)<n)++l;
-	f.resize(1<<l);
-	poly g{f[0].inv()},_f;
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		g.resize(1<<(i+1));_f.resize(1<<(i+1));
-		fft(g);fft(_f);
-		for(int j=0;j<(1<<(i+1));j++)
-			g[j]=mint(2)*g[j]-g[j]*g[j]*_f[j];
-		invFft(g);
-		fill(begin(g)+(1<<i),end(g),0);
+	poly g{f[0].inv()},a,b;
+	for(int m=1;m<n;m<<=1){
+		int t=m<<1;
+		a.assign(f.begin(),f.begin()+min(n,t));a.resize(t);
+		b=g;b.resize(t);
+		fft(a);fft(b);
+		for(int i=0;i<t;i++)a[i]*=b[i];
+		invFft(a);
+		fill(a.begin(),a.begin()+m,0);
+		fft(a);
+		for(int i=0;i<t;i++)a[i]*=b[i];
+		invFft(a);g.resize(min(n,t));
+		for(int i=m;i<(int)g.size();i++)g[i]=-a[i];
 	}
-	g.resize(n);
 	return g;
 }
 
@@ -343,43 +290,127 @@ poly diff(poly f){
 // Formal logarithm; f[0]=1. Integration denominators must be invertible.
 poly Ln(poly f){
 	assert(!f.empty()&&f[0].x==1);
-	poly f_=diff(f),_f=Inv(f);
-	int n=f_.size(),m=_f.size();
-	int l=0;
-	while((1<<l)<n+m)++l;
-	f_.resize(1<<l);_f.resize(1<<l);
-	fft(f_);fft(_f);
-	for(int i=0;i<(1<<l);i++)f_[i]*=_f[i];
-	invFft(f_);
-	f_=integ(f_);
-	f_.resize(f.size());
-	return f_;
+	int n=f.size();
+	poly g=diff(f)*Inv(f);
+	g.resize(n-1);
+	return integ(move(g));
 }
 
-// Formal exponential; f[0]=0. Integration denominators must be invertible.
+// f[0]=0; maintain g=exp(f), h=1/g and reuse their transforms.
 poly Exp(poly f){
-	assert(!f.empty()&&!f[0]);
-	poly g{1},_f,_g;
-	int n=f.size();
-	int l=0;
-	while((1<<l)<n)++l;
-	f.resize(1<<l);
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		_g=Ln(g);
-		g.resize(1<<(i+1));
-		_f.resize(1<<(i+1));
-		_g.resize(1<<(i+1));
-		fft(g);
-		fft(_f);
-		fft(_g);
-		for(int j=0;j<(1<<(i+1));j++)
-			g[j]*=mint(1)-_g[j]+_f[j];
-		invFft(g);
-		fill(begin(g)+(1<<i),end(g),0);
+	assert(!f.empty()&&!f[0]&&f.size()<=(1<<FFT_MAX));
+	int n=f.size(),l=1;
+	while(l<n)l<<=1;
+	init(l);f.resize(l);
+	poly g(l),h(l),a(l),b(l),c(l);
+	g[0]=h[0]=a[0]=1;
+	if(l>1)a[1]=1;
+	for(int m=1;m<l;m<<=1){
+		int t=m<<1;
+		for(int i=0;i<m;i++)c[i]=f[i]*i;
+		fft(c.data(),m);
+		for(int i=0;i<m;i++)c[i]*=a[i];
+		invFft(c.data(),m);
+		for(int i=0;i<m;i++)c[i+m]=g[i]*i-c[i],c[i]=0;
+		copy(h.begin(),h.begin()+m,b.begin());
+		fill(b.begin()+m,b.begin()+t,0);
+		fft(c.data(),t);fft(b.data(),t);
+		for(int i=0;i<t;i++)c[i]*=b[i];
+		invFft(c.data(),t);
+		fill(c.begin(),c.begin()+m,0);
+		for(int i=m;i<t;i++)c[i]=c[i]*inv[i]-f[i];
+		fft(c.data(),t);
+		for(int i=0;i<t;i++)a[i]*=c[i];
+		invFft(a.data(),t);
+		for(int i=m;i<t;i++)g[i]=a[i]=-a[i];
+		if(t==l)break;
+		copy(g.begin(),g.begin()+m,a.begin());
+		fill(a.begin()+t,a.begin()+2*t,0);
+		fft(a.data(),2*t);
+		for(int i=0;i<t;i++)c[i]=a[i]*b[i];
+		invFft(c.data(),t);
+		fill(c.begin(),c.begin()+m,0);
+		fft(c.data(),t);
+		for(int i=0;i<t;i++)c[i]*=b[i];
+		invFft(c.data(),t);
+		for(int i=m;i<t;i++)h[i]=-c[i];
 	}
 	g.resize(n);
 	return g;
+}
+
+// f[0]=1; choose the square root with constant term 1.
+poly Sqrt(poly f){
+	assert(!f.empty()&&f[0].x==1&&f.size()<=(1<<FFT_MAX));
+	int n=f.size(),l=1;
+	while(l<n)l<<=1;
+	f.resize(l);
+	poly g(l),h(l),a(l),b(l),c(l);
+	g[0]=h[0]=a[0]=1;
+	mint v=499122177;
+	for(int m=1;m<l;m<<=1){
+		int t=m<<1;
+		for(int i=0;i<m;i++)a[i]*=a[i];
+		invFft(a.data(),m);
+		for(int i=0;i<m;i++)a[i+m]=a[i]-f[i]-f[i+m],a[i]=0;
+		copy(h.begin(),h.begin()+m,b.begin());
+		fill(b.begin()+m,b.begin()+t,0);
+		fft(a.data(),t);fft(b.data(),t);
+		for(int i=0;i<t;i++)a[i]*=b[i];
+		invFft(a.data(),t);
+		for(int i=m;i<t;i++)g[i]=-a[i]*v;
+		if(t==l)break;
+		copy(g.begin(),g.begin()+t,a.begin());
+		fft(a.data(),t);
+		for(int i=0;i<t;i++)c[i]=a[i]*b[i];
+		invFft(c.data(),t);
+		fill(c.begin(),c.begin()+m,0);
+		fft(c.data(),t);
+		for(int i=0;i<t;i++)c[i]*=b[i];
+		invFft(c.data(),t);
+		for(int i=m;i<t;i++)h[i]=-c[i];
+	}
+	g.resize(n);
+	return g;
+}
+
+// f=q*g+r; g.back()!=0. Unlike operator/, this is division.
+void Div(poly f,poly g,poly &q,poly &r){
+	assert(!g.empty()&&g.back()&&(&q!=&r));
+	if(f.size()<g.size()){q={0};r=move(f);return;}
+	int n=f.size(),m=g.size(),k=n-m+1;
+	poly a(f.rbegin(),f.rbegin()+k),b(g.rbegin(),g.rend());
+	b.resize(k);q=a*Inv(b);q.resize(k);
+	reverse(q.begin(),q.end());
+	b=q*g;r.resize(m-1);
+	for(int i=0;i<m-1;i++)r[i]=f[i]-b[i];
+}
+
+// Return f(x[i]); repeated evaluation points are allowed.
+poly Eval(poly f,poly x){
+	int n=x.size();
+	if(!n)return{};
+	vector<poly>g(n*4);
+	auto build=[&](auto &&self,int u,int l,int r)->void{
+		if(l==r){g[u]={-x[l],1};return;}
+		int m=(l+r)>>1;
+		self(self,u*2,l,m);self(self,u*2+1,m+1,r);
+		g[u]=g[u*2]*g[u*2+1];
+	};
+	build(build,1,0,n-1);
+	poly ans(n);
+	auto solve=[&](auto &&self,poly a,int u,int l,int r)->void{
+		if(r-l<32){
+			for(int i=l;i<=r;i++)ans[i]=value(a,x[i]);
+			return;
+		}
+		int m=(l+r)>>1;
+		poly q,b;
+		Div(a,g[u*2],q,b);self(self,move(b),u*2,l,m);
+		Div(move(a),g[u*2+1],q,b);self(self,move(b),u*2+1,m+1,r);
+	};
+	solve(solve,move(f),1,0,n-1);
+	return ans;
 }
 
 poly BM(poly a){
@@ -455,6 +486,40 @@ poly lagrange(vector<mint>x,vector<mint>y){
 		for(int j=0;j<n;j++)f[j]+=q[j]*c;
 	}
 	return f;
+}
+poly to_ex(poly f){ // f(e^x)
+	int n=f.size();
+	if(!n)return{};
+	::init(n);
+	function<pair<poly,poly>(int,int)>solve=[&](int l,int r){
+		if(l==r)return make_pair(poly{f[l]},poly{1,MOD-l});
+		int mid=l+r>>1;
+		auto ls=solve(l,mid),rs=solve(mid+1,r);
+		return make_pair(ls.first*rs.second+ls.second*rs.first,
+			ls.second*rs.second);
+	};
+	auto ans=solve(0,n-1);
+	poly g=ans.first*Inv(ans.second);
+	g.resize(n);
+	for(int i=0;i<n;i++)g[i]=g[i]*ifac[i];
+	return g;
+}
+
+poly S2line(int n){
+	// return S(n,i)
+	assert(n>=0);::init(n);
+	poly F(n+1),G(n+1);
+	// S(n,i) * binom(j,i) -> F(j)
+	for(int i=0;i<=n;i++){
+		G[i]=ifac[i];F[i]=mint(i).pow(n)*ifac[i];
+		if(i&1)F[i]*=-1;
+	}
+	F=F*G;
+	F.resize(n+1);
+	for(int i=0;i<=n;i++){
+		if(i&1)F[i]*=-1;
+	}
+	return F;
 }
 // use init(n) before accessing fac / ifac / inv directly
 // end for polynomial/ntt-fast.cpp
