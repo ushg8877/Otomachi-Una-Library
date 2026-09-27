@@ -255,6 +255,12 @@ void invFft(poly &as){
 poly operator*(poly f,poly g){
 	if(f.empty()||g.empty())return{};
 	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
+	if(min(f.size(),g.size())<=32){
+		poly h(f.size()+g.size()-1);
+		for(int i=0;i<(int)f.size();i++)
+			for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
+		return h;
+	}
 	int n=f.size()+g.size();
 	int l=0;
 	while((1<<l)<n-1)++l;
@@ -305,24 +311,24 @@ mint value(const poly &f,mint x){
 	return ans;
 }
 
-// Formal inverse; constant term must be invertible.
+// Formal inverse; only compute the new upper half each round.
 poly Inv(poly f){
-	assert(!f.empty()&&f[0]);
+	assert(!f.empty()&&f[0]&&f.size()<=(1<<FFT_MAX));
 	int n=f.size();
-	int l=0;
-	while((1<<l)<n)++l;
-	f.resize(1<<l);
-	poly g{f[0].inv()},_f;
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		g.resize(1<<(i+1));_f.resize(1<<(i+1));
-		fft(g);fft(_f);
-		for(int j=0;j<(1<<(i+1));j++)
-			g[j]=mint(2)*g[j]-g[j]*g[j]*_f[j];
-		invFft(g);
-		fill(begin(g)+(1<<i),end(g),0);
+	poly g{f[0].inv()},a,b;
+	for(int m=1;m<n;m<<=1){
+		int t=m<<1;
+		a.assign(f.begin(),f.begin()+min(n,t));a.resize(t);
+		b=g;b.resize(t);
+		fft(a);fft(b);
+		for(int i=0;i<t;i++)a[i]*=b[i];
+		invFft(a);
+		fill(a.begin(),a.begin()+m,0);
+		fft(a);
+		for(int i=0;i<t;i++)a[i]*=b[i];
+		invFft(a);g.resize(min(n,t));
+		for(int i=m;i<(int)g.size();i++)g[i]=-a[i];
 	}
-	g.resize(n);
 	return g;
 }
 
@@ -347,124 +353,81 @@ poly diff(poly f){
 // Formal logarithm; f[0]=1. Integration denominators must be invertible.
 poly Ln(poly f){
 	assert(!f.empty()&&f[0].x==1);
-	poly f_=diff(f),_f=Inv(f);
-	int n=f_.size(),m=_f.size();
-	int l=0;
-	while((1<<l)<n+m)++l;
-	f_.resize(1<<l);_f.resize(1<<l);
-	fft(f_);fft(_f);
-	for(int i=0;i<(1<<l);i++)f_[i]*=_f[i];
-	invFft(f_);
-	f_=integ(f_);
-	f_.resize(f.size());
-	return f_;
+	int n=f.size();
+	poly g=diff(f)*Inv(f);
+	g.resize(n-1);
+	return integ(move(g));
 }
 
 // Formal exponential; f[0]=0. Integration denominators must be invertible.
 poly Exp(poly f){
 	assert(!f.empty()&&!f[0]);
-	poly g{1},_f,_g;
 	int n=f.size();
-	int l=0;
-	while((1<<l)<n)++l;
-	f.resize(1<<l);
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		_g=Ln(g);
-		g.resize(1<<(i+1));
-		_f.resize(1<<(i+1));
-		_g.resize(1<<(i+1));
-		fft(g);
-		fft(_f);
-		fft(_g);
-		for(int j=0;j<(1<<(i+1));j++)
-			g[j]*=mint(1)-_g[j]+_f[j];
-		invFft(g);
-		fill(begin(g)+(1<<i),end(g),0);
+	poly g{1};
+	// exp(f)=g*(1+f-ln(g)) modulo x^(2*m).
+	for(int m=1;m<n;m<<=1){
+		int t=min(n,m<<1);
+		g.resize(t);
+		poly h=Ln(g),a(t-m);
+		for(int i=m;i<t;i++)a[i-m]=f[i]-h[i];
+		g.resize(m);a=g*a;g.resize(t);
+		for(int i=m;i<t;i++)g[i]=a[i-m];
 	}
-	g.resize(n);
 	return g;
 }
 
+// f[0]=1; choose the square root with constant term 1.
 poly Sqrt(poly f){
 	assert(!f.empty()&&f[0].x==1);
-	poly g{1},_f,_g;
 	int n=f.size();
-	int l=0;
-	while((1<<l)<n)++l;
-	f.resize(1<<l);
-	mint inv2=mint(2).inv();
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		_g=Inv(g);
-		g.resize(1<<(i+1));
-		_f.resize(1<<(i+1));
-		_g.resize(1<<(i+1));
-		fft(_f);
-		fft(_g);
-		fft(g);
-		for(int j=0;j<(1<<(i+1));j++)
-			g[j]=(_f[j]+g[j]*g[j])*inv2*_g[j];
-		invFft(g);
-		fill(begin(g)+(1<<i),end(g),0);
+	poly g{1};
+	mint v=mint(2).inv();
+	for(int m=1;m<n;m<<=1){
+		int t=min(n,m<<1);
+		g.resize(t);
+		poly h=poly(f.begin(),f.begin()+t)*Inv(g);
+		for(int i=m;i<t;i++)g[i]=h[i]*v;
 	}
-	g.resize(n);
 	return g;
 }
 
+// f=q*g+r; g.back()!=0. Unlike operator/, this is division.
 void Div(poly f,poly g,poly &q,poly &r){
-	assert(!g.empty()&&g.back());
-	if(f.size()<g.size()){q={0};r=f;return;}
-	int n=f.size()-1,m=g.size()-1;
-	reverse(f.begin(),f.end());
-	reverse(g.begin(),g.end());
-	g.resize(n+1);
-	q=f*Inv(g);
-	q.resize(n-m+1);
+	assert(!g.empty()&&g.back()&&(&q!=&r));
+	if(f.size()<g.size()){q={0};r=move(f);return;}
+	int n=f.size(),m=g.size(),k=n-m+1;
+	poly a(f.rbegin(),f.rbegin()+k),b(g.rbegin(),g.rend());
+	b.resize(k);q=a*Inv(b);q.resize(k);
 	reverse(q.begin(),q.end());
-	g.resize(m+1);
-	reverse(g.begin(),g.end());
-	reverse(f.begin(),f.end());
-	poly h=q*g;
-	r.resize(m);
-	for(int i=0;i<m;i++)r[i]=f[i]-h[i];
+	b=q*g;r.resize(m-1);
+	for(int i=0;i<m-1;i++)r[i]=f[i]-b[i];
 }
 
+// Return f(x[i]); repeated evaluation points are allowed.
 poly Eval(poly f,poly x){
-	if(x.empty())return{};
-	vector<poly>func;
-	map<pair<int,int>,int>mp;
-	function<poly(int,int)>prod=[&](int l,int r){
-		poly ans;
-		if(l==r)ans=poly{-x[l],1};
-		else{
-			int mid=(l+r)>>1;
-			ans=prod(l,mid)*prod(mid+1,r);
-		}
-		func.push_back(ans);
-		mp[{l,r}]=func.size()-1;
-		return ans;
+	int n=x.size();
+	if(!n)return{};
+	vector<poly>g(n*4);
+	auto build=[&](auto &&self,int u,int l,int r)->void{
+		if(l==r){g[u]={-x[l],1};return;}
+		int m=(l+r)>>1;
+		self(self,u*2,l,m);self(self,u*2+1,m+1,r);
+		g[u]=g[u*2]*g[u*2+1];
 	};
-	prod(0,x.size()-1);
-
-	function<poly(poly,int,int)>solve=[&](poly f,int l,int r){
-		if(l==r){
-			mint val=0;
-			for(int i=f.size()-1;i>=0;i--)
-				val=val*x[l]+f[i];
-			return poly{val};
+	build(build,1,0,n-1);
+	poly ans(n);
+	auto solve=[&](auto &&self,poly a,int u,int l,int r)->void{
+		if(r-l<32){
+			for(int i=l;i<=r;i++)ans[i]=value(a,x[i]);
+			return;
 		}
-		int mid=(l+r)>>1;
-		poly p0=func[mp[{l,mid}]],p1=func[mp[{mid+1,r}]];
-		poly d,q;
-		Div(f,p0,d,q);
-		poly ans=solve(q,l,mid);
-		Div(f,p1,d,q);
-		poly _ans=solve(q,mid+1,r);
-		for(mint i:_ans)ans.push_back(i);
-		return ans;
+		int m=(l+r)>>1;
+		poly q,b;
+		Div(a,g[u*2],q,b);self(self,move(b),u*2,l,m);
+		Div(move(a),g[u*2+1],q,b);self(self,move(b),u*2+1,m+1,r);
 	};
-	return solve(f,0,x.size()-1);
+	solve(solve,move(f),1,0,n-1);
+	return ans;
 }
 
 poly BM(poly a){
