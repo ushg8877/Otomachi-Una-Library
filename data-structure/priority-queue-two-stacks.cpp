@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/priority-queue-two-stacks.cpp
 //
 // usage: pq2stack<T> pq; pq.push(x,w); pq.prep(); pq.pop();
 //   pop removes max weight; needs chkmin; call prep() before each query

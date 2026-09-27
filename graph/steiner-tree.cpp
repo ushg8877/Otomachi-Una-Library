@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/steiner-tree.cpp
 //
 // usage: Steiner_Tree g; g.setN(n); g.add_edge(u,v,w);
 //   ll ans=g.solve({s1,s2,s3}); // minimum cost, -1 if disconnected

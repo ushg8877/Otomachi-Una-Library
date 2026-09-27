@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/fast-set.cpp
 //
 // usage: FastSet fs; fs.setN(n); fs.insert(x); fs.erase(x);
 //   fs[x]; fs.prev/next; needs chkmin/chkmax/first_bit/last_bit

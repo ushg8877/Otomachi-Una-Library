@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/ordered-disjoint-interval-tree.cpp
 //
 // usage: ODT odt; odt.set(); odt.erase(l,r); odt.add(l,r,c);
 //   odt.extract(l,r);  // assign color on [l,r]

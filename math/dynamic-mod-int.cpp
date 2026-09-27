@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/dynamic-mod-int.cpp
 //
 // usage: mint::setM(mod); init_fact(n); mint x; cin >> x;
 //

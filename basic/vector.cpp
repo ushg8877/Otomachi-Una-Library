@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/basic/vector.cpp
 //
 // usage: auto a=vrange(1,6); auto b=a+2; auto c=vmap(a,f);
 //   vcat(a,b); vunique(a); a&b; a|b;

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/linear-basis/field.cpp
 //
 // usage: Linear_Basis<mint> B; B.setN(n); B.insert(x); B.contains(x);
 //   T must be an exact field type; coordinates are 0..n-1

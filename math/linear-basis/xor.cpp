@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/linear-basis/xor.cpp
 //
 // usage: Xor_Basis B; B.setM(m); B.insert(x); B.contains(x); B.ask(x);
 //   m bits, 0<=m<=64; default 64. setM clears; set keeps m.

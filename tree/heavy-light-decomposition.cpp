@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/tree/heavy-light-decomposition.cpp
 //
 // usage: Tree tr; tr.setN(n); tr.add_edge(u,v); tr.build();
 //   tr.lca(u,v); tr.index_of_path(u,v);

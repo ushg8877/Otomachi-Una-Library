@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/generalized-suffix-automaton.cpp
 //
 // usage: GSAM sam; sam.insert(" aba"); sam.insert(" bab"); sam.build();
 //   sam.count(" ab"); sam.distinct();

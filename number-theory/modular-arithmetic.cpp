@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/number-theory/modular-arithmetic.cpp
 //
 // usage: inv(x,M); COE a(r,M); COE c=a+b;
 //   c.empty() if no solution

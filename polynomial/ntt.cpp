@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/polynomial/ntt.cpp
 //
 // usage: poly h=f*g; Inv(f); Ln(f); Exp(f);
 //   init(n); C(n,k); BM(a);

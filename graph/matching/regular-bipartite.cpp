@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/matching/regular-bipartite.cpp
 //
 // usage: Regular_Bipartite g; g.setN(n); g.add_edge(u,v);
 //   auto a=g.solve(); // d perfect matchings, a[c][u] is the right partner

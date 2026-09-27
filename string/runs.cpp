@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/runs.cpp
 //
 // usage: Runs t; auto a=t.build(" ababab"); // {1,6,2}
 //

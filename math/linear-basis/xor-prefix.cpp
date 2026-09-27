@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/linear-basis/xor-prefix.cpp
 //
 // usage: Prefix_Xor_Basis B; B.setM(m); int removed=B.insert(x,id);
 //   m bits, 0<=m<=64; default 64. setM clears; set keeps m.

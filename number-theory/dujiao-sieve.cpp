@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/number-theory/dujiao-sieve.cpp
 //
 // usage: du_jiao d; d.init_mu(B); ll mu=d.sum_mu(n);
 //   d.init_phi(B); __int128 phi=d.sum_phi(n);

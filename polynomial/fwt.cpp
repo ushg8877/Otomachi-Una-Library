@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/polynomial/fwt.cpp
 //
 // usage: auto c=convolution_and(a,b); // convolution_or / convolution_xor
 //   fwt_and(a); fwt_and(a,true); // forward / inverse; also or / xor

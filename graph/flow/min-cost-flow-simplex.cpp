@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/flow/min-cost-flow-simplex.cpp
 //
 // usage: Cost_Flow_Graph g; g.setN(n); g.setST(S,T);
 //   g.add_edge(u,v,cap,cost); auto [flow,cost]=g.min_cost_flow();

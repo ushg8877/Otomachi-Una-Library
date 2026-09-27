@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/disjoint-set.cpp
 //
 // usage: DSU dsu; dsu.setN(n); dsu.merge(u, v);
 //   dsu.same(u, v); int r = dsu.find(u);  // merge returns new root or 0

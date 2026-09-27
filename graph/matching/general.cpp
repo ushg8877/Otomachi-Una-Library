@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/graph/matching/general.cpp
 //
 // usage: blossom g; g.setN(n); g.add_edge(u,v); int cnt=g.solve();
 //   cnt*2==n if perfect; match[u]=0 if unmatched; 1-index

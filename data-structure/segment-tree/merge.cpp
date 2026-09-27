@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/merge.cpp
 //
 // usage: segt_merge sm; sm.setN(n); int rt=0;
 //   sm.add(rt,i,v); sm.ask(rt,x); sm.merge(a,b);

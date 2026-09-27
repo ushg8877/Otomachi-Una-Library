@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/range-add-min.cpp
 //
 // usage: MinAdd_segt st; st.setN(n); upd/add; ask(l,r) for range min
 //   upd(i,v); add(l,r,v); ask(l,r); initial values are zero.

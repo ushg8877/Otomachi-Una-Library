@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/ordered-disjoint-interval-tree-fast.cpp
 //
 // usage: Fast_ODT fot; fot.setN(n); fot.insert(l,r,c); fot.extract(l,r);
 //   requires data-structure/fast-set.cpp

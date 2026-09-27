@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/basic/fast-io.cpp
 //
 // usage: input.set(stdin); output.set(stdout); // after freopen
 //   input >> x; output << x << '\n'; output.flush();

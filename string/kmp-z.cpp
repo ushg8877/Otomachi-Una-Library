@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/string/kmp-z.cpp
 //
 // usage: string s = " ababa"; auto b = border(s); auto z = z_function(s);
 //   1-indexed with leading space

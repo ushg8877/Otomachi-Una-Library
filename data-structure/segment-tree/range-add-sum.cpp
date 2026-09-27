@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/range-add-sum.cpp
 //
 // usage: AddSum_segt st; st.setN(n);  // or set(l,r), 1-indexed
 //   upd/add point; add(l,r,v) range; ask; find_first/last

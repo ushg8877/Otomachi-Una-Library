@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/math/mod-int.cpp
 //
 // usage: mint a,b; init(n); C(n,k); // fixed prime modulus
 //

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/linear-rmq.cpp
 //
 // usage: Linear_RMQ<int> t; t.build(a); t.ask(l,r); t.pos(l,r);
 //   0-indexed, inclusive; use Linear_RMQ<int,true> for maximum.

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/bitset.cpp
 //
 // usage: Bitset a(n),b(n); a.set(i); a|=b; a<<=k;
 //   a.count(l,r); a.positions(); a.window_xor(l,r,b,to);

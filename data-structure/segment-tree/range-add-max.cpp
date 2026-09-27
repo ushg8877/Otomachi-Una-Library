@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/segment-tree/range-add-max.cpp
 //
 // usage: MaxAdd_segt st; st.setN(n); upd/add; ask(l,r) for range max
 //   default leaf value 0

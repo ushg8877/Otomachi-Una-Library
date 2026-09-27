@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/data-structure/fenwick/max.cpp
 //
 // usage: Max_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
 //   upd(i,v) is chmax, not assignment; ask(r) queries [vl,r].

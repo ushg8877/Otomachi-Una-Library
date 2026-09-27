@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// https://github.com/ushg8877/Otomachi-Una-Library
+// https://github.com/ushg8877/Otomachi-Una-Library/blob/main/number-theory/stern-brocot.cpp
 //
 // usage: SBT t; t.setM(M);
 //   while(!t.done()){Rat x=t.ask();t.tell(cmp(x));}
