@@ -114,6 +114,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 
 - [polynomial/fwt.cpp](polynomial/fwt.cpp)
 - [polynomial/int64.cpp](polynomial/int64.cpp)
+- [polynomial/mtt-fast.cpp](polynomial/mtt-fast.cpp)
 - [polynomial/mtt.cpp](polynomial/mtt.cpp)
 - [polynomial/ntt-fast.cpp](polynomial/ntt-fast.cpp)
 - [polynomial/ntt-int64.cpp](polynomial/ntt-int64.cpp)

@@ -19,7 +19,7 @@ keepspaces=true,tabsize=4,showstringspaces=false,aboveskip=0.3em,belowskip=0.3em
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
-按当前源码核对的 79 份竞赛模板接口参考。先看用途与示例，再按接口名查参数、返回值和边界；同类重载放在一起说明。
+按当前源码核对的 80 份竞赛模板接口参考。先看用途与示例，再按接口名查参数、返回值和边界；同类重载放在一起说明。
 
 组织方式参考 \href{https://en.cppreference.com/cpp/container/vector}{cppreference} 的声明、行为、复杂度与示例分层，具体契约以本库当前实现为准。
 
@@ -4123,6 +4123,174 @@ ull RSPE(const poly &a,ll k)
 
 \end{minipage}\par\vspace{0.4em}
 \TemplNote{本文件不是有符号精确整数版本；输出是模 $2^{64}$ 的无符号代表元。FSPE 的分母常数必须是奇数。每次内部卷积结果长度不超过 $2^{23}$；已知递推式时用 recurrence 避免消元。不依赖 mint，不与其他 poly 实现同时粘贴。}
+\clearpage
+\subsection{\texttt{polynomial/mtt-fast.cpp}}
+\textbf{运行时模数快速多项式}\par
+\TemplUsage{先调用 mint::setM(mod)。奇素数模数在精度预算内使用二维格映射与 AVX2/FMA 复数 FFT；合数、偶数及超预算规模自动使用三模 NTT。保留 mtt.cpp 的所有公开运算及 FPS 接口。需要支持 AVX2/FMA 的 CPU、GNU C++17/20，并先包含 \texttt{<immintrin.h>}。}
+\subsubsection*{最小示例}
+\begin{lstlisting}
+mint::setM(1000000007);
+poly f{1,1,0,0};
+auto g=Inv(f); auto h=f*g; h.resize(4);
+assert(f*g==mtt_exact(f,g));
+assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
+auto e=Exp(Ln(f));
+for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
+assert(FSPE({0,1},{1,-1,-1},10).x==55);
+auto p=lagrange({0,1,2},{1,4,9});
+assert(p[0].x==1 && p[1].x==2 && p[2].x==1);
+\end{lstlisting}
+\subsubsection*{接口参考}
+\noindent\begin{minipage}{\textwidth}
+\textbf{1. 声明 / 调用形式}
+\begin{lstlisting}
+static void mint::setM(unsigned mod)
+\end{lstlisting}
+\textbf{参数、效果与返回：}2<=mod<=INT\_MAX；先设置再创建值，改模使旧值失效并清空 fac/ifac/inv。卷积支持合数；FPS/递推/插值中的所有除数必须是单位元。卷积长度<=2\textasciicircum{}23，FPS 输入<=2\textasciicircum{}22。
+
+\textbf{复杂度：}O(旧表大小)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{2. 声明 / 调用形式}
+\begin{lstlisting}
+poly; Poly; f[i]; f.resize(n)
+\end{lstlisting}
+\textbf{参数、效果与返回：}系数类型 mint，0 起下标就是次数；Poly 是 poly 别名。FPS 截断精度由输入长度决定，resize(n) 补高位零后再调用；不要提前去掉要保留的零。
+
+\textbf{复杂度：}resize 与新增项数相关。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{3. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(const poly &f,const poly &g); f+g; f-g; f+=g; f-=g
+\end{lstlisting}
+\textbf{参数、效果与返回：}* 为卷积；+/- 按次数相加减并扩展至较长长度；复合加减原地修改。空输入的卷积为空。
+
+\textbf{复杂度：}乘 O(N log N)，加减 O(n+m)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{4. 声明 / 调用形式}
+\begin{lstlisting}
+poly operator*(poly f,mint x); poly operator*(mint x,poly f); poly operator/(poly f,poly g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}数乘逐项乘；f/g 是相关运算，结果第 i 项=sum\_j f[i+j]*g[j]，不是多项式长除或 FPS 相除。
+
+\textbf{复杂度：}数乘 O(n)，相关 O(N log N)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{5. 声明 / 调用形式}
+\begin{lstlisting}
+mint value(const poly &f,mint x)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Horner 法求 f(x)，空多项式返回 0；不修改 f。
+
+\textbf{复杂度：}O(n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{6. 声明 / 调用形式}
+\begin{lstlisting}
+poly Inv(const poly &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回长度 n 的 1/f mod x\textasciicircum{}n；要求非空且 f[0] 可逆。FPS 相除用 f*Inv(g) 后 resize 到目标长度。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{7. 声明 / 调用形式}
+\begin{lstlisting}
+poly diff(poly f); poly integ(poly f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}求导返回 n-1 项（空输入返回空）；积分返回 n+1 项，常数为零。integ 要求 1..n 的逆元存在。
+
+\textbf{复杂度：}O(n)，积分可能扩展逆元表。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{8. 声明 / 调用形式}
+\begin{lstlisting}
+poly Ln(const poly &f); poly Exp(const poly &f)
+\end{lstlisting}
+\textbf{参数、效果与返回：}Ln 要求 f[0]=1，Exp 要求 f[0]=0；输入非空，返回同长度。计算涉及的整数分母均须可逆。
+
+\textbf{复杂度：}O(n log n)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{9. 声明 / 调用形式}
+\begin{lstlisting}
+poly BM(poly a)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+
+\textbf{复杂度：}O(样本数*d)，最坏二次。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{10. 声明 / 调用形式}
+\begin{lstlisting}
+mint FSPE(poly F,poly G,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}返回 [x\textasciicircum{}k]F/G，k>=0，G 非空、G[0] 可逆；F 可为空，返回 0。
+
+\textbf{复杂度：}O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{11. 声明 / 调用形式}
+\begin{lstlisting}
+mint RSPE(poly samples,ll k)
+\end{lstlisting}
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+
+\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{12. 声明 / 调用形式}
+\begin{lstlisting}
+poly lagrange(const vector<mint> &xs,const vector<mint> &ys)
+\end{lstlisting}
+\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+
+\textbf{复杂度：}O(n\textasciicircum{}2)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{13. 声明 / 调用形式}
+\begin{lstlisting}
+mint; mint::pow(ll k); mint::inv(); x; cin>>a; cout<<a
+\end{lstlisting}
+\textbf{参数、效果与返回：}内置 mint，不再粘贴其他模整数文件。构造、四则/复合四则、正负号、前置增减、==/!=、bool/!、输入输出的用法同模整数；负指数要求可逆。这里未提供后置 ++/--。
+
+\textbf{复杂度：}基本运算 O(1)，逆元/幂 O(log 参数)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{14. 声明 / 调用形式}
+\begin{lstlisting}
+void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
+\end{lstlisting}
+\textbf{参数、效果与返回：}预处理阶乘等表，C(k,n) 与 binom(n,k) 返回 n 选 k，越界 k 返回 0；C 会扩表。直接读表前先 init。
+
+\textbf{复杂度：}扩表 O(n)，表就绪查询 O(1)。
+
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
+\textbf{精确卷积 / 调用形式}
+\begin{lstlisting}
+poly mtt_exact(const poly &f,const poly &g)
+\end{lstlisting}
+\textbf{参数、效果与返回：}直接使用三模 NTT 和 CRT，返回当前 MOD 下的精确卷积。允许合数模数，空输入返回空。与 f*g 相同，非空结果长 n+m-1，须不超过 $2^{23}$。本接口不经过浮点 FFT；需要确定性精确卷积时显式调用，或直接选择普通 mtt.cpp。
+
+\textbf{复杂度：}O(N log N) 时间、O(N) 空间，N 为补齐长度。
+\end{minipage}\par\vspace{0.4em}
+\TemplNote{这是浮点加速版。二维格坐标采用固定种子的随机舍入来减小偏差，精度预算是保守经验条件，不是对任意输入的数学保证。预算为 $(n+m-1)d\,MOD^2\le 2^{84}$，d 由模数自动计算；不满足时转到精确 CRT。FPS 中的卷积同样可能走 FFT。要求确定性精确答案时选 mtt.cpp，或卷积直接用 mtt\_exact。改模后旧 mint/poly 值失效；Ln/Exp/积分涉及的分母必须可逆。需要 AVX2/FMA 与 <immintrin.h>，不提供运行时 CPU 分派。}
 \clearpage
 \subsection{\texttt{polynomial/mtt.cpp}}
 \textbf{非 NTT 模数下的多项式}\par

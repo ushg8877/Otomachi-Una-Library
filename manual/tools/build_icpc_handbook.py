@@ -107,6 +107,7 @@ TEMPLATES: list[tuple[str, str]] = [
     ('number-theory/stern-brocot.cpp', 'number-theory'),
     ('polynomial/fwt.cpp', 'polynomial'),
     ('polynomial/int64.cpp', 'polynomial'),
+    ('polynomial/mtt-fast.cpp', 'polynomial'),
     ('polynomial/mtt.cpp', 'polynomial'),
     ('polynomial/ntt-fast.cpp', 'polynomial'),
     ('polynomial/ntt-int64.cpp', 'polynomial'),
