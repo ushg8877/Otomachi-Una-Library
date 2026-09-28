@@ -101,6 +101,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [math/mod-int.cpp](math/mod-int.cpp)
 - [math/partisan-game.cpp](math/partisan-game.cpp)
 - [math/rational.cpp](math/rational.cpp)
+- [math/sprague-grundy.cpp](math/sprague-grundy.cpp)
 - [math/xor-equations.cpp](math/xor-equations.cpp)
 
 ### 数论
