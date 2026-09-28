@@ -10,7 +10,7 @@
 // remove this line when info has no subtraction / comparison
 #define USE_COMPARE
 struct segt{
-private:
+public:
 //////////////////////////////////////////////////////////////
 // basic operation
 // Edit info for the problem; find_first/last require monotonicity.
@@ -42,6 +42,7 @@ struct info{
 };
 /////////////////////////////////////////////////////////////////
 // basic segment tree template, private operations
+private:
 int vl=1,vr=0;
 vector<info> val;
 inline void pushup(int id){
@@ -104,6 +105,22 @@ int find_last(info x,int id,int l,int r){
 /////////////////////////////////////////////////////////////
 // public operations, remember to setN()/set()
 // convert arguments to info / lazt, and extract the answer here
+template<class F>
+ll search(int q,bool rev,F &f,info &s,int id,int l,int r)const{
+	if((rev?l>q:r<q)) return rev?(ll)vl-1:(ll)vr+1;
+	if(rev?r<=q:q<=l){
+		info t=rev?val[id]+s:s+val[id];
+		if(f(t)){s=t;return rev?(ll)vl-1:(ll)vr+1;}
+		if(l==r) return l;
+	}
+	int mid=l+((ll)r-l)/2;
+	ll p=rev?search(q,rev,f,s,id<<1|1,mid+1,r):
+		search(q,rev,f,s,id<<1,l,mid);
+	if(p!=(rev?(ll)vl-1:(ll)vr+1)) return p;
+	return rev?search(q,rev,f,s,id<<1,l,mid):
+		search(q,rev,f,s,id<<1|1,mid+1,r);
+}
+
 public:
 void set(){vl=1;vr=0;val.clear();}
 void set(int _l,int _r){
@@ -143,8 +160,32 @@ int find_last(ll x){
 	return find_last(info(x,0),1,vl,vr);
 }
 #endif
+// Largest r with f(info of [l,r]) true; return {r,info}, empty r=l-1.
+// O(log n). f(empty) must be true; extension may only change true to false.
+template<class F>
+pair<ll,info> max_right(ll l,F f)const{
+	assert(vl<=l&&l<=(ll)vr+1);
+	info s=info();
+	bool ok=f(s);assert(ok);(void)ok;
+	if(l==(ll)vr+1) return {l-1,s};
+	ll p=search((int)l,false,f,s,1,vl,vr);
+	return {p-1,s};
+}
+// Smallest l with f(info of [l,r]) true; return {l,info}, empty l=r+1.
+// Same predicate requirements; the information keeps left-to-right order.
+template<class F>
+pair<ll,info> min_left(ll r,F f)const{
+	assert((ll)vl-1<=r&&r<=vr);
+	info s=info();
+	bool ok=f(s);assert(ok);(void)ok;
+	if(r==(ll)vl-1) return {r+1,s};
+	ll p=search((int)r,true,f,s,1,vl,vr);
+	return {p+1,s};
+}
+
 };
 
 #undef USE_COMPARE
 // end for data-structure/segment-tree/point.cpp
 /////////////////////////
+// !!!!! Search predicates must be monotone and accept empty info. !!!!

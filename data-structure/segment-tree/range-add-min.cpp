@@ -45,6 +45,22 @@ ll query(int ql,int qr,int id,int l,int r){
 	return min(x,y);
 }
 
+template<class F>
+ll search(int q,bool rev,F &f,ll &s,int id,int l,int r){
+	if((rev?l>q:r<q)) return rev?(ll)vl-1:(ll)vr+1;
+	if(rev?r<=q:q<=l){
+		ll t=min(s,tr[id].s);
+		if(f(t)){s=t;return rev?(ll)vl-1:(ll)vr+1;}
+		if(l==r) return l;
+	}
+	int mid=l+((ll)r-l)/2;pushdown(id);
+	ll p=rev?search(q,rev,f,s,id<<1|1,mid+1,r):
+		search(q,rev,f,s,id<<1,l,mid);
+	if(p!=(rev?(ll)vl-1:(ll)vr+1)) return p;
+	return rev?search(q,rev,f,s,id<<1,l,mid):
+		search(q,rev,f,s,id<<1|1,mid+1,r);
+}
+
 public:
 void set(){vl=1;vr=0;tr.clear();}
 // Initialize [l,r] to zero; use upd to assign other initial values.
@@ -64,6 +80,30 @@ void add(int l,int r,ll v){
 ll ask(int l,int r){assert(vl<=l&&l<=r&&r<=vr);return query(l,r,1,vl,vr);}
 ll ask(int x){return ask(x,x);}
 
+// Largest r with f(info of [l,r]) true; return {r,info}, empty r=l-1.
+// O(log n). f(empty) must be true; extension may only change true to false.
+template<class F>
+pair<ll,ll> max_right(ll l,F f){
+	assert(vl<=l&&l<=(ll)vr+1);
+	ll s=LLONG_MAX;
+	bool ok=f(s);assert(ok);(void)ok;
+	if(l==(ll)vr+1) return {l-1,s};
+	ll p=search((int)l,false,f,s,1,vl,vr);
+	return {p-1,s};
+}
+// Smallest l with f(info of [l,r]) true; return {l,info}, empty l=r+1.
+// Same predicate requirements; the information keeps left-to-right order.
+template<class F>
+pair<ll,ll> min_left(ll r,F f){
+	assert((ll)vl-1<=r&&r<=vr);
+	ll s=LLONG_MAX;
+	bool ok=f(s);assert(ok);(void)ok;
+	if(r==(ll)vl-1) return {r+1,s};
+	ll p=search((int)r,true,f,s,1,vl,vr);
+	return {p+1,s};
+}
+
 };
 // end for data-structure/segment-tree/range-add-min.cpp
 /////////////////////////
+// !!!!! Search predicates must be monotone and accept empty info. !!!!

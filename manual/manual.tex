@@ -15,7 +15,7 @@ keepspaces=true,tabsize=4,showstringspaces=false,aboveskip=0.3em,belowskip=0.3em
 \newcommand{\TemplApi}[1]{\textbf{调用概览}\par #1\par}
 \newcommand{\TemplNote}[1]{\textbf{注意事项}\par #1\par}
 \title{Otomachi Una Library\\接口参考手册}
-\author{Junlin Ye}\date{2026-09-27}
+\author{Junlin Ye}\date{2026-09-28}
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
@@ -1419,6 +1419,29 @@ void add(int p,ll v); ll ask(int l,int r)
 
 \TemplNote{空键权值为零。与主席树不同：不保留历史版本，也不支持复用旧根。文件有全局对象 T。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,info> max_right(ll l,F f);
+pair<ll,info> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 固定域 [-1e9,1e9]。两者返回边界与对应闭区间的累计信息，info.s 为区间和。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log 值域)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+dynamic_segt t; t.set(); t.add(-100,3); t.add(200,4);
+auto [r,x]=t.max_right(-100,[](const auto &v){return v.s<=3;});
+assert(r==199&&x.s==3);
+\end{lstlisting}
+用区间和不超过阈值作为判定时，需保证各点权值非负。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/iterative-prefix.cpp}}
 \textbf{非递归线段树框架}\par
@@ -1461,6 +1484,30 @@ ll ask(int l,int r)
 
 \TemplNote{普通数组的叶子设为 s=a[i]、mx=max(0,a[i])。若 s 全为零且 mx 非负，也可用于区间最大值。其他统计应重写 info 的合并和单位元；合并必须满足结合律。下标从 0 开始。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,info> max_right(ll l,F f);
+pair<ll,info> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 [0,n-1]。两者返回边界与对应闭区间的累计信息，info.s 为区间和，info.mx 为允许空前缀的最大前缀和。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+zkw_segt t; t.setN(3);
+t.upd(0,-4,0); t.upd(1,9,9); t.upd(2,-2,0);
+auto [r,x]=t.max_right(0,[](const auto &v){return v.mx<=4;});
+assert(r==0&&x.s==-4);
+\end{lstlisting}
+
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/lazy.cpp}}
 \textbf{通用线段树（带懒标记）}\par
@@ -1532,6 +1579,28 @@ info / lazt
 
 \TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。 lazt += lazt 的顺序是旧标记后接新标记；info += lazt 负责作用标记，区间长度等元数据由 info 保存。不能仅因支持单点加，就直接认为相同统计能支持区间加。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,info> max_right(ll l,F f);
+pair<ll,info> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 初始化时指定的 [vl,vr]，setN(n) 对应 [1,n]。两者返回边界与对应闭区间的累计信息，info.s 为区间和，info.len 为长度。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+segt st; st.setN(5);
+auto [r,x]=st.max_right(1,[](const auto &v){return v.s<=10;});
+\end{lstlisting}
+用区间和不超过阈值作为判定时，需保证各点权值非负。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/merge.cpp}}
 \textbf{可合并的多棵线段树}\par
@@ -1584,6 +1653,28 @@ void merge(int &x,int &y)
 
 \TemplNote{这是破坏性合并，不是可持久化。合并后不能再使用旧根副本。单点操作 O(log V)，合并成本取决于重叠节点数；若想查询普通权值和，要改 info/query 的对外接口。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,info> max_right(int rt,ll l,F f);
+pair<ll,info> min_left(int rt,ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 [0,n]。两者返回边界与对应闭区间的累计信息，info.s 为权值和，info.s1 为下标乘权值之和。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+segt_merge sm; sm.setN(5); int rt=0; sm.add(rt,2,4);
+auto [r,x]=sm.max_right(rt,0,[](const auto &v){return v.s<=3;});
+\end{lstlisting}
+用区间和不超过阈值作为判定时，需保证各点权值非负。 rt 是要查询的树根，0 表示全零树；不消耗或修改根。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/point.cpp}}
 \textbf{通用线段树（不带懒标记）}\par
@@ -1663,6 +1754,28 @@ struct info{
 	inline info operator +(const info &y)const{return info(*this)+=y;}
 };
 \end{lstlisting}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,info> max_right(ll l,F f);
+pair<ll,info> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 初始化时指定的 [vl,vr]，setN(n) 对应 [1,n]。两者返回边界与对应闭区间的累计信息，info.s 为区间和，info.len 为长度。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+segt st; st.setN(5);
+auto [r,x]=st.max_right(1,[](const auto &v){return v.s<=10;});
+\end{lstlisting}
+用区间和不超过阈值作为判定时，需保证各点权值非负。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/range-add-max.cpp}}
 \textbf{区间加、区间最大值}\par
@@ -1715,6 +1828,29 @@ void add(int l,int r,ll v)
 
 \TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,ll> max_right(ll l,F f);
+pair<ll,ll> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 初始化时指定的 [vl,vr]，setN(n) 对应 [1,n]。两者返回边界与对应闭区间的累计信息，ll 为区间最大值，空区间为 LLONG\_MIN。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+MaxAdd_segt st; st.setN(5);
+auto [r,mx]=st.max_right(1,[](ll x){return x<10;});
+// r+1 is the first position with value >=10, if it exists.
+\end{lstlisting}
+
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/range-add-min.cpp}}
 \textbf{区间加、区间最小值}\par
@@ -1767,6 +1903,29 @@ void add(int l,int r,ll v)
 
 \TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,ll> max_right(ll l,F f);
+pair<ll,ll> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 初始化时指定的 [vl,vr]，setN(n) 对应 [1,n]。两者返回边界与对应闭区间的累计信息，ll 为区间最小值，空区间为 LLONG\_MAX。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+MinAdd_segt st; st.setN(5);
+auto [l,mn]=st.min_left(5,[](ll x){return x>0;});
+// l-1 is the last position <=5 with value <=0, if it exists.
+\end{lstlisting}
+
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/segment-tree/range-add-sum.cpp}}
 \textbf{区间加、区间和}\par
@@ -1829,6 +1988,28 @@ int find_first(ll x); int find_last(ll x)
 
 \TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。区间长度由递归参数计算，不存入节点；ask 和二分携带祖先标记，不下传、不改树。使用二分查询时所有点值必须非负，且 1<=k<=总和；k 参数为 ll。三个类名不同，可以组合粘贴。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{树上二分：max\_right / min\_left}
+\begin{lstlisting}
+pair<ll,ll> max_right(ll l,F f);
+pair<ll,ll> min_left(ll r,F f);
+\end{lstlisting}
+\textbf{参数、效果与返回：}有效下标域为 初始化时指定的 [vl,vr]，setN(n) 对应 [1,n]。两者返回边界与对应闭区间的累计信息，ll 为区间和，空区间为 0。
+
+\texttt{max\_right(l,f)} 从 l 向右扩展，返回最大的 r，使 f([l,r]) 为真；第一个元素就不满足时返回 l-1 和空信息。允许从域的右端点加一开始，此时结果为空。
+
+\texttt{min\_left(r,f)} 从 r 向左扩展，返回最小的 l，使 f([l,r]) 为真；第一个元素就不满足时返回 r+1 和空信息。允许从域的左端点减一开始。返回边界使用 ll，避免在 int 极值下标处表示空区间时溢出。
+
+\textbf{判定要求：}f 接受累计信息，返回 bool；空信息必须为真。沿对应方向扩展区间时只能由真变假，不能变回真。f 不得修改树或累计信息，也不应依赖调用次数。合并始终保持从左到右的顺序，不要求 info 支持减法。正向判定单调不代表反向也单调。
+
+\textbf{复杂度：}O(log n)，不额外做一次区间查询。下面是独立示例。
+\begin{lstlisting}
+AddSum_segt st; st.setN(5);
+auto [r,sum]=st.max_right(1,[](ll x){return x<=10;});
+\end{lstlisting}
+用区间和不超过阈值作为判定时，需保证各点权值非负。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{data-structure/sparse-table.cpp}}
 \textbf{静态区间最值}\par

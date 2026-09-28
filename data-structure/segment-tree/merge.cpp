@@ -8,7 +8,7 @@
 //
 ////////////////////////////////////////////////////////////////
 struct segt_merge{
-private:
+public:
 struct info{
 	// modify here
 	ll s,s1;
@@ -22,6 +22,7 @@ struct info{
 		return info(*this)+=y;
 	}
 };
+private:
 vector<info> val=vector<info>(1);
 vector<int> ls{0},rs{0};int n=0,tot=0;
 inline void pushup(int id){val[id]=val[ls[id]]+val[rs[id]];}
@@ -53,6 +54,22 @@ void merge(int &u,int &v,int l,int r){
 	merge(rs[u],rs[v],mid+1,r);
 	pushup(u);
 }
+template<class F>
+ll search(int q,bool rev,F &f,info &s,int id,int l,int r)const{
+	if(!id||(rev?l>q:r<q)) return rev?(ll)0-1:(ll)n+1;
+	if(rev?r<=q:q<=l){
+		info t=rev?val[id]+s:s+val[id];
+		if(f(t)){s=t;return rev?(ll)0-1:(ll)n+1;}
+		if(l==r) return l;
+	}
+	int mid=l+((ll)r-l)/2;
+	ll p=rev?search(q,rev,f,s,rs[id],mid+1,r):
+		search(q,rev,f,s,ls[id],l,mid);
+	if(p!=(rev?(ll)0-1:(ll)n+1)) return p;
+	return rev?search(q,rev,f,s,ls[id],l,mid):
+		search(q,rev,f,s,rs[id],mid+1,r);
+}
+
 public:
 void setN(int _n){
 	assert(_n>=0);
@@ -77,7 +94,31 @@ void merge(int &x,int &y){
 	merge(x,y,0,n);
 	y=0;
 }
+// Largest r with f(info of [l,r]) true; return {r,info}, empty r=l-1.
+// O(log n). f(empty) must be true; extension may only change true to false.
+template<class F>
+pair<ll,info> max_right(int rt,ll l,F f)const{
+	assert(0<=rt&&rt<=tot&&0<=l&&l<=(ll)n+1);
+	info s=info();
+	bool ok=f(s);assert(ok);(void)ok;
+	if(l==(ll)n+1) return {l-1,s};
+	ll p=search((int)l,false,f,s,rt,0,n);
+	return {p-1,s};
+}
+// Smallest l with f(info of [l,r]) true; return {l,info}, empty l=r+1.
+// Same predicate requirements; the information keeps left-to-right order.
+template<class F>
+pair<ll,info> min_left(int rt,ll r,F f)const{
+	assert(0<=rt&&rt<=tot&&(ll)0-1<=r&&r<=n);
+	info s=info();
+	bool ok=f(s);assert(ok);(void)ok;
+	if(r==(ll)0-1) return {r+1,s};
+	ll p=search((int)r,true,f,s,rt,0,n);
+	return {p+1,s};
+}
+
 };
 // end for data-structure/segment-tree/merge.cpp
 /////////////////////////
 // !!!!! merge consumes roots; do not reuse the old separate trees. !!!!
+// !!!!! Search predicates must be monotone and accept empty info. !!!!
