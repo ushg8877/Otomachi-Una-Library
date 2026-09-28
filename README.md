@@ -65,6 +65,7 @@ Otomachi Una 的 XCPC 算法模板库。使用 GNU C++17 或更新标准。
 - [graph/matching/bipartite.cpp](graph/matching/bipartite.cpp)
 - [graph/matching/general.cpp](graph/matching/general.cpp)
 - [graph/matching/regular-bipartite.cpp](graph/matching/regular-bipartite.cpp)
+- [graph/shortest-path-label.cpp](graph/shortest-path-label.cpp)
 - [graph/steiner-tree.cpp](graph/steiner-tree.cpp)
 - [graph/two-sat.cpp](graph/two-sat.cpp)
 
