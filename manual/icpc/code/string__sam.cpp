@@ -5,10 +5,11 @@ int n=0,tot=0,lst=0;
 vector<array<int,26>> ch;
 vector<int> fail,len,siz;
 vector<vector<int>> son;
-SAM(){init();}
-void init(int m=0){
+SAM(){set();}
+void set(int m=0){
 	assert(0<=m&&m<(INT_MAX-1)/2);n=tot=lst=0;
-	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);siz.assign(1,0);son.assign(1,{});
+	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);siz.assign(1,0);
+		son.assign(1,{});
 	ch.reserve(2*m+1);fail.reserve(2*m+1);len.reserve(2*m+1);
 	siz.reserve(2*m+1);son.reserve(2*m+1);
 }
@@ -54,7 +55,7 @@ void dfs(int u){
 }
 void build(string S){
 	assert(!S.empty()&&S[0]==' '&&S.size()<(INT_MAX-1)/2);
-	init((int)S.size()-1);s=move(S);n=(int)s.size()-1;
+	set((int)S.size()-1);s=move(S);n=(int)s.size()-1;
 	for(int i=1;i<=n;i++){
 		extend(s[i]);
 		// something record here

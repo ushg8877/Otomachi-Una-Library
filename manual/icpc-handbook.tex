@@ -12,28 +12,38 @@
 \newcommand{\TemplNote}[1]{\textbf{使用边界}\par #1\par}
 \title{Otomachi Una C++ 模板库\\XCPC 考场代码手册}
 \author{Junlin Ye}
-\date{2026-09-23}
+\date{2026-09-29}
+
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
-收录当前模板库的全部 72 份主模板。每节给出调用方式、最小示例和完整代码；模板有依赖时，先抄依赖，再抄本节代码。标题中的路径用于对应源码，实际抄写以本手册代码为准。
+按保留清单收录 40 份模板。编号与清单一致；正文给出调用方式、边界和代码。
 
-\textbf{考场版改动：}SA 使用计数排序倍增，构建 $O(n\log n)$；poly-fast、poly-new 和 MTT 使用普通二进制位逆序迭代 NTT，去掉大段预制根表和展开蝶形。其余算法保留原实现。源码目录中的高效版本不受影响。
+\textbf{考场版取舍：}保留原有算法复杂度，缩短实现与重复部分。
+NTT 使用缓存根表的普通蝶形，MTT 使用三模 NTT 和 CRT；
+SA 使用计数排序倍增，LCP 复用四毛子 RMQ。
+可撤销并查集自带回滚记录，不再依赖单独的变量回滚模板。
 
-\textbf{选择多项式：}常规卷积及 ln/exp 用 poly-fast；需要开方、带余除法或多点求值选 poly-new；非 NTT 目标模数选 MTT。poly-old 为旧接口，保留备查。各节代码完整，模整数定义也分别保留，使用时只能选其中一份。
+\textbf{共享代码：}09 的固定模数类与阶乘表只抄一次。
+52 分为通用 NTT、998244353 卷积、公共 FPS 三段。
+使用 55 时，把 09 的 MOD 改成目标模数，保留 52 的通用 NTT 和公共 FPS，
+用 55 替换中间的卷积函数。每次只保留一个多项式卷积函数。
 
-\textbf{编译与调试：}GNU C++17。basic/src.cpp 是含头文件和 main 的底稿，其他代码抄在 main 前。LOCAL 控制 Otomachi\_Una.in/out，DEBUG 控制 cerr、debug、debugl。不要把全部模板拼成一个程序。
+\textbf{多项式范围：}卷积、逆、ln/exp 与递推第 k 项保留快速算法；
+BM 和普通插值沿用考场版的二次算法。次数与模数的要求见对应节。
 
-\textbf{抄写提示：}行号不属于代码，排版换行不代表源码换行。长模板会跨页，按页码接续。清空对象使用 set/setN，几何与点分治用 output 调试；FastIO 仅适用于 Linux 的普通文件输入，额外头文件见对应节。
+\textbf{使用方式：}GNU C++17/20。先抄 01 的公共底稿，再按对应节说明抄依赖和模板。
+行号不属于代码；排版换行不代表源码换行。各模板独立使用，同名模板不要一起粘贴。
 
 \vfill
-使用顺序：按目录选模板 → 核对下标和依赖 → 抄写代码 → 跑最小示例 → 替换题目逻辑。
+此处代码是便于抄写的考场版本。标题保留清单中的路径名称。
 \end{titlepage}
 {\small\tableofcontents}\clearpage
+
 \section{基础与数值类型}
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/src.cpp}}
-\textbf{公共底稿}
+\textbf{01 公共底稿}
 
 \TemplUsage{提供类型别名、调试宏和其他模板依赖的辅助函数。自带标准头文件和 main，可直接作为提交程序的底稿。}
 \TemplApi{\begin{itemize}
@@ -50,7 +60,6 @@ debug(a);
 cerr << "diagnostic\n";
 \end{lstlisting}
 \TemplNote{定义 \texttt{LOCAL} 时从 \texttt{Otomachi\_Una.in} 读入并写入 \texttt{Otomachi\_Una.out}，打开失败返回 1；否则使用标准输入输出。\texttt{DEBUG} 独立控制调试输出。未定义时通过宏屏蔽裸写的 \texttt{cerr}，不要写 \texttt{std::cerr}。向量输入前必须先分配非空长度；向量输出带方括号并截断长向量，正式答案应自己循环输出。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
 #include<bits/stdc++.h>
@@ -135,8 +144,10 @@ ostream& operator <<(ostream &o,const vector<T> &I){
 inline int last_bit(ull x){assert(x);return 63-__builtin_clzll(x);}
 inline int first_bit(ull x){assert(x);return __builtin_ctzll(x);}
 inline int popc(ull x){return __builtin_popcountll(x);}
-template<typename A,typename B> inline bool chkmax(A &x,const B &y){if(x<y){x=y;return true;}return false;}
-template<typename A,typename B> inline bool chkmin(A &x,const B &y){if(x>y){x=y;return true;}return false;}
+template<typename A,typename B> inline bool chkmax(A &x,const B &y){if(x<y){
+	x=y;return true;}return false;}
+template<typename A,typename B> inline bool chkmin(A &x,const B &y){if(x>y){
+	x=y;return true;}return false;}
 int main(){
 	#ifdef LOCAL
 		if(!freopen("Otomachi_Una.in","r",stdin)) return 1;
@@ -147,57 +158,9 @@ int main(){
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
-\subsection{\texttt{basic/ST table.cpp}}
-\textbf{静态区间最值}
-
-\TemplUsage{数组不修改、需要多次查询闭区间最大值时使用。预处理 O(n log n)，查询 O(1)，空间 O(n log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{ST\_table t; t.setN(n)} 分配下标 1..n，要求 n>=1。
-\item 填入 \texttt{t.a[0][i]} 后调用 \texttt{t.build()}。
-\item \texttt{t.ask(l,r)} 返回最大值；要维护最小值，先把 \texttt{chk} 改成 \texttt{min}。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-ST_table t; t.setN(3);
-t.a[0][1]=4; t.a[0][2]=1; t.a[0][3]=8;
-t.build(); assert(t.ask(1,2)==4);
-\end{lstlisting}
-\TemplNote{修改原数组后必须重新 build。文件末尾已有全局对象 \texttt{S}，可以直接用它，也可以另建局部对象。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for ST table
-// version 1.0 (Last Update Jun 23rd, 2026)
-//
-// usage:
-//   S.setN(n); fill S.a[0][1..n]; S.build();
-//   int mx = S.ask(l, r);  // static RMQ, tweak chk() for min
-//
-struct ST_table{
-int n=0;
-vector<vector<int>> a;
-void setN(int _n){
-	assert(1<=_n&&_n<INT_MAX);n=_n;
-	a.assign(__lg(n)+1,vector<int>(n+1));
-}
-inline int chk(const int &x,const int &y){return max(x,y);} // compare
-void build(){
-	assert(n>0);
-	for(int i=1;i<(int)a.size();i++) for(int j=1;j<=n-(1<<i)+1;j++) 
-		a[i][j]=chk(a[i-1][j],a[i-1][j+(1<<(i-1))]);
-}
-int ask(int l,int r){
-	assert(1<=l&&l<=r&&r<=n);
-	int k=__lg(r-l+1);
-	return chk(a[k][l],a[k][r-(1<<k)+1]);
-}
-}S;
-\end{lstlisting}\Needspace{10\baselineskip}
 \subsection{\texttt{basic/ST table (linear).cpp}}
-\textbf{四毛子 RMQ：线性预处理与空间}
+\textbf{03 四毛子 RMQ：线性预处理与空间}
 
 \TemplUsage{静态数组最值。采用块内单调栈位掩码、块间 ST 表；在机器字位运算为 O(1) 的模型下，预处理及空间 O(n)，查询 O(1)。}
 \TemplApi{\texttt{Linear\_RMQ<int> t; t.build(a)} 接受从 0 开始的 vector，内部保存副本。\texttt{ask(l,r)} 查询闭区间最小值，\texttt{pos(l,r)} 返回最小值下标；相等取最左。\texttt{Linear\_RMQ<int,true>} 改为最大值，其他接口相同。}
@@ -210,26 +173,16 @@ Linear_RMQ<int,true> mx; mx.build(a);
 assert(mx.ask(1,3)==3);
 \end{lstlisting}
 \TemplNote{块长 B=max(1,floor(log2 n))，不是固定常数；块数 m=ceil(n/B)，块间表 O(m log m)=O(n)。每个元素存一份块前缀的单调栈掩码，一次清除低位和 ctz 即可查询块内最左最值。n<INT\_MAX，块长最多 30，使用 unsigned 位运算。可 build 空数组，但不能查询；修改数组后须重新 build。set() 清空。不需要普通 ST 表或笛卡尔树作为依赖。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for linear RMQ
-//
-// usage:
-//   Linear_RMQ<int> t; t.build(a); t.ask(l,r); t.pos(l,r);
-//   0-indexed, inclusive; use Linear_RMQ<int,true> for maximum.
-//   O(n) build / space, O(1) query on the word RAM; ties choose the leftmost.
-//
-////////////////////////////////////////////////////////////////
 template<typename T,bool MAX=false> struct Linear_RMQ{
 private:
 int n=0,B=1;
 vector<T> a;
 vector<unsigned> mask;
 vector<vector<int>> st;
-bool better(int x,int y)const{if constexpr(MAX)return a[y]<a[x];else return a[x]<a[y];}
+bool better(int x,int y)const{if constexpr(MAX)return a[y]<a[x];else return
+	a[x]<a[y];}
 int chk(int x,int y)const{return better(y,x)?y:x;}
 int small(int l,int r)const{
 	unsigned s=mask[r]&(~0u<<(l%B));
@@ -256,7 +209,8 @@ void build(const vector<T> &v){
 	}
 	for(int k=1;k<(int)st.size();k++){
 		st[k].resize(m-(1<<k)+1);
-		for(int i=0;i<(int)st[k].size();i++)st[k][i]=chk(st[k-1][i],st[k-1][i+(1<<(k-1))]);
+		for(int i=0;i<(int)st[k].size();i++)st[k][i]=chk(st[k-1][i],
+			st[k-1][i+(1<<(k-1))]);
 	}
 }
 int pos(int l,int r)const{
@@ -271,15 +225,11 @@ int pos(int l,int r)const{
 }
 T ask(int l,int r)const{return a[pos(l,r)];}
 };
-// end for basic/ST table (linear).cpp
-/////////////////////////
 \end{lstlisting}
-
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/DSU.cpp}}
-\textbf{普通并查集}
+\textbf{04 普通并查集}
 
 \TemplUsage{维护集合连通关系，路径压缩配合按大小合并。操作均摊近似 O(1)，空间 O(n)。}
 \TemplApi{\begin{itemize}
@@ -294,16 +244,8 @@ d.merge(1,2); assert(d.same(1,2));
 assert(d.siz[d.find(1)]==2 && !d.same(1,3));
 \end{lstlisting}
 \TemplNote{再次 setN 会清空关系。普通版不能回滚；需要撤销时选择 unionfind。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Disjoint Set Union (DSU)
-//
-// usage:
-//   DSU dsu; dsu.setN(n); dsu.merge(u, v);
-//   dsu.same(u, v); int r = dsu.find(u);  // merge returns new root or 0
-//
 struct DSU{
 int n=0;
 vector<int> fa,siz;
@@ -329,61 +271,9 @@ inline bool same(int x,int y){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{basic/int128\_IO.cpp}}
-\textbf{128 位整数输入输出}
-
-\TemplUsage{为有符号 \texttt{\_\_int128} 提供十进制流输入输出，仍然是定长整数。}
-\TemplApi{\begin{itemize}
-\item 类型别名 \texttt{lll} 等于 \texttt{\_\_int128}。
-\item 粘贴后可直接使用 \texttt{cin >> x}、\texttt{cout << x}。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-lll x=1;
-x*=1000000000000000000LL; x*=100;
-ostringstream out; out << x;
-assert(out.str()=="100000000000000000000");
-\end{lstlisting}
-\TemplNote{需要 GCC/Clang 的 \_\_int128 支持；输入和运算结果都必须在有符号 128 位范围内。乘法之前就要提升类型，例如 \texttt{(\_\_int128)a*b}。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for __int128 I/O
-//
-// usage:
-//   using lll = __int128; lll x; cin >> x; cout << x;
-//   GCC/Clang only; decimal I/O
-//
-using lll=__int128;
-istream& operator >>(istream &o,lll &x){
-	string s;if(!(o>>s))return o;
-	bool neg=s[0]=='-';size_t i=(neg||s[0]=='+');
-	assert(i<s.size());__uint128_t v=0,lim=((__uint128_t)1<<127)-!neg;
-	for(;i<s.size();i++){
-		assert('0'<=s[i]&&s[i]<='9');unsigned d=s[i]-'0';
-		assert(v<=(lim-d)/10);v=v*10+d;
-	}
-	x=neg?(lll)(__uint128_t(0)-v):(lll)v;
-	return o;
-}
-ostream& operator <<(ostream &o,lll x){
-	array<int,40> a;int n=0;
-	if(x==0){o<<0;return o;}
-	__uint128_t v=x;
-	if(x<0){o<<"-";v=__uint128_t(0)-v;}
-	while(v) a[++n]=v%10,v/=10;
-	for(int i=n;i>=1;i--) o<<a[i];
-	return o;
-}
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/BigInt.cpp}}
-\textbf{高精度有符号整数}
+\textbf{06 高精度有符号整数}
 
 \TemplUsage{十进制大整数，vector 按 10\textasciicircum{}9 分块。加减 O(n)，普通乘法及长除法最坏 O(nm)，n、m 是分块数。}
 \TemplApi{\begin{itemize}
@@ -402,7 +292,6 @@ ostringstream out; out << q << ' ' << r;
 assert(out.str()=="-123456789012345678 -90");
 \end{lstlisting}
 \TemplNote{除法向零取整，余数与被除数同号；除数不能为零。这不是 FFT 高精度乘法，也不支持小数。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
 struct BigInt{
@@ -418,32 +307,35 @@ struct BigInt{
 	explicit operator bool()const{return !a.empty();}
 	int cmp_abs(const BigInt &b)const{
 		if(a.size()!=b.a.size())return a.size()<b.a.size()?-1:1;
-		for(int i=(int)a.size()-1;i>=0;i--)if(a[i]!=b.a[i])return a[i]<b.a[i]?-1:1;
+		for(int i=(int)a.size()-1;i>=0;i--)if(a[i]!=b.a[i])return
+			a[i]<b.a[i]?-1:1;
 		return 0;
 	}
-	int cmp(const BigInt &b)const{return sign!=b.sign?(sign<b.sign?-1:1):sign*cmp_abs(b);}
+	int cmp(const BigInt &b)const{return
+		sign!=b.sign?(sign<b.sign?-1:1):sign*cmp_abs(b);}
 	bool operator <(const BigInt &b)const{return cmp(b)<0;}
 	bool operator >(const BigInt &b)const{return cmp(b)>0;}
 	bool operator <=(const BigInt &b)const{return cmp(b)<=0;}
 	bool operator >=(const BigInt &b)const{return cmp(b)>=0;}
-	bool operator ==(const BigInt &b)const{return sign==b.sign&&a==b.a;}
-	bool operator !=(const BigInt &b)const{return !(*this==b);}
-	BigInt operator -()const{BigInt b=*this;if(b)b.sign=-b.sign;return b;}
-	BigInt operator +()const{return *this;}
-	BigInt operator +(const BigInt &b)const{
+	bool operator==(const BigInt &b)const{return sign==b.sign&&a==b.a;}
+	bool operator!=(const BigInt &b)const{return !(*this==b);}
+	BigInt operator-()const{BigInt b=*this;if(b)b.sign=-b.sign;return b;}
+	BigInt operator+()const{return *this;}
+	BigInt operator+(const BigInt &b)const{
 		if(!b)return *this;
 		if(!*this)return b;
 		if(sign!=b.sign)return *this-(-b);
 		BigInt c;c.sign=sign;c.a.resize(max(a.size(),b.a.size()));
 		int carry=0;
 		for(int i=0;i<(int)c.a.size();i++){
-			long long x=(long long)carry+(i<(int)a.size()?a[i]:0)+(i<(int)b.a.size()?b.a[i]:0);
+			long long x=(long
+				long)carry+(i<(int)a.size()?a[i]:0)+(i<(int)b.a.size()?b.a[i]:0);
 			c.a[i]=x%base;carry=x/base;
 		}
 		if(carry)c.a.push_back(carry);
 		return c;
 	}
-	BigInt operator -(const BigInt &b)const{
+	BigInt operator-(const BigInt &b)const{
 		if(!b)return *this;
 		if(!*this)return -b;
 		if(sign!=b.sign)return *this+(-b);
@@ -464,7 +356,7 @@ struct BigInt{
 		if(carry)c.a.push_back(carry);
 		c.trim();return c;
 	}
-	BigInt operator *(const BigInt &b)const{
+	BigInt operator*(const BigInt &b)const{
 		BigInt c;if(!*this||!b)return c;
 		c.sign=sign*b.sign;c.a.resize(a.size()+b.a.size());
 		for(int i=0;i<(int)a.size();i++){
@@ -507,12 +399,12 @@ struct BigInt{
 		}
 		q.sign=sign*b.sign;r.sign=sign;q.trim();r.trim();return {q,r};
 	}
-	BigInt operator /(const BigInt &b)const{return divmod(b).first;}
+	BigInt operator/(const BigInt &b)const{return divmod(b).first;}
 	BigInt operator %(const BigInt &b)const{return divmod(b).second;}
-	BigInt& operator +=(const BigInt &b){return *this=*this+b;}
-	BigInt& operator -=(const BigInt &b){return *this=*this-b;}
-	BigInt& operator *=(const BigInt &b){return *this=*this*b;}
-	BigInt& operator /=(const BigInt &b){return *this=*this/b;}
+	BigInt& operator+=(const BigInt &b){return *this=*this+b;}
+	BigInt& operator-=(const BigInt &b){return *this=*this-b;}
+	BigInt& operator*=(const BigInt &b){return *this=*this*b;}
+	BigInt& operator/=(const BigInt &b){return *this=*this/b;}
 	BigInt& operator %=(const BigInt &b){return *this=*this%b;}
 	friend istream& operator >>(istream &in,BigInt &x){
 		string s;if(!(in>>s))return in;
@@ -539,173 +431,9 @@ struct BigInt{
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{basic/FastIO.cpp}}
-\textbf{普通文件上的 mmap 快读快写}
-
-\TemplUsage{适合 Linux 下大规模整数输入，输入必须是可映射的普通文件。}
-\TemplApi{\begin{itemize}
-\item 额外包含 \texttt{sys/stat.h}、\texttt{sys/mman.h}、\texttt{unistd.h}。
-\item 重定向输入输出之后调用 \texttt{input.set(stdin)} 和 \texttt{output.set(stdout)}。
-\item 整数使用 \texttt{input >> x}、\texttt{output << x}；\texttt{output.flush()} 主动刷新。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-// Input file: 2 10 20
-input.set(stdin); output.set(stdout);
-int n; input >> n; ll sum=0;
-for(int i=0;i<n;i++){ll x; input >> x; sum+=x;}
-output << sum << '\n'; output.flush(); // 30
-\end{lstlisting}
-\TemplNote{不适用于交互题、终端或管道输入，也不能原生运行于 Windows。不读浮点和字符串。不要和 cin 混读同一个输入源。本手册此例因当前检查环境为 Windows，未执行 Linux 运行验证。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for FastIO (mmap)
-// requires sys/stat.h, sys/mman.h, unistd.h
-//
-// usage:
-//   input.set(stdin); output.set(stdout);  // after freopen
-//   input >> x; output << x;  // integers only, Linux/WSL
-//
-// ---------------------------------------------------------------
-// Fast mmap‑based reader / buffered writer (from the __yzlf code)
-// ---------------------------------------------------------------
-using u8  = unsigned char;
-using u16 = unsigned short;
-using u32 = unsigned;
-using i64 = long long;
-using u64 = unsigned long long;
-
-constexpr std::size_t BUF_DEF_SIZE	   = 262144;
-constexpr std::size_t BUF_FLUSH_THRESHOLD = 32;
-constexpr u64 E16 = 10000000000000000ULL;
-constexpr u64 E12 = 1000000000000ULL;
-constexpr u64 E8  = 100000000ULL;
-constexpr u64 E4  = 10000ULL;
-
-struct _io_t {
-	std::array<u8,1 << 15> t_i;		  // two‑digit decode table
-	std::array<u32,10000> t_o;			// four ASCII digits packed in u32
-	_io_t() : t_i{}, t_o{} {
-		t_i.fill(u8(-1));
-		for (int i = 0; i < 10; ++i)
-			for (int j = 0; j < 10; ++j)
-				t_i[0x3030 + 256 * j + i] = j + 10 * i;
-		int idx = 0;
-		for (int e0 = (48 << 0); e0 < (58 << 0); e0 += (1 << 0))
-			for (int e1 = (48 << 8); e1 < (58 << 8); e1 += (1 << 8))
-				for (int e2 = (48 << 16); e2 < (58 << 16); e2 += (1 << 16))
-					for (int e3 = (48 << 24); e3 < (58 << 24); e3 += (1 << 24))
-						t_o[idx++] = e0 ^ e1 ^ e2 ^ e3;
-	}
-	void get(char* s, u32 p) const { memcpy(s, &t_o[p], sizeof(u32)); }
-};
-_io_t _iot;
-
-struct Reader {
-	char* bg=nullptr;
-	char* p=nullptr;
-	char* ed=nullptr;
-	std::size_t sz=0;
-	Reader() = default;
-	Reader(const Reader&)=delete;
-	Reader& operator=(const Reader&)=delete;
-	void set(FILE* f = stdin) {
-		assert(f);
-		if(bg)munmap(bg,sz);
-		int fd=fileno(f);struct stat st;
-		int res=fstat(fd,&st);assert(res==0&&S_ISREG(st.st_mode));
-		sz=st.st_size;bg=p=ed=nullptr;
-		if(!sz)return;
-		bg=static_cast<char*>(mmap(nullptr,sz,PROT_READ,MAP_PRIVATE,fd,0));
-		assert(bg!=MAP_FAILED);madvise(bg,sz,MADV_SEQUENTIAL);p=bg;ed=bg+sz;
-	}
-
-	~Reader(){if(bg)munmap(bg,sz);}
-
-	inline void skip_space() { while(p!=ed&&*p<=' ')++p; }
-
-	template <typename T>
-	Reader& operator>>(T& x) {
-		skip_space();assert(p!=ed);bool neg=false;
-		if(*p=='+')++p;
-		else if constexpr(std::is_signed_v<T>){neg=(*p=='-');p+=neg;}
-		assert(p!=ed&&'0'<=*p&&*p<='9');
-		using U=std::make_unsigned_t<T>;U v=*p++-'0';
-		while(ed-p>=2){
-			u16 z;memcpy(&z,p,sizeof(z));
-			u32 y=z<_iot.t_i.size()?_iot.t_i[z]:255;
-			if(y>99)break;
-			v=v*100+y;p+=2;
-		}
-		if(p!=ed&&'0'<=*p&&*p<='9')v=v*10+(*p++-'0');
-		x=neg?T(U(0)-v):T(v);return *this;
-	}
-};
-
-struct Writer {
-	std::vector<char> buf;
-	char* bg=nullptr;char* p=nullptr;char* ed=nullptr;FILE* f=nullptr;
-	Writer() = default;
-	Writer(const Writer&)=delete;
-	Writer& operator=(const Writer&)=delete;
-
-	void set(FILE* fi = stdout, std::size_t sz = BUF_DEF_SIZE) {
-		assert(fi&&sz>BUF_FLUSH_THRESHOLD);if(bg)flush();
-		f = fi;buf.resize(sz);
-		bg = buf.data();
-		p = bg;
-		ed = bg + sz - BUF_FLUSH_THRESHOLD;
-	}
-	~Writer() { if(bg)flush(); }
-	inline void flush() { assert(bg&&f);fwrite(bg, 1, p - bg, f); p = bg; }
-	inline void chk() { if (p > ed) flush(); }
-
-	inline void put_block(u32 x) { _iot.get(p, x); p += 4; }
-
-	inline void put2(u32 x) {
-		if (x > 9) { _iot.get(p, x * 100); p += 2; }
-		else *p++ = char('0' + x);
-	}
-	inline void put4(u32 x) {
-		if (x > 99) { if (x > 999) put_block(x); else { _iot.get(p, x * 10); p += 3; } }
-		else put2(x);
-	}
-	inline void write_u32(u32 x) {
-		if (x >= E8) { put2(x / E8); x %= E8; put_block(x / E4); put_block(x % E4); }
-		else if (x >= E4) { put4(x / E4); put_block(x % E4); }
-		else put4(x);
-		chk();
-	}
-	inline void write_u64(u64 x) {
-		if (x >= E8) {
-			u64 q0 = x / E8, r0 = x % E8;
-			if (x >= E16) { u64 q1 = q0 / E8, r1 = q0 % E8; put4(q1); put_block(r1 / E4); put_block(r1 % E4); }
-			else if (x >= E12) { put4(q0 / E4); put_block(q0 % E4); }
-			else put4(q0);
-			put_block(r0 / E4); put_block(r0 % E4);
-		} else if (x >= E4) { put4(x / E4); put_block(x % E4); }
-		else put4(static_cast<u32>(x));
-		chk();
-	}
-
-	Writer& operator<<(u32 x) { write_u32(x); return *this; }
-	Writer& operator<<(u64 x) { write_u64(x); return *this; }
-	Writer& operator<<(int x) { if (x < 0) { *p++ = '-'; write_u32(-static_cast<u32>(x)); } else write_u32(static_cast<u32>(x)); return *this; }
-	Writer& operator<<(long long x) { if (x < 0) { *p++ = '-'; write_u64(-static_cast<u64>(x)); } else write_u64(static_cast<u64>(x)); return *this; }
-	Writer& operator<<(char c) { *p++ = c; chk(); return *this; }
-};
-inline Reader input;
-inline Writer output;
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/Coordinate Compression.cpp}}
-\textbf{离散化并原地回写}
+\textbf{08 离散化并原地回写}
 
 \TemplUsage{先收集所有会用到的值，再排序去重，把已登记变量改写成 1..k 的排名。时间 O(n log n)。}
 \TemplApi{\begin{itemize}
@@ -722,17 +450,8 @@ assert(a==2 && b==1 && d==2 && c[2]==30);
 assert(c.id(30)==2);
 \end{lstlisting}
 \TemplNote{pb 后、build 前变量必须存活且地址稳定：不要登记即将离开作用域的局部变量，也不要让所属 vector 扩容。\texttt{id} 参数是原值，不是已改写后的排名。range 当前端点参数为 int。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Coordinate Compression
-// version 2.0 (Last Update Jul 3rd, 2026)
-//
-// usage:
-//   compress<int> cc; cc.set(); cc.pb(x); cc.build();
-//   cc.id(x); cc[i]; cc.range(l,r);  // call set() each problem
-//
 template<typename T>
 struct compress{
 vector<T> I;
@@ -769,10 +488,9 @@ T operator [](int x)const{
 // !!!!!!!!!! 如果元素被插入，cc.build() 会自动重编号 !!!!!!!!!!!!!
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/ModInt.cpp}}
-\textbf{固定模数及组合数}
+\textbf{09 固定模数及组合数}
 
 \TemplUsage{默认模数 998244353。模数写在源码中的 \texttt{MOD}；阶乘表按需扩容。}
 \TemplApi{\begin{itemize}
@@ -787,64 +505,54 @@ assert(C(2,5).x==10 && binom(5,2).x==10);
 mint a=3; assert((a*a.inv()).x==1);
 assert(a.pow(4).x==81);
 \end{lstlisting}
-\TemplNote{阶乘方案用于质数模数且 n<MOD；比较时可读 \texttt{.x}，此版未定义 mint 的 ==。输入运算符直接读 \texttt{.x}，读负数或未归一化数据时先读 long long 再构造 mint。避免 \texttt{pow(LLONG\_MIN)}。多项式文件已内置本类，不要重复粘贴。}
-
+\TemplNote{模数须在 2..INT\_MAX。阶乘表要求质数模数且 n<MOD；逆元要求与模数互质。支持 ==/!=、负数输入、ull 构造与 pow(LLONG\_MIN)。多项式共用本节代码，只抄一次。}
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-static_assert(1<MOD&&MOD<=INT_MAX);
-unsigned x;
-constexpr ModInt():x(0){}
-constexpr ModInt(unsigned y):x(y%MOD){}
-constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
-constexpr ModInt(unsigned long long y):x(y%MOD){}
-constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-bool operator ==(const ModInt &a)const{return x==a.x;}
-bool operator !=(const ModInt &a)const{return x!=a.x;}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
-	unsigned a=MOD,b=x;ll y=0,z=1;
-	while(b){
-		const unsigned q=a/b,c=a-q*b;
-		a=b,b=c;
-		const ll w=y-(ll)q*z;
-		y=z,z=w;
-	}
-	assert(a==1);return ModInt(y);
+template<unsigned M>
+struct ModInt{
+static constexpr unsigned MOD=M;
+static_assert(1<M&&M<=INT_MAX);
+unsigned x=0;
+ModInt()=default;
+template<typename T> ModInt(T v){
+	if constexpr(is_signed_v<T>){ll y=v%(ll)M;x=y<0?y+M:y;}
+	else x=v%M;
 }
-ModInt pow(long long k) const {
-	unsigned long long e=k;
-	ModInt a=*this,b=1;
+ModInt &operator+=(ModInt a){if((x+=a.x)>=M)x-=M;return *this;}
+ModInt &operator-=(ModInt a){if((x-=a.x)>=M)x+=M;return *this;}
+ModInt &operator*=(ModInt a){x=(ull)x*a.x%M;return *this;}
+ModInt &operator/=(ModInt a){return *this*=a.inv();}
+friend ModInt operator+(ModInt a,ModInt b){return a+=b;}
+friend ModInt operator-(ModInt a,ModInt b){return a-=b;}
+friend ModInt operator*(ModInt a,ModInt b){return a*=b;}
+friend ModInt operator/(ModInt a,ModInt b){return a/=b;}
+bool operator==(ModInt a)const{return x==a.x;}
+bool operator!=(ModInt a)const{return x!=a.x;}
+explicit operator bool()const{return x!=0;}
+bool operator!()const{return !x;}
+ModInt operator+()const{return *this;}
+ModInt operator-()const{ModInt a;a.x=x?M-x:0;return a;}
+ModInt &operator++(){return *this+=1;}
+ModInt &operator--(){return *this-=1;}
+ModInt operator++(int){ModInt a=*this;++*this;return a;}
+ModInt operator--(int){ModInt a=*this;--*this;return a;}
+ModInt inv()const{
+	ll a=M,b=x,y=0,z=1;
+	while(b){ll q=a/b;a-=q*b;swap(a,b);y-=q*z;swap(y,z);}
+	assert(a==1);return y;
+}
+ModInt pow(ll k)const{
+	ull e=k;ModInt a=*this,b=1;
 	if(k<0){a=a.inv();e=0-e;}
-	for(;e;e>>=1){if(e&1)b*=a;a*=a;}
+	for(;e;e>>=1,a*=a)if(e&1)b*=a;
 	return b;
 }
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator--(int){ModInt t=*this;--*this;return t;}
-ModInt operator++(int){ModInt t=*this;++*this;return t;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
-
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){ll y;if(i>>y)x=ModInt(y);return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
+friend istream &operator>>(istream &o,ModInt &a){
+	ll x;if(o>>x)a=x;return o;
+}
+friend ostream &operator<<(ostream &o,ModInt a){return o<<a.x;}
 };
-// Basic function, fac, ifac, binom
-// init(n) prepares fac / ifac / inv through n
+
 const int MOD=998244353;
 using mint=ModInt<MOD>;
 vector<mint> fac{1},ifac{1},inv{0,1};
@@ -871,17 +579,16 @@ inline mint Apple_in_Box(int n,int m){
 	return C(m-1,n-1);
 }
 inline mint Apple_in_Box(int n,int m,int k){
-	// n apples into m boxes, 
+	// n apples into m boxes,
 	// the first k boxes must be non-empty (others can be empty)
 	assert(0<=k&&k<=m);
 	return Apple_in_Box(n+(m-k),m);
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/ModInt-nonstaticMod.cpp}}
-\textbf{运行时模数及组合数}
+\textbf{10 运行时模数及组合数}
 
 \TemplUsage{同一份程序需要选定不同模数时使用。设置模数后再创建该轮使用的值。}
 \TemplApi{\begin{itemize}
@@ -896,90 +603,55 @@ assert(C(2,5).x==10);
 mint a=100; assert((a+2).x==1);
 \end{lstlisting}
 \TemplNote{修改模数不会转换已有 mint 变量；丢弃旧值并重建阶乘。与固定模数版、各多项式版本的 mint / fac 等全局名字冲突。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for ModInt (Mod isn't assign)
-// version 1.0 (Last Update Jun 16th, 2026)
-//
-// usage:
-//   mint::setM(mod); init_fact(n); mint x; cin >> x;
-//
-struct mint {
-	static unsigned M;
-	static unsigned long long NEG_INV_M;
-	static void setM(unsigned m) {
-		assert(1<m&&m<=INT_MAX);M = m;
-		NEG_INV_M = -1ULL / M;
-	}
-	unsigned x;
-	mint() : x(0U) {}
-	mint(unsigned x_) : x(x_ % M) {}
-	mint(unsigned long long x_) : x(x_ % M) {}
-	mint(int x_) : x(((x_ %= static_cast<int>(M)) < 0) ? (x_ + static_cast<int>(M)) : x_) {}
-	mint(long long x_) : x(((x_ %= static_cast<long long>(M)) < 0) ? (x_ + static_cast<long long>(M)) : x_) {}
-	mint& operator+=(const mint &a) {
-		x = ((x += a.x) >= M) ? (x - M) : x;
-		return *this;
-	}
-	mint& operator-=(const mint &a) {
-		x = ((x -= a.x) >= M) ? (x + M) : x;
-		return *this;
-	}
-	mint& operator*=(const mint &a) {
-		const unsigned long long y = static_cast<unsigned long long>(x) * a.x;
-		const unsigned long long q = static_cast<unsigned long long>(
-			(static_cast<unsigned __int128>(NEG_INV_M) * y) >> 64
-		);
-		const unsigned long long r = y - M * q;
-		x = r - M * (r >= M);
-		return *this;
-	}
-	mint& operator/=(const mint &a) { return (*this *= a.inv()); }
-	mint pow(long long e) const {
-		unsigned long long k=e;
-		mint a=*this,b=1;
-		if(e<0){a=a.inv();k=0-k;}
-		for(;k;k>>=1){if(k&1)b*=a;a*=a;}
-		return b;
-	}
-	mint inv() const {
-		unsigned a = M, b = x;
-		ll y = 0, z = 1;
-		for (; b; ) {
-			const unsigned q = a / b;
-			const unsigned c = a - q * b;
-			a = b; b = c;
-			const ll w = y - (ll)q * z;
-			y = z; z = w;
-		}
-		assert(a == 1U);
-		return mint(y);
-	}
-	mint operator+() const { return *this; }
-	mint operator-() const { mint a; a.x = x ? (M - x) : 0U; return a;}
-	mint operator+(const mint &a) const { return (mint(*this) += a); }
-	mint operator-(const mint &a) const { return (mint(*this) -= a); }
-	mint operator*(const mint &a) const { return (mint(*this) *= a); }
-	mint operator/(const mint &a) const { return (mint(*this) /= a); }
-	mint& operator++() { *this += 1; return *this; }
-	mint& operator--() { *this -= 1; return *this; }
-	bool operator!() const { return x == 0; }
-	explicit operator bool() const { return x != 0; }
-	bool operator==(const mint &a) const { return (x == a.x); }
-	bool operator!=(const mint &a) const { return (x != a.x); }
-	template<class T> friend mint operator+(T a, const mint &b) { return (mint(a) += b); }
-	template<class T> friend mint operator-(T a, const mint &b) { return (mint(a) -= b); }
-	template<class T> friend mint operator*(T a, const mint &b) { return (mint(a) *= b); }
-	template<class T> friend mint operator/(T a, const mint &b) { return (mint(a) /= b); }
-	friend istream& operator>>(istream &i, mint &a) { ll x;if(i>>x)a=mint(x);return i; }
-	friend ostream& operator<<(ostream &o, const mint &a) { return o << a.x; }
+struct mint{
+static inline unsigned M=998244353;
+static inline ull R=-1ull/M;
+static void setM(unsigned m){assert(1<m&&m<=INT_MAX);M=m;R=-1ull/M;}
+unsigned x=0;
+mint()=default;
+template<typename T> mint(T v){
+	if constexpr(is_signed_v<T>){ll y=v%(ll)M;x=y<0?y+M:y;}
+	else x=v%M;
+}
+mint &operator+=(mint a){if((x+=a.x)>=M)x-=M;return *this;}
+mint &operator-=(mint a){if((x-=a.x)>=M)x+=M;return *this;}
+mint &operator*=(mint a){
+	ull v=(ull)x*a.x,q=(__uint128_t)R*v>>64;
+	v-=q*M;x=v>=M?v-M:v;return *this;
+}
+mint &operator/=(mint a){return *this*=a.inv();}
+friend mint operator+(mint a,mint b){return a+=b;}
+friend mint operator-(mint a,mint b){return a-=b;}
+friend mint operator*(mint a,mint b){return a*=b;}
+friend mint operator/(mint a,mint b){return a/=b;}
+bool operator==(mint a)const{return x==a.x;}
+bool operator!=(mint a)const{return x!=a.x;}
+explicit operator bool()const{return x!=0;}
+bool operator!()const{return !x;}
+mint operator+()const{return *this;}
+mint operator-()const{mint a;a.x=x?M-x:0;return a;}
+mint &operator++(){return *this+=1;}
+mint &operator--(){return *this-=1;}
+mint operator++(int){mint a=*this;++*this;return a;}
+mint operator--(int){mint a=*this;--*this;return a;}
+mint inv()const{
+	ll a=M,b=x,y=0,z=1;
+	while(b){ll q=a/b;a-=q*b;swap(a,b);y-=q*z;swap(y,z);}
+	assert(a==1);return y;
+}
+mint pow(ll k)const{
+	ull e=k;mint a=*this,b=1;
+	if(k<0){a=a.inv();e=0-e;}
+	for(;e;e>>=1,a*=a)if(e&1)b*=a;
+	return b;
+}
+friend istream &operator>>(istream &o,mint &a){
+	ll x;if(o>>x)a=x;return o;
+}
+friend ostream &operator<<(ostream &o,mint a){return o<<a.x;}
 };
-unsigned mint::M = 998244353;
-unsigned long long mint::NEG_INV_M = -1ULL / mint::M;
-
-// !!!!!!!!!!!Use mint::setM(<new mod>)!!!!!!!!!!
 
 vector<mint> fac,ifac,inv;
 unsigned fact_mod=0;
@@ -1000,1073 +672,56 @@ inline mint C(int x,int y){
 inline mint binom(int y,int x){return C(x,y);}
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{basic/roll back saver (int).cpp}}
-\textbf{记录并撤销变量修改}
-
-\TemplUsage{保存变量的地址和旧值，用版本号撤销一段修改。每次保存和撤销一次记录都是 O(1)。}
-\TemplApi{\begin{itemize}
-\item 修改前先 \texttt{saver.save(x)}。
-\item \texttt{saver.version()} 返回当前记录数，\texttt{saver.roll\_back(t)} 逆序恢复到该记录数。
-\item \texttt{saver.set()} 仅丢弃历史，不恢复变量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-saver.set(); int x=7;
-auto t=saver.version(); saver.save(x); x=20;
-saver.roll_back(t); assert(x==7);
-\end{lstlisting}
-\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for roll back saver
-//
-// usage:
-//   saver.set(); saver.save(x); int t=saver.version(); saver.roll_back(t);
-//   int only; pair with DSU (with undo)
-//   saved elements must stay at the same address until rollback
-//
-struct rollback_saver{
-vector<pair<int*,int>> buf;
-void set(){buf.clear();}
-void save(int &x){buf.push_back(make_pair(&x,x));}
-int version(){return buf.size();}
-void roll_back(int t){
-	assert(0<=t&&t<=version());
-	while(buf.size()>t){
-		auto [a,b]=buf.back();buf.pop_back();
-		*a=b;
-	}
-}
-};
-rollback_saver saver;
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{basic/roll back saver (int or ll).cpp}}
-\textbf{记录并撤销变量修改}
-
-\TemplUsage{保存变量的地址和旧值，用版本号撤销一段修改。每次保存和撤销一次记录都是 O(1)。}
-\TemplApi{\begin{itemize}
-\item 修改前先 \texttt{saver.save(x)}。
-\item \texttt{saver.version()} 返回当前记录数，\texttt{saver.roll\_back(t)} 逆序恢复到该记录数。
-\item \texttt{saver.set()} 仅丢弃历史，不恢复变量。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-saver.set(); ll x=7;
-auto t=saver.version(); saver.save(x); x=20;
-saver.roll_back(t); assert(x==7);
-\end{lstlisting}
-\TemplNote{保存期间变量地址必须保持有效，不能让包含它的 vector 扩容。每个版本号只能用于当前历史；两种 saver 不能同时粘贴。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for roll back saver
-//
-// usage:
-//   saver.set(); saver.save(x); saver.save(y); saver.roll_back(t);
-//   supports int and ll; do not paste with (int) saver
-//   saved elements must stay at the same address until rollback
-//
-using ll=long long;
-struct rollback_saver{
-vector<pair<int*,int>> buf;
-vector<pair<ll*,ll>> buf1;
-int saved_ele=0;
-vector<char> R=vector<char>(1);
-void set(){saved_ele=0;buf.clear();buf1.clear();R.assign(1,false);}
-void save(int &x){buf.push_back(make_pair(&x,x));R.push_back(false);++saved_ele;}
-void save(ll &x){buf1.push_back(make_pair(&x,x));R.push_back(true);++saved_ele;}
-int version(){return saved_ele;}
-void roll_back(int t){
-	assert(0<=t&&t<=version());
-	while(saved_ele>t){
-		if(R[saved_ele]){
-			auto [a,b]=buf1.back();buf1.pop_back();
-			*a=b;
-		}else{
-			auto [a,b]=buf.back();buf.pop_back();
-			*a=b;
-		}
-		saved_ele--;R.pop_back();
-	}
-}
-};
-rollback_saver saver;
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{basic/DSU (with undo).cpp}}
-\textbf{可撤销并查集}
+\textbf{13 可撤销并查集}
 
 \TemplUsage{适合线段树分治或搜索中加入连边后回退。按大小合并、不做路径压缩，单次查找 O(log n)。}
-\TemplApi{\begin{itemize}
-\item 先粘贴一种 saver，再粘贴本文件。
-\item \texttt{unionfind d; d.setN(n)} 初始化；\texttt{find/merge} 与普通版类似。
-\item 通过全局 \texttt{saver.version/saver.roll\_back} 撤销 merge，而不是调用对象成员。
-\end{itemize}}
-\textbf{额外依赖（按此顺序粘贴）：}\texttt{basic/roll back saver (int).cpp}。
+\TemplApi{\texttt{unionfind d; d.setN(n)} 初始化；find/merge 同普通版。\texttt{int t=d.version()} 保存快照，\texttt{d.roll\_back(t)} 撤销到该快照。记录直接保存在并查集内，无其他依赖。}
 
 \textbf{最小示例（放入 main）：}
 \begin{lstlisting}
-saver.set(); unionfind d; d.setN(3);
-auto t=saver.version(); d.merge(1,2);
+unionfind d; d.setN(3);
+auto t=d.version(); d.merge(1,2);
 assert(d.find(1)==d.find(2));
-saver.roll_back(t); assert(d.find(1)!=d.find(2));
+d.roll_back(t); assert(d.find(1)!=d.find(2));
 \end{lstlisting}
-\TemplNote{setN 前先清空旧历史，不能在旧历史仍引用数组时重新分配。不要自行加入路径压缩。}
-
+\TemplNote{setN 会清空历史，旧快照随之失效。不要加入路径压缩；单次 find/merge 为 $O(\log n)$，每撤销一次实际合并为 $O(1)$。}
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for unionfind (accept undo, O(nlogn))
-// saver.version 1.0 (Last Update Jun 28th, 2026)
-//
-// usage:
-//   Paste roll back saver (int).cpp first.
-//   unionfind uf; uf.setN(n); int t=saver.version(); uf.merge(u,v); saver.roll_back(t);
-//
 struct unionfind{
 int n=0;
-vector<int> fa,siz;
-inline void setN(int _n){
-	// saved addresses must not survive setN()
-	assert(saver.version()==0);
-	assert(0<=_n&&_n<INT_MAX);n=_n;
-	fa.resize(n+1);iota(fa.begin(),fa.end(),0);siz.assign(n+1,1);siz[0]=0;
+vector<int> fa,siz,h;
+void setN(int m){
+	assert(0<=m&&m<INT_MAX);n=m;h.clear();
+	fa.resize(n+1);iota(fa.begin(),fa.end(),0);
+	siz.assign(n+1,1);siz[0]=0;
 }
-inline int find(int x){assert(1<=x&&x<=n);while(x^fa[x])x=fa[x];return x;}
-inline int merge(int x,int y){
-	assert(1<=min(x,y)&&max(x,y)<=n);
-	x=find(x),y=find(y);
-	if(x==y) return 0;
-	if(siz[x]<siz[y]) swap(x,y);
-	saver.save(siz[x]);saver.save(fa[y]);
-	siz[x]+=siz[y];fa[y]=x;
+int find(int x)const{
+	assert(1<=x&&x<=n);
+	while(x!=fa[x])x=fa[x];
 	return x;
+}
+int merge(int x,int y){
+	x=find(x);y=find(y);if(x==y)return 0;
+	if(siz[x]<siz[y])swap(x,y);
+	h.push_back(y);fa[y]=x;siz[x]+=siz[y];return x;
+}
+int version()const{return h.size();}
+void roll_back(int t){
+	assert(0<=t&&t<=(int)h.size());
+	while((int)h.size()>t){
+		int y=h.back();h.pop_back();siz[fa[y]]-=siz[y];fa[y]=y;
+	}
 }
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \clearpage
 \section{数据结构}
 \Needspace{10\baselineskip}
-\subsection{\texttt{ds/BIT.cpp}}
-\textbf{自定义下标的树状数组}
-
-\TemplUsage{同时提供单点加的 BIT 和区间加的双 BIT。初始化 O(n)，单次操作 O(log n)，空间 O(n)。}
-\TemplApi{两种结构都用 \texttt{setRange(L,R)} 设置闭区间，\texttt{setN(n)} 等价于 \texttt{setRange(1,n)}。BIT 的 \texttt{add(i,v)} 单点加，\texttt{ask(r)} 返回 [L,r] 的和，\texttt{ask(l,r)} 返回区间和。rars 的 \texttt{add(l,r,v)} 区间加，\texttt{ask(l,r)} 查区间和。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-BIT b; b.setRange(-2,2); b.add(0,7);
-assert(b.ask(0)==7 && b.ask(-1,1)==7);
-rars t; t.setRange(-2,2); t.add(-1,1,3);
-assert(t.ask(-2,0)==6);
-b.setN(3); assert(b.ask(3)==0);
-\end{lstlisting}
-\TemplNote{下标 0 或负数只要在设定区间内就合法；内部会转成正下标。ask(L-1) 返回零，add(R+1,v) 是差分哨兵，不计入查询。极端坐标的 L-1/R+1 用 ll 计算。rars 的加权差分使用相对位置，不依赖坐标绝对值；值、加权积与答案须在 ll 范围内。set() 清空；重新 setRange/setN 丢弃旧值。文件末尾保留全局 rars 对象 T。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for BIT
-//
-// usage:
-//   BIT: setRange(l,r); add(i,v); ask(r); ask(l,r).
-//   setN(n) = setRange(1,n); add(vr+1,v) is a difference sentinel.
-//   rars: setRange(l,r); add(l,r,v); ask(l,r).
-//
-////////////////////////////////////////////////////////////////
-struct BIT{
-private:
-struct info{
-	ll x=0;
-	info(){}
-	info(ll _x):x(_x){}
-	info& operator +=(const info &y){x+=y.x;return *this;}
-	info operator +(const info &y)const{return info(*this)+=y;}
-};
-int vl=1,vr=0,n=0;vector<info> a;
-info query(int x)const{
-	info ans;for(;x;x-=x&-x)ans+=a[x];return ans;
-}
-public:
-void set(){vl=1;vr=n=0;a.clear();}
-void setRange(int l,int r){
-	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,info());
-}
-void setN(int n){setRange(1,n);}
-void add(ll x,ll v){
-	assert(!a.empty()&&vl<=x&&x<=(ll)vr+1);
-	for(ll i=x-vl+1;i<=n+1;i+=i&-i)a[i]+=info(v);
-}
-ll ask(ll x)const{assert((ll)vl-1<=x&&x<=vr);return query(x-vl+1).x;}
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return ask(r)-ask((ll)l-1);}
-};
-struct rars{
-int vl=1,vr=0;BIT T0,T1;
-void set(){vl=1;vr=0;T0.set();T1.set();}
-void setRange(int l,int r){vl=l;vr=r;T0.setRange(l,r);T1.setRange(l,r);}
-void setN(int n){setRange(1,n);}
-void add(int l,int r,ll x){
-	assert(vl<=l&&l<=r&&r<=vr);
-	ll a=(ll)l-vl+1,b=(ll)r-vl+2;
-	T0.add(l,x);T0.add((ll)r+1,-x);
-	T1.add(l,a*x);T1.add((ll)r+1,-b*x);
-}
-ll query(ll x)const{return (x-vl+2)*T0.ask(x)-T1.ask(x);}
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return query(r)-query((ll)l-1);}
-}T;
-// end for ds/BIT.cpp
-/////////////////////////
-\end{lstlisting}
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/BIT/Sum.cpp}}
-\textbf{树状数组：和特化}
-
-\TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Sum\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{add(i,v)} 单点加；\texttt{ask(r)} 查询 [L,r] 的和；\texttt{ask(l,r)} 查询区间和。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Sum_BIT t; t.setRange(-2,2); t.add(0,5); t.add(1,-3);
-assert(t.ask(0)==5 && t.ask(0,1)==2);
-\end{lstlisting}
-\TemplNote{初始值全零；允许 add(R+1,v) 差分哨兵及 ask(L-1) 空前缀。支持负坐标，查询不会修改树。 三个类名不同，可组合粘贴；set() 清空。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for BIT (sum)
-//
-// usage:
-//   Sum_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
-//   add(i,v); ask(r); ask(l,r); initial values are zero.
-//   add(vr+1,v) is allowed as a difference sentinel.
-//
-////////////////////////////////////////////////////////////////
-struct Sum_BIT{
-private:
-int vl=1,vr=0,n=0;vector<ll> a;
-public:
-void set(){vl=1;vr=n=0;a.clear();}
-void setRange(int l,int r){
-	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,0);
-}
-void setN(int n){setRange(1,n);}
-void add(ll x,ll v){
-	assert(!a.empty()&&vl<=x&&x<=(ll)vr+1);
-	for(ll i=x-vl+1;i<=n+1;i+=i&-i)a[i]+=v;
-}
-ll ask(ll x)const{
-	assert((ll)vl-1<=x&&x<=vr);ll ans=0;
-	for(int i=x-vl+1;i;i-=i&-i)ans+=a[i];
-	return ans;
-}
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return ask(r)-ask((ll)l-1);}
-};
-// end for ds/BIT/Sum.cpp
-/////////////////////////
-\end{lstlisting}
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/BIT/Max.cpp}}
-\textbf{树状数组：最大值特化}
-
-\TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Max\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{upd(i,v)} 把第 i 项取最大值，并非赋值；\texttt{ask(r)} 查询 [L,r] 的最大值。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Max_BIT t; t.setRange(-2,2); t.upd(0,5); t.upd(0,3);
-assert(t.ask(1)==5);
-\end{lstlisting}
-\TemplNote{初值和空前缀返回 LLONG\_MIN。只支持单点 chmax；不能把已有大值减小。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for BIT (max)
-//
-// usage:
-//   Max_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
-//   upd(i,v) is chmax, not assignment; ask(r) queries [vl,r].
-//   Initial / empty-prefix value: LLONG_MIN. No inverse for interval queries.
-//
-////////////////////////////////////////////////////////////////
-struct Max_BIT{
-private:
-int vl=1,vr=0,n=0;vector<ll> a;
-public:
-void set(){vl=1;vr=n=0;a.clear();}
-void setRange(int l,int r){
-	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,LLONG_MIN);
-}
-void setN(int n){setRange(1,n);}
-void upd(ll x,ll v){
-	assert(vl<=x&&x<=vr);
-	for(ll i=x-vl+1;i<=n;i+=i&-i)a[i]=max(a[i],v);
-}
-ll ask(ll x)const{
-	assert((ll)vl-1<=x&&x<=vr);ll ans=LLONG_MIN;
-	for(int i=x-vl+1;i;i-=i&-i)ans=max(ans,a[i]);
-	return ans;
-}
-
-};
-// end for ds/BIT/Max.cpp
-/////////////////////////
-\end{lstlisting}
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/BIT/Min.cpp}}
-\textbf{树状数组：最小值特化}
-
-\TemplUsage{初始化 O(n)，单点修改和前缀查询 O(log n)，空间 O(n)。}
-\TemplApi{\texttt{Min\_BIT t; t.setRange(L,R)}；\texttt{setN(n)} 调用 \texttt{setRange(1,n)}。\texttt{upd(i,v)} 把第 i 项取最小值，并非赋值；\texttt{ask(r)} 查询 [L,r] 的最小值。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Min_BIT t; t.setRange(-2,2); t.upd(0,5); t.upd(0,3);
-assert(t.ask(1)==3);
-\end{lstlisting}
-\TemplNote{初值和空前缀返回 LLONG\_MAX。只支持单点 chmin；不能把已有小值增大。没有 ask(l,r)，最值不能像和一样用两个前缀相减；任意点赋值或一般区间最值请用线段树。 三个类名不同，可组合粘贴；set() 清空。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for BIT (min)
-//
-// usage:
-//   Min_BIT t; t.setRange(l,r); // setN(n) = setRange(1,n)
-//   upd(i,v) is chmin, not assignment; ask(r) queries [vl,r].
-//   Initial / empty-prefix value: LLONG_MAX. No inverse for interval queries.
-//
-////////////////////////////////////////////////////////////////
-struct Min_BIT{
-private:
-int vl=1,vr=0,n=0;vector<ll> a;
-public:
-void set(){vl=1;vr=n=0;a.clear();}
-void setRange(int l,int r){
-	ll m=(ll)r-l+1;assert(0<=m&&m<INT_MAX-1);
-	vl=l;vr=r;n=m;a.assign(n+2,LLONG_MAX);
-}
-void setN(int n){setRange(1,n);}
-void upd(ll x,ll v){
-	assert(vl<=x&&x<=vr);
-	for(ll i=x-vl+1;i<=n;i+=i&-i)a[i]=min(a[i],v);
-}
-ll ask(ll x)const{
-	assert((ll)vl-1<=x&&x<=vr);ll ans=LLONG_MAX;
-	for(int i=x-vl+1;i;i-=i&-i)ans=min(ans,a[i]);
-	return ans;
-}
-
-};
-// end for ds/BIT/Min.cpp
-/////////////////////////
-\end{lstlisting}
-
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree/AddSum.cpp}}
-\textbf{区间加、区间和}
-
-\TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\item \texttt{find\_first(k)} 从左累计达到 k 的位置；\texttt{find\_last(k)} 从右累计达到 k 的位置。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-AddSum_segt t; t.setN(3);
-t.upd(2,5); t.add(1,2,2);
-assert(t.ask(1,3)==9);
-\end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。区间长度由递归参数计算，不存入节点；ask 和二分携带祖先标记，不下传、不改树。使用二分查询时所有点值必须非负，且 1<=k<=总和；k 参数为 ll。三个类名不同，可以组合粘贴。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Segment Tree — 区间加 / 区间和 / 前缀和二分
-// version 1.1 (Last Update Jun 27th, 2026)
-//
-// usage:
-//   AddSum_segt st; st.setN(n);  // or set(l,r), 1-indexed
-//   upd/add point; add(l,r,v) range; ask; find_first/last
-//
-////////////////////////////////////////////////////////////////
-struct AddSum_segt{
-private:
-struct node{ll s=0,a=0;};
-int vl=1,vr=0;
-vector<node> tr;
-inline void pushup(int id){tr[id].s=tr[id<<1].s+tr[id<<1|1].s;}
-inline void push(int id,ll x,int len){
-	tr[id].s+=x*len;
-	if(len>1)tr[id].a+=x;
-}
-inline void pushdown(int id,int l,int r){
-	ll x=tr[id].a;if(!x)return;
-	int mid=l+((ll)r-l)/2;
-	push(id<<1,x,mid-l+1);push(id<<1|1,x,r-mid);
-	tr[id].a=0;
-}
-void update(int x,ll v,bool assign,int id,int l,int r){
-	if(l==r){if(assign)tr[id].s=v;else tr[id].s+=v;tr[id].a=0;return;}
-	int mid=l+((ll)r-l)/2;pushdown(id,l,r);
-	if(x<=mid)update(x,v,assign,id<<1,l,mid);
-	else update(x,v,assign,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int ql,int qr,ll x,int id,int l,int r){
-	if(ql<=l&&r<=qr){push(id,x,r-l+1);return;}
-	int mid=l+((ll)r-l)/2;pushdown(id,l,r);
-	if(ql<=mid)modify(ql,qr,x,id<<1,l,mid);
-	if(mid<qr)modify(ql,qr,x,id<<1|1,mid+1,r);
-	pushup(id);
-}
-ll query(int ql,int qr,int id,int l,int r,ll a)const{
-	// carry ancestor tags; queries do not change the tree
-	if(ql<=l&&r<=qr)return tr[id].s+a*(r-l+1);
-	int mid=l+((ll)r-l)/2;a+=tr[id].a;
-	if(qr<=mid)return query(ql,qr,id<<1,l,mid,a);
-	if(mid<ql)return query(ql,qr,id<<1|1,mid+1,r,a);
-	ll x=query(ql,qr,id<<1,l,mid,a),y=query(ql,qr,id<<1|1,mid+1,r,a);
-	return x+y;
-}
-int find(ll x,bool rev)const{
-	int id=1,l=vl,r=vr;ll a=0;
-	while(l<r){
-		int mid=l+((ll)r-l)/2;a+=tr[id].a;
-		ll s=tr[id<<1|rev].s+a*(rev?r-mid:mid-l+1);
-		bool right=rev;
-		if(x>s){x-=s;right=!right;}
-		id=id<<1|right;
-		if(right)l=mid+1;else r=mid;
-	}
-	return l;
-}
-public:
-void set(){vl=1;vr=0;tr.clear();}
-void set(int l,int r){
-	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=l;vr=r;tr.assign(4*n,node());
-}
-void setN(int n){set(1,n);}
-void upd(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,true,1,vl,vr);}
-void add(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,false,1,vl,vr);}
-void add(int l,int r,ll v){
-	assert(vl<=l&&(ll)l<=1ll+r&&r<=vr);
-	if(l<=r)modify(l,r,v,1,vl,vr);
-}
-ll ask(int l,int r)const{assert(vl<=l&&l<=r&&r<=vr);return query(l,r,1,vl,vr,0);}
-ll ask(int x)const{return ask(x,x);}
-// all leaf values must be non-negative
-int find_first(ll x)const{assert(!tr.empty()&&0<x&&x<=tr[1].s);return find(x,false);}
-int find_last(ll x)const{assert(!tr.empty()&&0<x&&x<=tr[1].s);return find(x,true);}
-};
-// end for ds/Segment Tree/AddSum.cpp
-/////////////////////////
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree/MaxAdd.cpp}}
-\textbf{区间加、区间最大值}
-
-\TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-MaxAdd_segt t; t.setN(3);
-t.upd(2,5); t.add(1,2,2);
-assert(t.ask(1,3)==7);
-\end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Segment Tree — 区间加 / 区间最大
-// version 1.0 (Last Update Jun 27th, 2026)
-//
-// usage:
-//   MaxAdd_segt st; st.setN(n); upd/add; ask(l,r) for range max
-//   default leaf value 0
-//
-////////////////////////////////////////////////////////////////
-struct MaxAdd_segt{
-private:
-struct node{ll s=0,a=0;};
-int vl=1,vr=0;
-vector<node> tr;
-inline void pushup(int id){tr[id].s=max(tr[id<<1].s,tr[id<<1|1].s);}
-inline void push(int id,ll x){
-	tr[id].s+=x;
-	tr[id].a+=x;
-}
-inline void pushdown(int id){
-	ll x=tr[id].a;if(!x)return;
-	push(id<<1,x);push(id<<1|1,x);
-	tr[id].a=0;
-}
-void update(int x,ll v,bool assign,int id,int l,int r){
-	if(l==r){if(assign)tr[id].s=v;else tr[id].s+=v;tr[id].a=0;return;}
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(x<=mid)update(x,v,assign,id<<1,l,mid);
-	else update(x,v,assign,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int ql,int qr,ll x,int id,int l,int r){
-	if(ql<=l&&r<=qr){push(id,x);return;}
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(ql<=mid)modify(ql,qr,x,id<<1,l,mid);
-	if(mid<qr)modify(ql,qr,x,id<<1|1,mid+1,r);
-	pushup(id);
-}
-ll query(int ql,int qr,int id,int l,int r){
-	if(ql<=l&&r<=qr)return tr[id].s;
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(qr<=mid)return query(ql,qr,id<<1,l,mid);
-	if(mid<ql)return query(ql,qr,id<<1|1,mid+1,r);
-	ll x=query(ql,qr,id<<1,l,mid),y=query(ql,qr,id<<1|1,mid+1,r);
-	return max(x,y);
-}
-
-public:
-void set(){vl=1;vr=0;tr.clear();}
-void set(int l,int r){
-	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=l;vr=r;tr.assign(4*n,node());
-}
-void setN(int n){set(1,n);}
-void upd(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,true,1,vl,vr);}
-void add(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,false,1,vl,vr);}
-void add(int l,int r,ll v){
-	assert(vl<=l&&(ll)l<=1ll+r&&r<=vr);
-	if(l<=r)modify(l,r,v,1,vl,vr);
-}
-ll ask(int l,int r){assert(vl<=l&&l<=r&&r<=vr);return query(l,r,1,vl,vr);}
-ll ask(int x){return ask(x,x);}
-
-};
-// end for ds/Segment Tree/MaxAdd.cpp
-/////////////////////////
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree/MinAdd.cpp}}
-\textbf{区间加、区间最小值}
-
-\TemplUsage{默认闭区间下标 1..n、初值全零，初始化 O(n)，单次修改查询 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{setN(n)} 或 \texttt{set(l,r)} 指定有效闭区间。
-\item \texttt{upd(i,v)} 是赋值，\texttt{add(i,v)} 是加法；\texttt{add(l,r,v)} 区间加。
-\item \texttt{ask(l,r)} 查询，\texttt{ask(i)} 查单点。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-MinAdd_segt t; t.setN(3);
-t.upd(2,5); t.add(1,2,2);
-assert(t.ask(1,3)==0);
-\end{lstlisting}
-\TemplNote{这是区间加的特化实现；要更换信息或标记类型，使用外面的两份通用模板。set/setN 直接初始化全零节点，不递归建树。若初始数组不是全零，应逐点 upd；负数数组不需要改初始化，只要把所有位置正确赋值。三个类名不同，可以组合粘贴。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Segment Tree — 区间加 / 区间最小
-// version 1.0 (Last Update Jun 27th, 2026)
-//
-// usage:
-//   MinAdd_segt st; st.setN(n); upd/add; ask(l,r) for range min
-//   needs chkmin; set leaf INF in build for min queries
-//
-////////////////////////////////////////////////////////////////
-struct MinAdd_segt{
-private:
-struct node{ll s=0,a=0;};
-int vl=1,vr=0;
-vector<node> tr;
-inline void pushup(int id){tr[id].s=min(tr[id<<1].s,tr[id<<1|1].s);}
-inline void push(int id,ll x){
-	tr[id].s+=x;
-	tr[id].a+=x;
-}
-inline void pushdown(int id){
-	ll x=tr[id].a;if(!x)return;
-	push(id<<1,x);push(id<<1|1,x);
-	tr[id].a=0;
-}
-void update(int x,ll v,bool assign,int id,int l,int r){
-	if(l==r){if(assign)tr[id].s=v;else tr[id].s+=v;tr[id].a=0;return;}
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(x<=mid)update(x,v,assign,id<<1,l,mid);
-	else update(x,v,assign,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int ql,int qr,ll x,int id,int l,int r){
-	if(ql<=l&&r<=qr){push(id,x);return;}
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(ql<=mid)modify(ql,qr,x,id<<1,l,mid);
-	if(mid<qr)modify(ql,qr,x,id<<1|1,mid+1,r);
-	pushup(id);
-}
-ll query(int ql,int qr,int id,int l,int r){
-	if(ql<=l&&r<=qr)return tr[id].s;
-	int mid=l+((ll)r-l)/2;pushdown(id);
-	if(qr<=mid)return query(ql,qr,id<<1,l,mid);
-	if(mid<ql)return query(ql,qr,id<<1|1,mid+1,r);
-	ll x=query(ql,qr,id<<1,l,mid),y=query(ql,qr,id<<1|1,mid+1,r);
-	return min(x,y);
-}
-
-public:
-void set(){vl=1;vr=0;tr.clear();}
-void set(int l,int r){
-	ll n=(ll)r-l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=l;vr=r;tr.assign(4*n,node());
-}
-void setN(int n){set(1,n);}
-void upd(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,true,1,vl,vr);}
-void add(int x,ll v){assert(vl<=x&&x<=vr);update(x,v,false,1,vl,vr);}
-void add(int l,int r,ll v){
-	assert(vl<=l&&(ll)l<=1ll+r&&r<=vr);
-	if(l<=r)modify(l,r,v,1,vl,vr);
-}
-ll ask(int l,int r){assert(vl<=l&&l<=r&&r<=vr);return query(l,r,1,vl,vr);}
-ll ask(int x){return ask(x,x);}
-
-};
-// end for ds/Segment Tree/MinAdd.cpp
-/////////////////////////
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree(with lazytag).cpp}}
-\textbf{通用线段树（带懒标记）}
-
-\TemplUsage{默认维护区间和，下标 1..n，初值全零。递归部分只处理 info，按题目改写信息与标记的运算。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt t; t.setN(n)} 初始化。
-\item \texttt{upd(i,v)} 单点赋值；\texttt{ask(l,r)} 区间和，\texttt{ask(i)} 单点值。
-\item \texttt{add(i,v)} 单点加，\texttt{add(l,r,v)} 区间加。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-segt t; t.setN(3); t.upd(2,5);
-t.add(1,2,2); assert(t.ask(1,3)==9);
-\end{lstlisting}
-\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。 lazt += lazt 的顺序是旧标记后接新标记；info += lazt 负责作用标记，区间长度等元数据由 info 保存。不能仅因支持单点加，就直接认为相同统计能支持区间加。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Segment Tree
-// version 1.1 (Last Update Jun 27th, 2026)
-//
-// usage:
-//   segt st; st.setN(n);  // or set(l,r), 1-indexed
-//   upd/add point; add(l,r,v) range; ask; find_first/last
-//
-////////////////////////////////////////////////////////////////
-// remove this line when info has no subtraction / comparison
-#define USE_COMPARE
-struct segt{
-private:
-//////////////////////////////////////////////////////////////
-// basic operation
-struct lazt{
-	// modify here
-	ll a;
-	bool empty()const{return a==0;}
-	void set(){a=0;}
-	lazt():a(0){}
-	lazt(ll _a):a(_a){}
-	inline lazt& operator +=(const lazt &y){
-		a+=y.a;
-		return *this;
-	}
-	inline lazt operator +(const lazt &y)const{
-		return lazt(*this)+=y;
-	}
-};
-struct info{
-	// modify here
-	ll s,len;
-	info():s(0),len(0){}
-	info(ll _s,ll _len):s(_s),len(_len){}
-	inline info& operator +=(const info &y){
-		s+=y.s;len+=y.len;
-		return *this;
-	}
-	inline info operator +(const info &y)const{
-		return info(*this)+=y;
-	}
-	inline info& operator +=(const lazt &y){
-		s+=len*y.a;
-		return *this;
-	}
-	inline info operator +(const lazt &y)const{
-		return info(*this)+=y;
-	}
-#ifdef USE_COMPARE
-	// for find_first or find_last
-	inline info& operator -=(const info &y){
-		s-=y.s;len-=y.len;
-		return *this;
-	}
-	inline info operator -(const info &y)const{
-		return info(*this)-=y;
-	}
-	inline bool operator <= (const info &a)const{
-		return s<=a.s;
-	}
-#endif
-};
-/////////////////////////////////////////////////////////////////
-// basic segment tree template, private operations
-int vl=1,vr=0;
-vector<info> val;
-vector<lazt> laz;
-inline void push(int id,const lazt &x){
-	laz[id]+=x;val[id]+=x;
-}
-inline void pushdown(int id){
-	if(!laz[id].empty()) push(id<<1,laz[id]),push(id<<1|1,laz[id]),laz[id].set();
-}
-inline void pushup(int id){
-	val[id]=val[id<<1]+val[id<<1|1];
-}
-void build(int id,int l,int r){
-	laz[id]=lazt();
-	if(l==r){
-		val[id]=info(0,1); // please modify this init value
-		return;
-	}
-	int mid=l+((ll)r-l)/2;
-	build(id<<1,l,mid);build(id<<1|1,mid+1,r);
-	pushup(id);
-}
-void update(int x,const info &v,int id,int l,int r){
-	if(l==r){
-		assert(x==l);
-		val[id]=v;laz[id].set();return;
-	}
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	if(x<=mid) update(x,v,id<<1,l,mid);
-	else update(x,v,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int x,const info &v,int id,int l,int r){
-	if(l==r){
-		assert(x==l);
-		val[id]+=v;return;
-	}
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	if(x<=mid) modify(x,v,id<<1,l,mid);
-	else modify(x,v,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int ql,int qr,const lazt &v,int id,int l,int r){
-	if(ql<=l&&r<=qr){push(id,v);return;}
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	if(ql<=mid) modify(ql,qr,v,id<<1,l,mid);
-	if(mid<qr) modify(ql,qr,v,id<<1|1,mid+1,r);
-	pushup(id);
-}
-info query(int ql,int qr,int id,int l,int r){
-	if(ql<=l&&r<=qr) return val[id];
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	if(qr<=mid) return query(ql,qr,id<<1,l,mid);
-	if(mid<ql) return query(ql,qr,id<<1|1,mid+1,r);
-	return query(ql,qr,id<<1,l,mid)+query(ql,qr,id<<1|1,mid+1,r);
-}
-#ifdef USE_COMPARE
-int find_first(info x,int id,int l,int r){
-	// if no compare betweeen infos, delete this
-	if(l==r) return l;
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],id<<1|1,mid+1,r);
-}
-int find_last(info x,int id,int l,int r){
-	// if no compare betweeen infos, delete this
-	if(l==r) return l;
-	int mid=l+((ll)r-l)/2;
-	pushdown(id);
-	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):find_last(x-val[id<<1|1],id<<1,l,mid);
-}
-#endif
-/////////////////////////////////////////////////////////////
-// public operations, remember to setN()/set()
-// convert arguments to info / lazt, and extract the answer here
-public:
-void set(){vl=1;vr=0;val.clear();laz.clear();}
-void set(int _l,int _r){
-	ll n=(ll)_r-_l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=_l;vr=_r;val.assign(4*n,info());
-	laz.assign(4*n,lazt());
-	build(1,vl,vr);
-}
-void setN(int _n){
-	set(1,_n);
-}
-void upd(int x,ll a){
-	assert(vl<=x&&x<=vr);
-	update(x,info(a,1),1,vl,vr);
-}
-void add(int x,ll a){
-	assert(vl<=x&&x<=vr);
-	modify(x,info(a,0),1,vl,vr);
-}
-void add(int ql,int qr,ll a){
-	assert(vl<=ql&&(ll)ql<=1ll+qr&&qr<=vr);
-	if(ql<=qr) modify(ql,qr,lazt(a),1,vl,vr);
-}
-ll ask(int ql,int qr){
-	assert(vl<=ql&&ql<=qr&&qr<=vr);
-	return query(ql,qr,1,vl,vr).s;
-}
-ll ask(int x){
-	assert(vl<=x&&x<=vr);
-	// query a[x]
-	return query(x,x,1,vl,vr).s;
-}
-#ifdef USE_COMPARE
-int find_first(ll x){
-	assert(!val.empty()&&x>0&&info(x,0)<=val[1]);
-	return find_first(info(x,0),1,vl,vr);
-}
-int find_last(ll x){
-	assert(!val.empty()&&x>0&&info(x,0)<=val[1]);
-	return find_last(info(x,0),1,vl,vr);
-}
-#endif
-};
-
-#undef USE_COMPARE
-// end for ds/Segment Tree(with lazytag).cpp
-/////////////////////////
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree(without lazytag).cpp}}
-\textbf{通用线段树（不带懒标记）}
-
-\TemplUsage{默认维护区间和，下标 1..n，初值全零。递归部分只处理 info，按题目改写信息与标记的运算。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt t; t.setN(n)} 初始化。
-\item \texttt{upd(i,v)} 单点赋值；\texttt{ask(l,r)} 区间和，\texttt{ask(i)} 单点值。
-\item \texttt{add(i,v)} 单点加，不支持区间加。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-segt t; t.setN(3); t.upd(2,5);
-t.add(2,2); assert(t.ask(1,3)==7);
-\end{lstlisting}
-\TemplNote{info + info 按左右顺序合并；upd 在叶子整体替换 info，单点 add 使用 info(delta,0)，通过 info += info 更新叶子。初值在 build 的 info(0,1) 处修改。参数转换、提取答案只改公开接口。USE\_COMPARE 默认开启；自定义信息不支持减法与比较时，删除文件顶部的 define 行，对应运算和二分函数就不编译。默认二分要求所有点值非负、目标为正且不超过总和。set/setN 清空重建。两版同名 segt，只选一份。}
-
-
-\textbf{改写示例：单点加、区间最大子段和（非空）}
-删除顶部的 \texttt{\#define USE\_COMPARE}，把 info 替换为下面这段；区间 ask 的返回字段从 s 改为 mx，其他部分不改。len=0 的参数表示单点增量，len=1 表示叶子；合并的左右区间均非空。
-\begin{lstlisting}
-struct info{
-	ll s,pre,suf,mx,len;
-	info(ll x=0,ll n=0):s(x),pre(x),suf(x),mx(x),len(n){}
-	inline info& operator +=(const info &y){
-		if(!y.len){ // point add: y is info(delta,0)
-			s+=y.s;pre=suf=mx=s;return *this;
-		}
-		mx=max({mx,y.mx,suf+y.pre});
-		pre=max(pre,s+y.pre);suf=max(y.suf,y.s+suf);
-		s+=y.s;len+=y.len;return *this;
-	}
-	inline info operator +(const info &y)const{return info(*this)+=y;}
-};
-\end{lstlisting}
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Segment Tree
-// version 1.1 (Last Update Jun 27th, 2026)
-//
-// usage:
-//   segt st; st.setN(n);  // or set(l,r), 1-indexed
-//   upd/add point; ask(l,r); find_first/last
-//
-////////////////////////////////////////////////////////////////
-// remove this line when info has no subtraction / comparison
-#define USE_COMPARE
-struct segt{
-private:
-//////////////////////////////////////////////////////////////
-// basic operation
-struct info{
-	// modify here
-	ll s,len;
-	info():s(0),len(0){}
-	info(ll _s,ll _len):s(_s),len(_len){}
-	inline info& operator +=(const info &y){
-		s+=y.s;len+=y.len;
-		return *this;
-	}
-	inline info operator +(const info &y)const{
-		return info(*this)+=y;
-	}
-#ifdef USE_COMPARE
-	// for find_first or find_last
-	inline info& operator -=(const info &y){
-		s-=y.s;len-=y.len;
-		return *this;
-	}
-	inline info operator -(const info &y)const{
-		return info(*this)-=y;
-	}
-	inline bool operator <= (const info &a)const{
-		return s<=a.s;
-	}
-#endif
-};
-/////////////////////////////////////////////////////////////////
-// basic segment tree template, private operations
-int vl=1,vr=0;
-vector<info> val;
-inline void pushup(int id){
-	val[id]=val[id<<1]+val[id<<1|1];
-}
-void build(int id,int l,int r){
-	if(l==r){
-		val[id]=info(0,1); // please modify this init value
-		return;
-	}
-	int mid=l+((ll)r-l)/2;
-	build(id<<1,l,mid);build(id<<1|1,mid+1,r);
-	pushup(id);
-}
-void update(int x,const info &v,int id,int l,int r){
-	if(l==r){
-		assert(x==l);
-		val[id]=v;return;
-	}
-	int mid=l+((ll)r-l)/2;
-	if(x<=mid) update(x,v,id<<1,l,mid);
-	else update(x,v,id<<1|1,mid+1,r);
-	pushup(id);
-}
-void modify(int x,const info &v,int id,int l,int r){
-	if(l==r){
-		assert(x==l);
-		val[id]+=v;return;
-	}
-	int mid=l+((ll)r-l)/2;
-	if(x<=mid) modify(x,v,id<<1,l,mid);
-	else modify(x,v,id<<1|1,mid+1,r);
-	pushup(id);
-}
-info query(int ql,int qr,int id,int l,int r){
-	if(ql<=l&&r<=qr) return val[id];
-	int mid=l+((ll)r-l)/2;
-	if(qr<=mid) return query(ql,qr,id<<1,l,mid);
-	if(mid<ql) return query(ql,qr,id<<1|1,mid+1,r);
-	return query(ql,qr,id<<1,l,mid)+query(ql,qr,id<<1|1,mid+1,r);
-}
-#ifdef USE_COMPARE
-int find_first(info x,int id,int l,int r){
-	// if no compare betweeen infos, delete this
-	if(l==r) return l;
-	int mid=l+((ll)r-l)/2;
-	return x<=val[id<<1]?find_first(x,id<<1,l,mid):find_first(x-val[id<<1],id<<1|1,mid+1,r);
-}
-int find_last(info x,int id,int l,int r){
-	// if no compare betweeen infos, delete this
-	if(l==r) return l;
-	int mid=l+((ll)r-l)/2;
-	return x<=val[id<<1|1]?find_last(x,id<<1|1,mid+1,r):find_last(x-val[id<<1|1],id<<1,l,mid);
-}
-#endif
-/////////////////////////////////////////////////////////////
-// public operations, remember to setN()/set()
-// convert arguments to info / lazt, and extract the answer here
-public:
-void set(){vl=1;vr=0;val.clear();}
-void set(int _l,int _r){
-	ll n=(ll)_r-_l+1;assert(1<=n&&n<=INT_MAX/4);
-	vl=_l;vr=_r;val.assign(4*n,info());
-	build(1,vl,vr);
-}
-void setN(int _n){
-	set(1,_n);
-}
-void upd(int x,ll a){
-	assert(vl<=x&&x<=vr);
-	update(x,info(a,1),1,vl,vr);
-}
-void add(int x,ll a){
-	assert(vl<=x&&x<=vr);
-	modify(x,info(a,0),1,vl,vr);
-}
-ll ask(int ql,int qr){
-	assert(vl<=ql&&ql<=qr&&qr<=vr);
-	return query(ql,qr,1,vl,vr).s;
-}
-ll ask(int x){
-	assert(vl<=x&&x<=vr);
-	// query a[x]
-	return query(x,x,1,vl,vr).s;
-}
-#ifdef USE_COMPARE
-int find_first(ll x){
-	assert(!val.empty()&&x>0&&info(x,0)<=val[1]);
-	return find_first(info(x,0),1,vl,vr);
-}
-int find_last(ll x){
-	assert(!val.empty()&&x>0&&info(x,0)<=val[1]);
-	return find_last(info(x,0),1,vl,vr);
-}
-#endif
-};
-
-#undef USE_COMPARE
-// end for ds/Segment Tree(without lazytag).cpp
-/////////////////////////
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
 \subsection{\texttt{ds/zkw.cpp}}
-\textbf{非递归线段树框架}
+\textbf{23 非递归线段树框架}
 
 \TemplUsage{单点赋值和闭区间聚合，当前 info 维护区间和与最大前缀和（允许空前缀）。单次 O(log n)。}
 \TemplApi{\begin{itemize}
@@ -2081,17 +736,8 @@ t.upd(0,-4,0); t.upd(1,9,9); t.upd(2,-2,0);
 assert(t.ask(0,2)==5);
 \end{lstlisting}
 \TemplNote{普通数组的叶子设为 s=a[i]、mx=max(0,a[i])。若 s 全为零且 mx 非负，也可用于区间最大值。其他统计应重写 info 的合并和单位元；合并必须满足结合律。下标从 0 开始。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for ZKW segment tree
-// version 1.0 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   zkw_segt z; z.setN(n); z.upd(i, s, mx); z.ask(l, r);
-//   0-indexed; leaf mx=max(0ll,s); ask returns maximum prefix sum
-//
 struct zkw_segt{
 // information
 struct info{
@@ -2099,13 +745,13 @@ struct info{
 	ll s,mx;
 	info():s(0),mx(0){}
 	info(ll _s,ll _mx):s(_s),mx(_mx){}
-	inline info& operator +=(const info &y){
+	inline info& operator+=(const info &y){
 		ll os=s;
 		s+=y.s;
 		mx=max(mx,os+y.mx);
 		return *this;
 	}
-	inline info operator +(const info &y)const{
+	inline info operator+(const info &y)const{
 		return info(*this)+=y;
 	}
 };
@@ -2115,7 +761,7 @@ int n=0,B=0;vector<info> a;
 void modify(int x,info v){
 	x+=B+1;
 	a[x]=v;
-	while(x>1) x>>=1,a[x]=a[x<<1]+a[x<<1|1]; 
+	while(x>1) x>>=1,a[x]=a[x<<1]+a[x<<1|1];
 }
 info query(int l,int r){
 	l+=B,r+=B+2;
@@ -2146,10 +792,9 @@ ll ask(int l,int r){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{ds/Dynamic Segment Tree.cpp}}
-\textbf{大值域稀疏单点统计}
+\textbf{24 大值域稀疏单点统计}
 
 \TemplUsage{在整数键 -10\textasciicircum{}9..10\textasciicircum{}9 上做单点加、区间和；节点带键交换以压缩空间。单次 O(log V)。}
 \TemplApi{\begin{itemize}
@@ -2163,18 +808,8 @@ t.add(-100,3); t.add(200,4);
 assert(t.ask(-100,0)==3);
 \end{lstlisting}
 \TemplNote{空键权值为零。与主席树不同：不保留历史版本，也不支持复用旧根。文件有全局对象 T。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Dynamic Segment Tree
-// this code accept single-point modify, range query, cost memory O(N)
-// version 1.0 (Last Update Jun 16th, 2026)
-//
-// usage:
-//   dynamic_segt T; T.set(); T.add(pos, val); T.ask(l, r);
-//   sparse segt on value domain [L,R]
-//
 struct dynamic_segt{
 private:
 static const int L=-1e9,R=1e9;
@@ -2183,8 +818,8 @@ struct info{
 	ll s;
 	info():s(0){}
 	info(ll _s):s(_s){}
-	inline info& operator +=(const info &x){s+=x.s;return *this;}
-	inline info operator +(const info &x)const{return info(*this)+=x;}
+	inline info& operator+=(const info &x){s+=x.s;return *this;}
+	inline info operator+(const info &x)const{return info(*this)+=x;}
 };
 struct node{
 	int p=0,ls=0,rs=0;
@@ -2221,7 +856,8 @@ void query(int ql,int qr,int id,int l,int r,info &X){
 	query(ql,qr,tr[id].rs,mid+1,r,X);
 }
 public:
-void set(int m=0){assert(m>=0);tot=rt=0;tr.assign(1,node());tr.reserve((size_t)m+1);}
+void set(int m=0){assert(m>=0);tot=rt=0;tr.assign(1,node());
+	tr.reserve((size_t)m+1);}
 void add(int p,ll s){
 	assert(L<=p&&p<=R);
 	rt=add(p,info(s),rt,L,R);
@@ -2235,106 +871,9 @@ ll ask(int l,int r){
 }T;
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/Segment Tree Merge.cpp}}
-\textbf{可合并的多棵线段树}
-
-\TemplUsage{维护多棵互不共享节点的树，值域 0..n。当前权值设计用于统计所有键 y>=x 的 (y-x)*权值。}
-\TemplApi{\begin{itemize}
-\item \texttt{segt\_merge t; t.setN(n)} 初始化池，外部根变量设为 0。
-\item \texttt{add(rt,y,w)} 给键 y 加权 w，根按引用更新。
-\item \texttt{ask(rt,x)} 返回 sum\_\{y>=x\}(y-x)*w[y]。
-\item \texttt{merge(a,b)} 把 b 合入 a 并把 b 置零。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-segt_merge t; t.setN(10); int a=0,b=0;
-t.add(a,5,2); t.add(b,8,1); t.merge(a,b);
-assert(b==0 && t.ask(a,3)==9);
-\end{lstlisting}
-\TemplNote{这是破坏性合并，不是可持久化。合并后不能再使用旧根副本。单点操作 O(log V)，合并成本取决于重叠节点数；若想查询普通权值和，要改 info/query 的对外接口。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Segment Tree Merge
-// version 1.0 (Last Update Jun 25th, 2026)
-//
-// usage:
-//   segt_merge sm; sm.setN(n); int rt=0;
-//   sm.add(rt,i,v); sm.ask(rt,x); sm.merge(a,b);
-//
-struct segt_merge{
-private:
-struct info{
-	// modify here
-	ll s,s1;
-	info():s(0),s1(0){}
-	info(ll _s,ll _s1):s(_s),s1(_s1){}
-	inline info& operator +=(const info &y){
-		s+=y.s;s1+=y.s1;
-		return *this;
-	}
-	inline info operator +(const info &y)const{
-		return info(*this)+=y;
-	}
-};
-vector<info> val=vector<info>(1);
-vector<int> ls{0},rs{0};int n=0,tot=0;
-inline void pushup(int id){val[id]=val[ls[id]]+val[rs[id]];}
-int add(int x,info v,int id,int l,int r){
-	if(!id){
-		assert(tot<INT_MAX-1);id=++tot;
-		val.emplace_back();ls.push_back(0);rs.push_back(0);
-	}
-	if(l==r){val[id]+=v;return id;}
-	int mid=l+(r-l)/2;
-	if(x<=mid){int t=add(x,v,ls[id],l,mid);ls[id]=t;}
-	else {int t=add(x,v,rs[id],mid+1,r);rs[id]=t;}
-	pushup(id);return id;
-}
-info query(int ql,int qr,int id,int l,int r){
-	if(!id||max(l,ql)>min(r,qr)) return info(); 
-	if(ql<=l&&r<=qr) return val[id];
-	int mid=l+(r-l)/2;
-	return query(ql,qr,ls[id],l,mid)+query(ql,qr,rs[id],mid+1,r);
-}
-void merge(int &u,int &v,int l,int r){
-	if(!u||!v){u|=v;return;}
-	if(l==r){val[u]+=val[v];return;}
-	int mid=l+(r-l)/2;
-	merge(ls[u],ls[v],l,mid);
-	merge(rs[u],rs[v],mid+1,r);
-	pushup(u);
-}
-public:
-void setN(int _n){
-	assert(_n>=0);n=_n;tot=0;
-	val.assign(1,info());ls.assign(1,0);rs.assign(1,0);
-}
-void add(int &id,int x,int o){
-	assert(0<=x&&x<=n);
-	assert(0<=id&&id<=tot);
-	id=add(x,info(o,1ll*x*o),id,0,n);
-}
-ll ask(int &id,int x){
-	assert(0<=id&&id<=tot&&0<=x&&x<=n);
-	auto it=query(x,n,id,0,n);
-	return it.s1-it.s*x;
-}
-void merge(int &x,int &y){
-	assert(0<=x&&x<=tot&&0<=y&&y<=tot&&(&x!=&y)&&(!x||x!=y));
-	merge(x,y,0,n);
-	y=0;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{ds/lichao.cpp}}
-\textbf{线段李超树}
+\textbf{26 线段李超树}
 
 \TemplUsage{插入只在一段整数横坐标上有效的直线，查询某点的最小值。}
 \TemplApi{\begin{itemize}
@@ -2349,17 +888,8 @@ t.add({2,3},0,10); t.add({-1,8},0,10);
 assert(t.ask(2)==6);
 \end{lstlisting}
 \TemplNote{横坐标及斜率限制在 [-10\textasciicircum{}9,10\textasciicircum{}9]，有效端点的纵坐标需在 [-2e18,2e18]。整条线插入 O(log V)，线段插入 O(log\textasciicircum{}2 V)，查询 O(log V)。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for lichao segment tree
-// version 1.2 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   lichao lc; lc.set(); lc.add({k,b}); lc.add({k,b}, l, r);
-//   ll y = lc.ask(x);  // min y=kx+b, INF if empty
-//
 struct line{
 	ll k,b;
 	ll f(ll x){return k*x+b;}
@@ -2411,7 +941,6 @@ ll ask(int x,int id,int l,int r){
 	return ans;
 }
 
-
 void add(line x,int l=-V,int r=V){
 	assert(-V<=l&&l<=r&&r<=V);
 	assert(-V<=x.k&&x.k<=V);
@@ -2427,393 +956,9 @@ ll ask(int x){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/ODT.cpp}}
-\textbf{有序区间集合}
-
-\TemplUsage{维护若干不相交的常值闭区间。适合区间覆盖以及依赖当前分段的统计。}
-\TemplApi{\begin{itemize}
-\item \texttt{ODT t; t.set()} 清空；\texttt{add(l,r,c)} 只插入一个区间，不会自动清除旧区间。
-\item 赋值应先 \texttt{erase(l,r)} 再 \texttt{add(l,r,c)}；erase 返回被覆盖的旧段。
-\item \texttt{extract(l,r)} 返回当前区间片段，每段字段为 l,r,c。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-ODT t; t.set(); t.add(1,5,0);
-t.erase(2,4); t.add(2,4,7);
-auto a=t.extract(2,3);
-assert(a.size()==1 && a[0].c==7);
-\end{lstlisting}
-\TemplNote{extract 会切开边界，可能增加内部段数；没有自动合并相邻同色段。一次操作可能遍历很多段，不保证对任意输入都是对数复杂度。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for ODT
-// Chtholly is very cute!
-// version 1.0 (Last Update Jun 16th, 2026)
-//
-// usage:
-//   ODT odt; odt.set(); odt.erase(l,r); odt.add(l,r,c);
-//   odt.extract(l,r);  // assign color on [l,r]
-//
-struct seg{
-	int l,r,c;
-	seg():l(0),r(0),c(0){}
-	seg(int _l,int _r,int _c):l(_l),r(_r),c(_c){}
-	inline bool operator < (const seg &x) const {return l<x.l;}
-};
-struct ODT{
-private:
-std::set<seg> S;
-void cut(int y){
-	auto it=S.upper_bound(seg(y,0,0));
-	if(it==S.begin()) return;
-	auto [l,r,c]=*(--it);
-	if(l<y&&y<=r) S.erase(it),S.insert(seg(l,y-1,c)),S.insert(seg(y,r,c));
-}
-public:
-void set(){S.clear();}
-vector<seg> erase(int l,int r){
-	// erase segments from [l,r]
-	assert(l<=r);
-	cut(l);if(r<INT_MAX)cut(r+1);
-	auto it=S.lower_bound(seg(l,0,0));
-	vector<seg> I;
-	while(1){
-		if(it==S.end()||it->l>r) break;
-		I.push_back(*it);
-		it=S.erase(it);
-	}
-	return I;
-}
-vector<seg> extract(int l,int r){
-	// extract segments from [l,r]
-	// before you use this function, pay attention is the TC correct?
-	assert(l<=r);
-	cut(l);if(r<INT_MAX)cut(r+1);
-	auto it=S.lower_bound(seg(l,0,0));
-	vector<seg> I;
-	while(1){
-		if(it==S.end()||it->l>r) break;
-		I.push_back(*it);
-		it++;
-	}
-	return I;
-}
-void add(int l,int r,int c){
-	assert(l<=r);
-	S.insert(seg(l,r,c));
-}
-};
-// !!!!!!!!!! before add segments, erase the range first!!!!!!!!!!
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/FastSet.cpp}}
-\textbf{有界整数集合}
-
-\TemplUsage{用分层位集维护集合成员及前驱后继。修改和前驱后继 O(log\_64 V)，成员判断 O(1)。}
-\TemplApi{\begin{itemize}
-\item \texttt{FastSet s; s.setN(v)} 允许存储 0..v，包含 v。
-\item \texttt{insert/erase} 幂等，\texttt{s[x]} 判断是否存在。
-\item \texttt{prev(x)} 为最大 <=x 的元素，\texttt{next(x)} 为最小 >=x 的元素；没有则返回 -1。
-\item \texttt{front/back} 返回最小/最大元素；\texttt{to\_vector()} 扫描整个值域输出元素。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-FastSet s; s.setN(100);
-s.insert(3); s.insert(100);
-assert(s.next(3)==3 && s.prev(99)==3);
-assert(s.next(101)==-1);
-\end{lstlisting}
-\TemplNote{值域太大时不适合使用，空间跟 V 相关而非当前元素个数。需要 src 的位运算和最值辅助函数。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for fast set, insert/erase a non-negative integer in O(log_w(V))
-// query a integer exist in O(1) 
-// version 1.2 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   FastSet fs; fs.setN(n); fs.insert(x); fs.erase(x);
-//   fs[x]; fs.prev/next; needs chkmin/chkmax/first_bit/last_bit
-//
-struct FastSet{
-vector<vector<ull>> a;int V=0,B=0;
-void setN(int _V){
-	assert(0<=_V&&_V<INT_MAX);V=_V+1;a.clear();
-	for(int n=V;;){
-		n=(n-1)/64+1;a.emplace_back(n,0);
-		if(n==1)break;
-	}
-	B=(int)a.size()-1;
-}
-inline bool operator [](int x)const{assert(0<=x&&x<V);return a[0][x>>6]>>(x&63)&1;}
-vector<int> to_vector()const{
-	vector<int> I;
-	if(a.empty())return I;
-	for(int i=0;i<(int)a[0].size();i++)
-		for(ull x=a[0][i];x;x&=x-1)I.push_back(i*64+first_bit(x));
-	return I;
-}
-void insert(int x){
-	assert(0<=x&&x<V);
-	if((*this)[x]) return;
-	for(int i=0;i<=B;i++){
-		a[i][x>>6]|=(1ull<<(x&63));
-		x>>=6;
-	}
-}
-void erase(int x){
-	assert(0<=x&&x<V);
-	if(!(*this)[x]) return;
-	for(int i=0;i<=B;i++){
-		a[i][x>>6]&=~(1ull<<(x&63));
-		if(a[i][x>>6]) break;
-		x>>=6;
-	}
-}
-int prev(int x){
-	// find the first element <= x, if no, return -1
-	if(x<0||a.empty())return -1;
-	chkmin(x,V-1);
-	for(int h=0;h<=B;h++){
-		if(x<0||(x>>6)>=(int)a[h].size()) break;
-		ull f=a[h][x>>6]<<(63-(x&63));
-		if(!f){
-			x=(x>>6)-1;
-			continue;
-		}
-		x-=63-last_bit(f);
-		for(int g=h-1;g>=0;g--){
-			x<<=6;
-			x+=last_bit(a[g][x>>6]);
-		}
-		return x;
-	}
-	return -1;
-}
-int next(int x){
-	// find the first element >=x, if no, return -1
-	if(x>=V||a.empty())return -1;
-	chkmax(x,0);
-	for(int h=0;h<=B;h++){
-		if(x<0||(x>>6)>=(int)a[h].size()) break;
-		ull f=a[h][x>>6]>>(x&63);
-		if(!f){
-			x=(x>>6)+1;
-			continue;
-		}
-		x+=first_bit(f);
-		for(int g=h-1;g>=0;g--){
-			x<<=6;
-			x+=first_bit(a[g][x>>6]);
-		}
-		return x;
-	}
-	return -1;
-}
-inline int front(){return next(0);}
-inline int back(){return prev(V-1);}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/FastODT.cpp}}
-\textbf{位集加速的区间覆盖}
-
-\TemplUsage{借助 FastSet 存储区间右端点。下标 1..n，适合值域固定的区间覆盖。}
-\TemplApi{\begin{itemize}
-\item 先粘贴 FastSet，再粘贴本文件。
-\item \texttt{Fast\_ODT t; t.setN(n)} 分配空间；先 insert(1,n,c0) 明确初始颜色。
-\item \texttt{insert(l,r,c)} 覆盖区间并返回旧的 \{L,R,col\} 段；\texttt{extract(l,r)} 获取当前片段。
-\end{itemize}}
-\textbf{额外依赖（按此顺序粘贴）：}\texttt{ds/FastSet.cpp}。
-
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Fast_ODT t; t.setN(5); t.insert(1,5,0);
-t.insert(2,4,7); auto a=t.extract(2,3);
-assert(a.size()==1 && a[0][2]==7);
-\end{lstlisting}
-\TemplNote{extract 会分裂边界。不保证任意操作序列的高效性，成本仍取决于访问的段数。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Fast ODT, require Fast Set
-// Chtholly is very cute!
-// version 1.0 (Last Update Jun 16th, 2026)
-//
-// usage:
-//   Fast_ODT fot; fot.setN(n); fot.insert(l,r,c); fot.extract(l,r);
-//   requires FastSet.cpp
-//
-struct Fast_ODT{
-private:
-vector<int> a;int n=0;
-FastSet S;
-void cut(int y){
-	if(S[y]) return;
-	a[y]=a[S.next(y)];
-	S.insert(y);
-}
-public:
-void setN(int _n){assert(1<=_n&&_n<INT_MAX);n=_n;a.assign(n+1,0);S.setN(n);S.insert(n);a[n]=-1;}
-
-vector<array<int,3>> extract(int l,int r){
-	// extract segments from [l,r]
-	// before you use this function, pay attention is the TC correct?
-	assert(1<=l&&l<=r&&r<=n);
-	cut(l-1);cut(r);
-	vector<array<int,3>> I;
-	for(int i=l,j;i<=r;){
-		j=S.next(i);
-		I.push_back({i,j,a[j]});
-		i=j+1;
-	}
-	return I;
-}
-vector<array<int,3>> insert(int l,int r,int c){
-	// erase segments from [l,r]
-	// return vector for segs, [l,r,c]
-	assert(1<=l&&l<=r&&r<=n);
-	cut(l-1);cut(r);
-	vector<array<int,3>> I;
-	for(int i=l,j;i<=r;){
-		j=S.next(i);
-		S.erase(j);
-		I.push_back({i,j,a[j]});
-		i=j+1;
-	}
-	a[r]=c;S.insert(r);
-	return I;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{ds/FHQ.cpp}}
-\textbf{按键或按序列位置分裂的 Treap}
-
-\TemplUsage{随机平衡二叉树。外部维护根编号 rt，空树为 0，普通 split/merge 期望 O(log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{FHQ t; t.set()} 清空；\texttt{newnode(x)} 建一个 key=x 的节点。
-\item \texttt{split\_by\_key(rt,k,a,b)} 分为 key<=k 与 key>k；\texttt{split\_by\_size(rt,k,a,b)} 分出前 k 个。
-\item \texttt{rt=merge(a,b)} 要求 a 所有元素应在 b 前面；按键维护时要求 max(a)<=min(b)。
-\item \texttt{merge\_it(a,b)} 可合并键域交错的两树。\texttt{push(rt,v)} 给整个非空子树的 key 加 v。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-FHQ t; t.set(); int rt=0;
-for(int v:{2,5,8})rt=t.merge(rt,t.newnode(v));
-int a,b; t.split_by_key(rt,5,a,b);
-assert(t.siz[a]==2 && t.siz[b]==1);
-rt=t.merge(a,b); assert(t.siz[rt]==3);
-\end{lstlisting}
-\TemplNote{setN(n) 只是创建 n 个孤立节点，不会把它们连成树。按键分裂依赖排序不变量；区间加可能破坏该不变量。没有现成的区间翻转或持久化。全局 rnd 可能与别的模板重名。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for FHQ Treap
-//
-// usage:
-//   FHQ t; t.setN(n); split_by_size / split_by_key / merge / merge_it
-//   t.push(id, x) for lazy add on key[]
-//
-mt19937_64 rnd(time(0));
-struct FHQ{
-int tot=0;
-vector<int> ls{0},rs{0},key{0},siz{0},tag{0};
-vector<ll> val{0};
-inline void push(const int &id,const int &x){
-	assert(1<=id&&id<=tot);
-	key[id]+=x;tag[id]+=x;
-}
-inline void pushup(const int &id){
-	siz[id]=siz[ls[id]]+siz[rs[id]]+1;
-}
-inline void pushdown(const int &id){
-	if(tag[id]){
-		if(ls[id]) push(ls[id],tag[id]);
-		if(rs[id]) push(rs[id],tag[id]);
-		tag[id]=0;
-	}
-}
-void set(){setN(0);}
-void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX);tot=_n;
-	ls.assign(tot+1,0);rs.assign(tot+1,0);tag.assign(tot+1,0);
-	key.assign(tot+1,0);siz.assign(tot+1,1);siz[0]=0;val.resize(tot+1);
-	for(int i=1;i<=tot;i++)val[i]=rnd();
-}
-inline int newnode(int x){
-	assert(tot<INT_MAX-1);++tot;
-	ls.push_back(0);rs.push_back(0);tag.push_back(0);siz.push_back(1);
-	key.push_back(x);val.push_back(rnd());return tot;
-}
-int leftmost(int x){
-	while(ls[x]) pushdown(x),x=ls[x];
-	return x;
-}
-int rightmost(int x){
-	while(rs[x]) pushdown(x),x=rs[x];
-	return x;
-}
-int merge(int p,int q){
-	if(!p||!q) return p|q;
-	if(val[p]>val[q]) {pushdown(p);rs[p]=merge(rs[p],q);pushup(p);return p;}
-	else {pushdown(q);ls[q]=merge(p,ls[q]);pushup(q);return q;}
-}
-void split_by_key(int rt,int k,int &p,int &q){
-	if(!rt){p=q=0;return;}
-	pushdown(rt);
-	if(k<key[rt]) q=rt,split_by_key(ls[rt],k,p,ls[rt]);
-	else p=rt,split_by_key(rs[rt],k,rs[rt],q);
-	pushup(rt);
-}
-void split_by_size(int rt,int k,int &p,int &q){
-	assert(0<=k&&k<=siz[rt]);
-	if(k==0){p=0;q=rt;return;}
-	if(k==siz[rt]){p=rt;q=0;return;}
-	pushdown(rt);
-	if(k<=siz[ls[rt]]) q=rt,split_by_size(ls[rt],k,p,ls[rt]),pushup(rt);
-	else p=rt,split_by_size(rs[rt],k-1-siz[ls[rt]],rs[rt],q),pushup(rt);
-}
-int merge_it(int p,int q){
-	// ~O(logn*logV) to merge two set (maybe intersect)
-	if(!p||!q) return p|q;
-	if(key[rightmost(p)]<=key[leftmost(q)]) return merge(p,q);
-	if(key[rightmost(q)]<=key[leftmost(p)]) return merge(q,p);
-	if(val[p]<val[q]) swap(p,q);
-	int r,s;
-	pushdown(p);
-	split_by_key(q,key[p],r,s);
-	ls[p]=merge_it(ls[p],r);
-	rs[p]=merge_it(rs[p],s);
-	pushup(p);
-	return p;
-}
-void alldown(int id){
-	if(!id) return;
-	pushdown(id);
-	alldown(ls[id]);
-	alldown(rs[id]);
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{ds/pq2stack.cpp}}
-\textbf{把优先队列删除转为栈撤销}
+\textbf{31 把优先队列删除转为栈撤销}
 
 \TemplUsage{适合只支持栈式加入/撤销，却需要删除最大权元素的离线或可撤销结构。模板只安排顺序，实际状态由调用方维护。}
 \TemplApi{\begin{itemize}
@@ -2831,17 +976,8 @@ for(int x:q.prep())st.push_back(x);
 assert(st.size()==1 && st[0]==10);
 \end{lstlisting}
 \TemplNote{不能把 pop 的返回值当成被删元素。每次重加入都需要重新产生撤销记录；同权元素删除顺序不固定。单次可能重排大量元素，收益依赖整段操作序列。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for  pq2stack (a.k.a. fuckGold14526 trick)
-// version 1.0 (Last Update Jun 28th, 2026)
-//
-// usage:
-//   pq2stack<T> pq; pq.push(x,w); pq.prep(); pq.pop();
-//   pop removes max weight; needs chkmin; call prep() before each query
-//
 template<typename T>
 struct pq2stack{
 private:
@@ -2908,10 +1044,9 @@ int pop(){
 // !!!!!!!!!!!!!!! before each query, use pq.prep() !!!!!!!!!!!!!!!
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{ds/xihe\_tree.cpp}}
-\textbf{析合树：返回完整结构}
+\textbf{32 析合树：返回完整结构}
 
 \TemplUsage{对 1..n 的排列构建析合树。构建时间 O(n log n)，包含四毛子 RMQ、辅助线段树和返回结构在内的空间均为 O(n)。}
 \TemplApi{先粘贴 \texttt{basic/ST table (linear).cpp}。\texttt{xihe\_tree tr; auto t=tr.build(a)} 接受不带哨兵的 vector；也可先 setN(n)，填写 tr.a[1..n]，再调用 build()。结果独立持有数据：rt 为根，cnt 为结点数，son[u] 为按位置排序的儿子；typ[u] 为 LEAF/INC/DEC/PRIME；[L[u],R[u]] 为下标闭区间，[mn[u],mx[u]] 为值域闭区间；id[i] 为第 i 项对应的叶子编号。}
@@ -2925,22 +1060,8 @@ assert(t.typ[u]==xihe_tree::DEC && t.son[u].size()==2);
 assert(t.mn[t.id[2]]==1);
 \end{lstlisting}
 \TemplNote{输入必须恰为 1..n 的排列，不接受重复值；必要时在外部离散化，但需确认题目是否只关心排名连续。返回的结点编号、下标区间、id 均从 1 开始，0 不使用。n=0 时 rt=cnt=0。INC/DEC 是儿子值域顺序递增/递减的合点，PRIME 是析点。不要假定父编号大于儿子编号；在返回结果上自行遍历、DP，构建器不含 solve。再次 build 或修改构建器不会改变已返回结果。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Divide-Combine Tree
-//
-// usage:
-//   Paste basic/ST table (linear).cpp first.
-//   xihe_tree tr; auto t=tr.build(vector<int>{3,1,2});
-//   Or setN(n), fill a[1..n], then auto t=tr.build().
-//   Input must be a permutation of 1..n. Node / interval indices are 1-based.
-//   t.rt, t.son, t.typ, t.L/R, t.mn/mx, t.id; no problem-specific solver.
-//   Build O(n log n), space O(n). Children are ordered by position.
-//
-////////////////////////////////////////////////////////////////
 struct xihe_tree{
 enum Type{LEAF,INC,DEC,PRIME};
 struct result{
@@ -2957,7 +1078,8 @@ struct segt{
 	int n;vector<int> val,laz;
 	segt(int _n):n(_n),val(4*n),laz(4*n){}
 	void push(int id,int x){val[id]+=x;laz[id]+=x;}
-	void pushdown(int id){if(laz[id]){push(id<<1,laz[id]);push(id<<1|1,laz[id]);laz[id]=0;}}
+	void pushdown(int id){if(laz[id]){push(id<<1,laz[id]);push(id<<1|1,
+		laz[id]);laz[id]=0;}}
 	void add(int ql,int qr,int x,int id,int l,int r){
 		if(ql<=l&&r<=qr){push(id,x);return;}
 		int mid=(l+r)>>1;pushdown(id);
@@ -2980,9 +1102,11 @@ public:
 result build()const{
 	assert(a.size()==(size_t)n+1||!n);
 	result res;res.n=n;
-	auto &son=res.son;auto &typ=res.typ;auto &L=res.L;auto &R=res.R;auto &id=res.id;
+	auto &son=res.son;auto &typ=res.typ;auto &L=res.L;auto &R=res.R;auto
+		&id=res.id;
 	int &cnt=res.cnt;
-	son.resize(2*n+1);typ.resize(2*n+1,LEAF);L.resize(2*n+1);R.resize(2*n+1);id.resize(n+1);
+	son.resize(2*n+1);typ.resize(2*n+1,LEAF);L.resize(2*n+1);R.resize(2*n+1);
+		id.resize(n+1);
 	if(!n){res.mn.resize(1);res.mx.resize(1);return res;}
 	vector<char> vis(n+1);
 	for(int i=1;i<=n;i++){assert(1<=a[i]&&a[i]<=n&&!vis[a[i]]);vis[a[i]]=true;}
@@ -2992,8 +1116,10 @@ result build()const{
 	vector<int> M(2*n+1),st1(n+1),st2(n+1),st(n+1);
 	int tp1=0,tp2=0,tp=0;segt T(n);
 	for(int i=1;i<=n;i++){
-		while(tp1&&a[i]<=a[st1[tp1]]) T.add(st1[tp1-1]+1,st1[tp1],a[st1[tp1]]),tp1--;
-		while(tp2&&a[i]>=a[st2[tp2]]) T.add(st2[tp2-1]+1,st2[tp2],-a[st2[tp2]]),tp2--;
+		while(tp1&&a[i]<=a[st1[tp1]]) T.add(st1[tp1-1]+1,st1[tp1],
+			a[st1[tp1]]),tp1--;
+		while(tp2&&a[i]>=a[st2[tp2]]) T.add(st2[tp2-1]+1,st2[tp2],
+			-a[st2[tp2]]),tp2--;
 		T.add(st1[tp1]+1,i,-a[i]);
 		T.add(st2[tp2]+1,i,a[i]);
 		st1[++tp1]=st2[++tp2]=i;
@@ -3002,7 +1128,8 @@ result build()const{
 		while(tp&&L[st[tp]]>=le){
 			if((typ[st[tp]]==INC||typ[st[tp]]==DEC)&&judge(M[st[tp]],i)){
 				// 当儿子
-				R[st[tp]]=i;M[st[tp]]=L[now];son[st[tp]].push_back(now);now=st[tp--];
+				R[st[tp]]=i;M[st[tp]]=L[now];son[st[tp]].push_back(now);
+					now=st[tp--];
 			}else if(judge(L[st[tp]],i)){
 				// 新合点
 				++cnt;
@@ -3030,24 +1157,22 @@ result build()const{
 	assert(tp==1);res.rt=st[1];
 	son.resize(cnt+1);typ.resize(cnt+1);L.resize(cnt+1);R.resize(cnt+1);
 	res.mn.resize(cnt+1);res.mx.resize(cnt+1);
-	for(int i=1;i<=cnt;i++){res.mn[i]=mn.ask(L[i]-1,R[i]-1);res.mx[i]=mx.ask(L[i]-1,R[i]-1);}
+	for(int i=1;i<=cnt;i++){res.mn[i]=mn.ask(L[i]-1,R[i]-1);
+		res.mx[i]=mx.ask(L[i]-1,R[i]-1);}
 	return res;
 }
 result build(const vector<int> &v){
-	assert(v.size()<=(size_t)INT_MAX/4);setN(v.size());copy(v.begin(),v.end(),a.begin()+1);return build();
+	assert(v.size()<=(size_t)INT_MAX/4);setN(v.size());copy(v.begin(),v.end(),
+		a.begin()+1);return build();
 }
 };
-// end for ds/xihe_tree.cpp
-/////////////////////////
 \end{lstlisting}
-
 \par\vspace{1em}
-
 \clearpage
 \section{图论}
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/flow.cpp}}
-\textbf{Dinic 最大流}
+\textbf{33 Dinic 最大流}
 
 \TemplUsage{有向网络最大流，容量是非负 ll。一般图最坏 O(V\textasciicircum{}2 E)，具体模型常有更好表现。}
 \TemplApi{\begin{itemize}
@@ -3063,18 +1188,8 @@ assert(g.max_flow()==3 && g.edge_flow(id)==3);
 assert(g.max_flow()==3);
 \end{lstlisting}
 \TemplNote{重复求流返回总流量，不是新增流量；添加边后继续增广。setN 清空图，new\_node 保留旧图添加点。无向容量边需要根据建模显式加边。流量总和应在 ll 范围内。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for max flow (dinic)
-// last update Jun 23rd, 2026
-//
-// usage:
-//   Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap);
-//   ll f = g.max_flow(); g.edge_flow(id);
-//   setN clears the graph; new_node keeps existing edges
-//
 struct Flow_Graph{
 private:
 static const ll inf=2.02e18;
@@ -3127,7 +1242,8 @@ void setST(int _S,int _T){
 	lst.resize(n+1);level.resize(n+1);cur.resize(n+1);is_flowed=false;
 }
 int new_node(){
-	assert(n<INT_MAX-1);++n;lst.push_back(0);level.push_back(0);cur.push_back(0);
+	assert(n<INT_MAX-1);++n;lst.push_back(0);level.push_back(0);
+		cur.push_back(0);
 	is_flowed=false;return n;
 }
 ll edge_flow(int id){
@@ -3153,10 +1269,9 @@ ll max_flow(){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/mcmf.cpp}}
-\textbf{最小费用最大流}
+\textbf{34 最小费用最大流}
 
 \TemplUsage{先求最大可行流量，再在最大流中最小化费用。有负费用边时先用 SPFA 求势能；之后 Dijkstra 求最短路，在零约化费用子图上用 Dinic 批量增广，适合大量路径费用相同的网络。DFS 使用显式数组，不依赖递归栈。}
 \TemplApi{\begin{itemize}
@@ -3172,19 +1287,8 @@ auto [f,c]=g.min_cost_flow();
 assert(f==2 && c==4 && g.edge_flow(id)==2);
 \end{lstlisting}
 \TemplNote{允许负费用边，但整个输入图不能有负费用环。没有指定流量参数；要限制流量，增加一个容量为上限的新源边。更改图后重新从原始容量计算；不改图则返回缓存。容量、总流量及计算过程中的总费用须能用 ll 表示，距离与势能使用 \texttt{\_\_int128}。相同最短路费用的增广会合并，但费用层数很多时仍可能较慢。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for min cost max flow (potential + dijkstra + blocking flow)
-//
-// usage:
-//   Cost_Flow_Graph g; g.setN(n); g.setST(S,T); g.add_edge(u,v,cap,cost);
-//   auto [flow,cost]=g.min_cost_flow(); g.edge_flow(id);
-//   negative costs allowed, input graph must have no negative cost cycle
-//   setN clears the graph; editing the graph makes the next solve start over
-//   flow and cost must fit ll; distances use __int128
-//
 struct Cost_Flow_Graph{
 private:
 static constexpr __int128 inf=(__int128)1<<120;
@@ -3217,7 +1321,8 @@ void SPFA(){
 }
 bool Dijkstra(){
 	fill(dis.begin(),dis.end(),inf);dis[S]=0;
-	priority_queue<pair<__int128,int>,vector<pair<__int128,int>>,greater<pair<__int128,int>>> q;
+	priority_queue<pair<__int128,int>,vector<pair<__int128,int>>,
+		greater<pair<__int128,int>>> q;
 	q.push({0,S});
 	while(!q.empty()){
 		auto [d,u]=q.top();q.pop();
@@ -3284,10 +1389,12 @@ void setN(int _n){
 void setST(int _S,int _T){
 	assert(1<=min(_S,_T)&&max(_S,_T)<INT_MAX&&_S!=_T);
 	S=_S;T=_T;n=max({n,S,T});
-	lst.resize(n+1);pre.resize(n+1);h.resize(n+1);dis.resize(n+1);is_flowed=false;
+	lst.resize(n+1);pre.resize(n+1);h.resize(n+1);dis.resize(n+1);
+		is_flowed=false;
 }
 int new_node(){
-	assert(n<INT_MAX-1);++n;lst.push_back(0);pre.push_back(0);h.push_back(0);dis.push_back(0);
+	assert(n<INT_MAX-1);++n;lst.push_back(0);pre.push_back(0);h.push_back(0);
+		dis.push_back(0);
 	is_flowed=false;return n;
 }
 ll edge_flow(int id){
@@ -3319,70 +1426,9 @@ pair<ll,ll> min_cost_flow(){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{graph/sssp.cpp}}
-\textbf{非负权单源最短路}
-
-\TemplUsage{堆优化 Dijkstra，有向图，复杂度 O((n+m) log n)。}
-\TemplApi{\begin{itemize}
-\item \texttt{graph\_SSSP g; g.setN(n); g.setS(s)} 设置图和源点。
-\item \texttt{add\_edge(u,v,w)} 要求 w>=0；无向图要加两个方向。
-\item \texttt{SSSP()} 返回长度 n+1 的距离数组，0 号不用，不可达为 10\textasciicircum{}18。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-graph_SSSP g; g.setN(3); g.setS(1);
-g.add_edge(1,2,4); g.add_edge(2,3,6);
-auto d=g.SSSP(); assert(d[3]==10);
-\end{lstlisting}
-\TemplNote{有限最短路必须小于不可达哨兵 10\textasciicircum{}18，边权相加不能溢出。不支持负权；不会返回具体路径。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Single-source shortest path
-// last update Jun 23rd, 2026
-//
-// usage:
-//   graph_SSSP G; G.setN(n); G.setS(s); G.add_edge(u,v,w);
-//   auto d = G.SSSP();  // unreachable 1e18, non-negative weights
-//
-struct graph_SSSP{
-private:
-int n=0,s=0;
-vector<vector<pair<int,ll>>> edg;
-public:
-void setN(int N){assert(0<=N&&N<INT_MAX);n=N;s=0;edg.assign(n+1,{});}
-void setS(int S){s=S;assert(1<=s&&s<=n);}
-void add_edge(int u,int v,ll w){
-	assert(1<=min(u,v)&&max(u,v)<=n&&0<=w);
-	edg[u].push_back(make_pair(v,w));
-}
-vector<ll> SSSP(){
-	// return a vector of length n+1 --- ans[i] shortest path between s and i
-	// if no path, ans[i] will be 1e18
-	assert(1<=s&&s<=n);
-	priority_queue<pair<ll,int>,vector<pair<ll,int>>,greater<pair<ll,int>>> q;
-	vector<ll> d(n+1,1e18);
-	d[s]=0;q.push(make_pair(0,s));
-	while(!q.empty()){
-		auto [dd,u]=q.top();q.pop();
-		if(dd!=d[u]) continue;
-		for(auto [v,w]:edg[u]) if(w<d[v]-d[u]){
-			d[v]=d[u]+w;
-			q.push(make_pair(d[v],v));
-		}
-	}
-	return d;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/2-sat.cpp}}
-\textbf{布尔约束求解}
+\textbf{36 布尔约束求解}
 
 \TemplUsage{求满足所有二元或子句的一组赋值，时间与空间 O(n+m)。}
 \TemplApi{\begin{itemize}
@@ -3399,17 +1445,8 @@ auto ans=s.solve();
 assert(!ans.empty() && ans[1] && ans[2]);
 \end{lstlisting}
 \TemplNote{只有“或”子句接口；例如强制 x=a 可重复同一文字。setN 清空约束。不要把 add 当作直接添加两条蕴含边。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for 2-SAT
-//
-// usage:
-//   two_sat sat; sat.set(); sat.setN(n); sat.add(x1,o1,x2,o2);
-//   auto ans = sat.solve();  // empty if unsat; var i: 2i-1=T, 2i=F
-//   setN clears old clauses
-//
 struct two_sat{
 int tot=0,scnt=0,top=0,n=0;
 vector<int> low,dfn,stk,bel;
@@ -3447,7 +1484,7 @@ vector<int> solve(){
 	// else return a vector with length n+1, the a[i] - any valid answer
 	tot=scnt=top=0;
 	for(int i=1;i<=2*n;i++) low[i]=dfn[i]=bel[i]=inq[i]=0;
-	for(int i=1;i<=2*n;i++) if(!dfn[i]) tarjan(i); 
+	for(int i=1;i<=2*n;i++) if(!dfn[i]) tarjan(i);
 	for(int i=1;i<=n;i++) if(bel[2*i-1]==bel[2*i]) return {};
 	vector<int> ans(n+1);
 	for(int i=1;i<=n;i++) ans[i]=bel[2*i-1]<bel[2*i];
@@ -3462,10 +1499,9 @@ void add(int x1,int o1,int x2,int o2){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/block-cut-tree.cpp}}
-\textbf{点双连通分量与圆方树}
+\textbf{37 点双连通分量与圆方树}
 
 \TemplUsage{无向图的点双分解，支持非连通图和重边，不支持自环。构建时间 O(n+m)。}
 \TemplApi{\begin{itemize}
@@ -3480,19 +1516,8 @@ g.add_edge(1,2); g.add_edge(2,3); g.build();
 assert(g.scc==5 && g.tr[2].size()==2);
 \end{lstlisting}
 \TemplNote{scc 是最终最大节点编号，不是分量个数，方点数应为 scc-n。割点可以属于多个点双，不能像 SCC 一样给每个原点分配唯一块号。递归深度可能达到 O(n)。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Block Cut Tree
-// use add_edge to add (u,v), tr[n+i] for vertex in i-th component
-// ec[i] for edge in i-th component
-// version 1.0 (Last Update Jun 17th, 2026)
-//
-// usage:
-//   block_cut bc; bc.setN(n); bc.add_edge(u,v); bc.build();
-//   vertex u -> tree u; BCC i -> tree n+i; bc.ec[i] edges
-//
 struct block_cut{
 int n=0,tot=0,scc=0,top=0;
 vector<char> inq;
@@ -3520,7 +1545,8 @@ void tarjan(int u,int fa=0){
 			int v=edg[x][i++];
 			if(v==p&&!skip){skip=1;continue;}
 			if(!dfn[v]){
-				low[v]=dfn[v]=++tot;stk[++top]=v;inq[v]=true;q.push_back({v,x,0,0});
+				low[v]=dfn[v]=++tot;stk[++top]=v;inq[v]=true;q.push_back({v,x,
+					0,0});
 			}else if(inq[v])low[x]=min(low[x],dfn[v]);
 		}else{
 			int v=x,parent=p;q.pop_back();
@@ -3528,7 +1554,8 @@ void tarjan(int u,int fa=0){
 			low[parent]=min(low[parent],low[v]);
 			if(low[v]>=dfn[parent]){
 				++scc;tr[scc].push_back(parent);tr[parent].push_back(scc);int y;
-				do{y=stk[top--];inq[y]=false;tr[y].push_back(scc);tr[scc].push_back(y);}while(y!=v);
+				do{y=stk[top--];inq[y]=false;tr[y].push_back(scc);
+					tr[scc].push_back(y);}while(y!=v);
 			}
 		}
 	}
@@ -3556,83 +1583,9 @@ void build(){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{graph/Edge BCC.cpp}}
-\textbf{边双连通分量及桥森林}
-
-\TemplUsage{无向图删除桥后缩点，支持重边和非连通图。时间 O(n+m)。}
-\TemplApi{\begin{itemize}
-\item \texttt{bi\_edge g; g.setN(n)} 后加边。
-\item \texttt{auto e=g.build()} 返回连接不同分量的边表；每端是分量编号。
-\item \texttt{bel[u]} 表示点所属分量，分量编号 1..scnt。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-bi_edge g; g.setN(3);
-g.add_edge(1,2); g.add_edge(1,2); g.add_edge(2,3);
-auto e=g.build();
-assert(g.bel[1]==g.bel[2] && g.bel[2]!=g.bel[3]);
-assert(e.size()==1);
-\end{lstlisting}
-\TemplNote{桥森林的顶点是分量，不是原图点。与圆方树分别处理边双、点双，不能互换。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Edge BCC (edge-biconnected components)
-//
-// usage:
-//   bi_edge b; b.setN(n); b.add_edge(u,v); auto E = b.build();
-//   bel[u] is EBCC id; E lists edges between different blocks
-//
-struct bi_edge{
-int n=0,top=0,tot=0,scnt=0;
-vector<vector<int>> edg;
-vector<int> low,dfn,stk,bel;
-void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX);n=_n;edg.assign(n+1,{});
-	low.assign(n+1,0);dfn.assign(n+1,0);stk.assign(n+1,0);bel.assign(n+1,0);
-	top=tot=scnt=0;
-}
-void add_edge(int u,int v){
-	assert(1<=min(u,v)&&max(u,v)<=n);
-	edg[u].push_back(v);
-	edg[v].push_back(u);
-}
-vector<array<int,2>> build(){
-	fill(dfn.begin(),dfn.end(),0);top=tot=scnt=0;
-	for(int u=1;u<=n;u++)if(!dfn[u]){
-		vector<array<int,4>> q{{u,0,0,0}};
-		low[u]=dfn[u]=++tot;stk[++top]=u;
-		while(!q.empty()){
-			auto &[x,p,i,skip]=q.back();
-			if(i<(int)edg[x].size()){
-				int v=edg[x][i++];
-				if(v==p&&!skip){skip=1;continue;}
-				if(!dfn[v]){low[v]=dfn[v]=++tot;stk[++top]=v;q.push_back({v,x,0,0});}
-				else low[x]=min(low[x],dfn[v]);
-			}else{
-				int v=x,parent=p;q.pop_back();
-				if(parent)low[parent]=min(low[parent],low[v]);
-				if(low[v]==dfn[v]){
-					scnt++;int y;do{y=stk[top--];bel[y]=scnt;}while(y!=v);
-				}
-			}
-		}
-	}
-	vector<array<int,2>> E;
-	for(int i=1;i<=n;i++) for(int j:edg[i]) if(bel[i]<bel[j])
-		E.push_back({bel[i],bel[j]});
-	return E;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/blossom.cpp}}
-\textbf{无权一般图最大匹配}
+\textbf{39 无权一般图最大匹配}
 
 \TemplUsage{带花树，允许奇环，返回匹配边数，最坏 O(n\textasciicircum{}3)。}
 \TemplApi{\begin{itemize}
@@ -3649,16 +1602,8 @@ assert(g.solve()==2);
 assert(g.match[g.match[1]]==1);
 \end{lstlisting}
 \TemplNote{这是无权匹配，不会最小化或最大化边权。点数为奇数时不可能完全匹配。重复 solve 会重新求解。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for General Graph Matching (blossom), O(n^3)
-//
-// usage:
-//   blossom g; g.setN(n); g.add_edge(u,v); int cnt=g.solve();
-//   cnt*2==n if perfect; match[u]=0 if unmatched; 1-index
-//
 struct blossom{
 int n=0;
 vector<vector<int>> edg;
@@ -3732,10 +1677,9 @@ int solve(){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/bipartite-matching.cpp}}
-\textbf{二分图最大匹配}
+\textbf{40 二分图最大匹配}
 
 \TemplUsage{给定左右两部，多次加边后求最大基数匹配，返回匹配的点对。先贪心匹配，再用多源 BFS 记录起点与前驱，遇到未匹配右点就立即增广；整个过程不递归。}
 \TemplApi{\begin{itemize}
@@ -3756,21 +1700,8 @@ for(auto [u,v]:a){
 }
 \end{lstlisting}
 \TemplNote{邻接表在 solve 内按左点压成连续存储，保持各点的加边顺序。rt[u] 记录搜索树的未匹配起点，pre[u] 记录增广前驱；某起点完成增广后，跳过该搜索树剩余队列项。一轮允许处理不同长度的增广路。设总点数 V=n+m、边数 E，空间 $O(V+E)$，每轮 $O(n+E)$；保守最坏时间界为 $O((V+E)(\min(n,m)+1))$，不沿用分层 HK 的复杂度保证。空部、空边集允许，返回空匹配。每次 solve 都重新计算；可继续加边再调用。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Bipartite Matching
-// usage:
-//   Bipartite_Matching g; g.setN(n,m); g.add_edge(u,v);
-//   auto a=g.solve(); // pairs {u,v}, ordered by the left endpoint
-//   Left 1..n, right 1..m; a.size() is the maximum matching size.
-//   matchL / matchR are partners, 0 if unmatched; parallel edges are allowed.
-//   Greedy initialization + multi-source BFS augmentation; solve rebuilds.
-//   O(n+m+E) space; O(n+E) per BFS round.
-//
-////////////////////////////////////////////////////////////////
 struct Bipartite_Matching{
 struct edge{int u,v;};
 int n=0,m=0;
@@ -3822,147 +1753,11 @@ vector<pair<int,int>> solve(){
 	return ans;
 }
 };
-// end for graph/bipartite-matching.cpp
-/////////////////////////
 \end{lstlisting}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{graph/regular-bipartite.cpp}}
-\textbf{正则二分图的完美匹配分解}
-
-\TemplUsage{两部各 n 个点，每个点度数均为 d，将全部 nd 条边恰好分成 d 组完美匹配。支持多重边，同一对点之间的边按重数计入分解。}
-\TemplApi{\begin{itemize}
-\item \texttt{Regular\_Bipartite g; g.setN(n)}；\texttt{g.add\_edge(u,v)} 加入左点 u 到右点 v 的边，两部下标均为 1..n。
-\item \texttt{auto a=g.solve()} 返回 \texttt{vector<vector<int>>}，共 d 组。每组长度 n+1，\texttt{a[c][u]} 直接是第 c 组中左点 u 匹配的右点；\texttt{a[c][0]=0} 占位。
-\item 每组的 a[c][1..n] 都是右部点的一个排列。所有组中 (u,v) 出现的总次数等于该边的输入重数。组编号为 0..d-1，组间没有固定的字典序要求。
-\item d 从输入度数推得，solve 用 assert 检查正则条件；d=0 返回空分解。n=0 也返回空分解。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Regular_Bipartite g; g.setN(2);
-g.add_edge(1,1); g.add_edge(1,2);
-g.add_edge(2,1); g.add_edge(2,2);
-auto a=g.solve(); assert(a.size()==2);
-for(auto &match:a){
-    assert(match.size()==3 && match[0]==0);
-    assert(1<=match[1] && match[1]<=2);
-    assert(1<=match[2] && match[2]<=2);
-    assert(match[1]!=match[2]);
-}
-\end{lstlisting}
-\TemplNote{确定性算法，时间 $O(n+nd\log(nd+1))$，包括结果在内空间 $O(n+nd)$。偶数度用欧拉分边；奇数度通过整数重数缩减找完美匹配，再借用已分解的匹配，把另一分支凑成二的幂次度数。无随机失败概率。非正则图不属于此接口，不要关闭断言后直接输入；重复 solve 不修改原边集。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Regular Bipartite Matching
-// usage:
-//   Regular_Bipartite g; g.setN(n); g.add_edge(u,v);
-//   auto a=g.solve(); // d perfect matchings, a[c][u] is the right partner
-//   Each row has n+1 entries, a[c][0]=0; c is 0-indexed, u is 1-indexed.
-//   Both sides are 1..n; every vertex must have the same degree d.
-//   Parallel edges are allowed and counted with multiplicity.
-//   Deterministic O(n+nd*log(nd+1)) time, O(n+nd) space.
-//
-////////////////////////////////////////////////////////////////
-struct Regular_Bipartite{
-struct edge{int u,v;};
-int n=0;
-vector<edge> e=vector<edge>(1);
-void set(){n=0;e.assign(1,{});}
-void setN(int _n){assert(0<=_n&&_n<INT_MAX/4);set();n=_n;}
-void add_edge(int u,int v){
-	assert(1<=min(u,v)&&max(u,v)<=n&&e.size()+n<INT_MAX/2);
-	e.push_back({u,v});
-}
-private:
-// Split an even-degree bipartite graph into two equal-degree subgraphs.
-// Negative id -u denotes a temporary edge (u,u).
-vector<char> split(const vector<int> &a)const{
-	assert(a.size()<INT_MAX/2);int m=a.size();
-	vector<int> head(2*n+1,-1),nxt(2*m);
-	vector<char> vis(m),col(m);
-	for(int i=0;i<m;i++){
-		int id=a[i],u=id>0?e[id].u:-id,v=(id>0?e[id].v:-id)+n;
-		nxt[i*2]=head[u];head[u]=i*2;
-		nxt[i*2+1]=head[v];head[v]=i*2+1;
-	}
-	for(int s=1;s<=2*n;s++){
-		int u=s,c=0;
-		while(head[u]!=-1){
-			int x=head[u];head[u]=nxt[x];int i=x/2;
-			if(vis[i])continue;
-			vis[i]=true;col[i]=c;c^=1;
-			int id=a[i];u=x&1?(id>0?e[id].u:-id):(id>0?e[id].v:-id)+n;
-		}
-		assert(u==s&&!c);
-	}
-	return col;
-}
-vector<int> perfect(const vector<int> &ids,int d)const{
-	ll q=1;while(q<(ll)ids.size())q*=2;
-	vector<pair<int,ll>> a; a.reserve(ids.size()+n);
-	for(int id:ids)a.emplace_back(id,q/d);
-	if(q%d)for(int u=1;u<=n;u++)a.emplace_back(-u,q%d);
-	while(q>1){
-		vector<int> odd;
-		for(auto [id,w]:a)if(w&1)odd.push_back(id);
-		auto col=split(odd);int c0=0,c1=0;
-		for(int i=0;i<(int)odd.size();i++)if(odd[i]<0)(col[i]?c1:c0)++;
-		int keep=c1<c0,j=0,k=0;
-		for(auto [id,w]:a){
-			ll v=w/2;if(w&1)v+=col[k++]==keep;
-			if(v)a[j++]={id,v};
-		}
-		a.resize(j);q/=2;
-	}
-	vector<int> ans(n);
-	for(auto [id,w]:a){assert(id>0&&w==1);ans[e[id].u-1]=id;}
-	assert((int)a.size()==n);return ans;
-}
-void divide(vector<int> a,int d,vector<vector<int>> &ans)const{
-	if(!d)return;
-	if(d==1){
-		vector<int> b(n);for(int id:a)b[e[id].u-1]=id;
-		ans.push_back(move(b));return;
-	}
-	if(d&1){
-		ans.push_back(perfect(a,d));const auto &b=ans.back();
-		a.erase(remove_if(a.begin(),a.end(),[&](int id){return b[e[id].u-1]==id;}),a.end());
-		d--;
-	}
-	auto col=split(a);vector<int> l,r;l.reserve(a.size()/2);r.reserve(a.size()/2);
-	for(int i=0;i<(int)a.size();i++)(col[i]?r:l).push_back(a[i]);
-	divide(move(l),d/2,ans);
-	// Borrow some completed matchings, so the other degree is a power of two.
-	int k=1;while(k<=((d-1)/2))k*=2;
-	for(int i=0;i<k-d/2;i++){
-		r.insert(r.end(),ans.back().begin(),ans.back().end());ans.pop_back();
-	}
-	divide(move(r),k,ans);
-}
-public:
-vector<vector<int>> solve()const{
-	if(!n)return {};
-	vector<int> l(n+1),r(n+1),ids(e.size()-1);
-	for(int id=1;id<(int)e.size();id++)l[e[id].u]++,r[e[id].v]++,ids[id-1]=id;
-	int d=l[1];for(int u=1;u<=n;u++)assert(l[u]==d&&r[u]==d);
-	vector<vector<int>> ans;ans.reserve(d);divide(move(ids),d,ans);
-	for(auto &a:ans){
-		vector<int> b(n+1);for(int u=1;u<=n;u++)b[u]=e[a[u-1]].v;
-		a=move(b);
-	}
-	return ans;
-}
-};
-// end for graph/regular-bipartite.cpp
-/////////////////////////
-\end{lstlisting}
-
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/directed-mst.cpp}}
-\textbf{指定根的最小树形图}
+\textbf{42 指定根的最小树形图}
 
 \TemplUsage{在带权有向图中，以 S 为根，选取 n-1 条边，使 S 能沿选边到达每个点，且总权最小。每个非根点恰有一条入边。}
 \TemplApi{\begin{itemize}
@@ -3983,20 +1778,8 @@ assert(a.id[2]==1 && a.id[3]==3 && a.id[4]==5);
 assert(!g.solve(4).ok);
 \end{lstlisting}
 \TemplNote{设 n 为点数、m 为输入边数，时间 $O((n+m)\log(n+1))$，空间 $O(n+m)$；任意显式图至少需要 $O(m)$ 读边，只有稀疏图才能写成 n 乘多对数。使用左偏堆、可回退并查集缩环并恢复选边。中间权值和 cost 都是 \texttt{\_\_int128}；输出总权时先抄 \texttt{basic/int128\_IO.cpp}，不要直接强转 ll。solve 不修改原图，可更换根重新求解。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Directed MST (Chu-Liu / Edmonds)
-// usage:
-//   Directed_MST g; g.setN(n); g.add_edge(u,v,w); auto a=g.solve(S);
-//   a.ok; a.cost; a.id[v] is the incoming edge of v, a.id[S]=0.
-//   Vertices / edge ids are 1-indexed; edges point away from the root S.
-//   Negative weights / parallel edges / loops are allowed. No solution: ok=false.
-//   O((n+m)*log(n+1)) time, O(n+m) space; cost uses __int128.
-//
-////////////////////////////////////////////////////////////////
 struct Directed_MST{
 struct edge{int u,v;ll w;};
 struct result{bool ok=false;__int128 cost=0;vector<int> id;};
@@ -4037,7 +1820,8 @@ struct DSU{
 		stk.emplace_back(u,v);fa[v]=u;siz[u]+=siz[v];return true;
 	}
 	void rollback(int t){
-		while((int)stk.size()>t){auto [u,v]=stk.back();stk.pop_back();fa[v]=v;siz[u]-=siz[v];}
+		while((int)stk.size()>t){auto [u,v]=stk.back();stk.pop_back();fa[v]=v;
+			siz[u]-=siz[v];}
 	}
 };
 public:
@@ -4047,7 +1831,8 @@ result solve(int S)const{
 	// Keep one cheapest edge per ordered pair, also bounding heap size by n*n.
 	{
 		vector<vector<int>> edg(n+1);vector<int> vis(n+1),best(n+1),a;
-		for(int id=1;id<(int)e.size();id++)if(e[id].u!=e[id].v&&e[id].v!=S)edg[e[id].v].push_back(id);
+		for(int id=1;id<(int)e.size();
+			id++)if(e[id].u!=e[id].v&&e[id].v!=S)edg[e[id].v].push_back(id);
 		for(int v=1;v<=n;v++){
 			a.clear();
 			for(int id:edg[v]){
@@ -4086,13 +1871,11 @@ result solve(int S)const{
 	return {true,cost,move(in)};
 }
 };
-// end for graph/directed-mst.cpp
-/////////////////////////
 \end{lstlisting}
-
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{graph/chordal.cpp}}
-\textbf{弦图判定与完美消除序列}
+\textbf{43 弦图判定与完美消除序列}
 
 \TemplUsage{判断无向图中是否不存在长度至少为 4 的无弦诱导环。如果是弦图，返回一个完美消除序列。}
 \TemplApi{\begin{itemize}
@@ -4112,19 +1895,8 @@ assert(g.peo.size()==4);
 for(int i=0;i<4;i++)assert(g.rk[g.peo[i]]==i+1);
 \end{lstlisting}
 \TemplNote{时间、空间均为 $O(n+m)$，m 为输入边数。MCS 用桶维护已选邻居数；验证时把结点按最靠前的后继邻居分组，统一检查后继邻居的包含关系，避免对每个邻域两两枚举。返回 false 时只给出判定，不构造无弦环证据。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Chordal Graph Recognition (MCS)
-// usage:
-//   Chordal g; g.setN(n); g.add_edge(u,v); bool ok=g.solve();
-//   If ok, peo[0..n-1] is the elimination order, rk[u] is 1-indexed.
-//   Undirected, vertices 1..n; loops are ignored, parallel edges are merged.
-//   O(n+m) time / space; a failed solve clears peo and rk.
-//
-////////////////////////////////////////////////////////////////
 struct Chordal{
 int n=0;
 vector<vector<int>> edg;
@@ -4170,336 +1942,13 @@ bool solve(){
 	return true;
 }
 };
-// end for graph/chordal.cpp
-/////////////////////////
 \end{lstlisting}
+\par\vspace{1em}
 \clearpage
 \section{树上算法}
 \Needspace{10\baselineskip}
-\subsection{\texttt{trees/HLD.cpp}}
-\textbf{LCA、祖先和路径分段}
-
-\TemplUsage{对一棵连通无向树预处理，支持 O(1) LCA 和 O(log n) 路径分段。}
-\TemplApi{\begin{itemize}
-\item \texttt{Tree t; t.setN(n)} 后加入 n-1 条边；可设置 t.rt，再 build。
-\item \texttt{lca(u,v)}、\texttt{dist(u,v)} 返回最近公共祖先及边数距离；\texttt{kth\_anc(u,k)} 的 k=0 返回自身。
-\item \texttt{in[u]} 是 DFS 编号，\texttt{dfn[i]} 反查原点；子树为 [in[u],out[u]]。
-\item \texttt{index\_of\_path(u,v)} 返回覆盖点路径的一组 DFS 序闭区间。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Tree t; t.setN(3);
-t.add_edge(1,2); t.add_edge(1,3); t.build();
-assert(t.lca(2,3)==1 && t.dist(2,3)==2);
-int cnt=0;
-for(auto [l,r]:t.index_of_path(2,3))cnt+=r-l+1;
-assert(cnt==3);
-\end{lstlisting}
-\TemplNote{配线段树时，把点 u 的值放在位置 in[u]，不要直接用 u。路径段没有保证从 u 到 v 的方向顺序，只能直接用于可交换聚合。按边统计时要另行排除 LCA。与 DC.cpp 都定义 Tree。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Heavy-Light Decomposition, prepared by Otomachi Una
-// version 1.0 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   Tree tr; tr.setN(n); tr.add_edge(u,v); tr.build();
-//   tr.lca(u,v); tr.index_of_path(u,v);
-//
-struct Tree{
-int n=0,rt=1,tot=0;
-vector<vector<int>> edg,st;
-vector<int> in,out,siz,ff,dep,dfn,hson,top,ed;
-void setN(int _n){
-	assert(1<=_n&&_n<INT_MAX-1);n=_n;tot=0;rt=1;
-	edg.assign(n+1,{});st.resize(__lg(n)+1);
-	for(int i=0;i<(int)st.size();i++)st[i].assign(n-(1<<i)+2,0);
-	in.assign(n+1,0);
-	out.assign(n+1,0);
-	siz.assign(n+1,0);
-	ff.assign(n+1,0);
-	dep.assign(n+1,0);
-	dfn.assign(n+1,0);
-	hson.assign(n+1,0);
-	top.assign(n+1,0);
-	ed.assign(n+1,0);
-}
-void setRt(int _rt){assert(1<=_rt&&_rt<=n);rt=_rt;}
-void add_edge(int u,int v){
-	assert(1<=min(u,v)&&max(u,v)<=n&&u!=v);
-	edg[u].push_back(v);
-	edg[v].push_back(u);
-}
-void HLD(int u,int fa){
-	vector<int> q{u};assert(!siz[u]);siz[u]=1;ff[u]=fa;
-	for(int i=0;i<(int)q.size();i++){
-		int x=q[i];
-		for(int v:edg[x])if(v!=ff[x]){
-			assert(!siz[v]);siz[v]=1;ff[v]=x;dep[v]=dep[x]+1;q.push_back(v);
-		}
-	}
-	for(int i=(int)q.size()-1;i>0;i--){
-		int x=q[i],p=ff[x];siz[p]+=siz[x];
-		if(siz[x]>siz[hson[p]])hson[p]=x;
-	}
-} 
-void HLD1(int u,int fa){
-	int start=tot;vector<int> q{u};ff[u]=fa;
-	while(!q.empty()){
-		int x=q.back();q.pop_back();in[x]=++tot;dfn[tot]=x;st[0][tot]=ff[x];
-		for(int i=(int)edg[x].size()-1;i>=0;i--){
-			int v=edg[x][i];if(v==ff[x]||v==hson[x])continue;
-			top[v]=v;q.push_back(v);
-		}
-		if(hson[x]){top[hson[x]]=top[x];q.push_back(hson[x]);}
-		out[x]=in[x]+siz[x]-1;
-	}
-	for(int i=tot;i>start;i--){int x=dfn[i];ed[x]=hson[x]?ed[hson[x]]:x;}
-}
-inline int higher(int x,int y){return dep[x]<dep[y]?x:y;}
-void build(){
-	// build all basic information in O(nlogn) (without lca O(n))
-	assert(1<=rt&&rt<=n);tot=0;
-	fill(hson.begin(),hson.end(),0);fill(siz.begin(),siz.end(),0);
-	dep[rt]=1;top[rt]=rt;HLD(rt,0);HLD1(rt,0);assert(tot==n);
-	for(int i=1;i<(int)st.size();i++) for(int j=1;j<=n-(1<<i)+1;j++)
-		st[i][j]=higher(st[i-1][j],st[i-1][j+(1<<(i-1))]);
-}
-inline int lca(int x,int y){
-	// find lca ancestor in O(1)
-	assert(1<=min(x,y)&&max(x,y)<=n);
-	if(x==y) return x;
-	x=in[x],y=in[y];
-	if(x>y) swap(x,y);
-	x++;int k=__lg(y-x+1);
-	return higher(st[k][x],st[k][y-(1<<k)+1]);
-}
-inline int dist(int u,int v){
-	return dep[u]+dep[v]-2*dep[lca(u,v)];
-}
-inline int kth_anc(int u,int k){
-	// find k-th ancestor in O(logn)
-	assert(1<=u&&u<=n&&0<=k&&k<dep[u]);
-	while(1){
-		if(dep[u]-dep[top[u]]>=k) return dfn[in[u]-k];
-		k-=dep[u]-dep[top[u]]+1;
-		u=ff[top[u]];
-		if(!u) return rt;
-	}
-}
-inline vector<array<int,2>> index_of_path(int x,int y){
-	// return all in ids in path (x,y)
-	assert(1<=min(x,y)&&max(x,y)<=n);
-	vector<array<int,2>> id;
-	while(top[x]!=top[y]){
-		if(dep[top[x]]<dep[top[y]]) swap(x,y);
-		id.push_back({in[top[x]],in[x]});
-		x=ff[top[x]];
-	}
-	if(dep[x]>dep[y]) swap(x,y);
-	id.push_back({in[x],in[y]});
-	return id;
-}
-void output(){
-	cerr<<"***********************************\n";
-	cerr<<"structure:"<<endl;
-	cerr<<"root = "<<rt<<endl;
-	for(int i=1;i<=n;i++) for(int j:edg[i]) if(i<j)
-		cerr<<i<<' '<<j<<'\n';
-	cerr<<"***********************************\n";
-	cerr<<"dfn-order: ";
-	for(int i=1;i<=n;i++) cerr<<dfn[i]<<" \n"[i==n];
-	cerr<<"top: ";
-	for(int i=1;i<=n;i++) cerr<<top[i]<<" \n"[i==n];
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{trees/DC.cpp}}
-\textbf{点分治框架}
-
-\TemplUsage{提供寻找重心、递归处理剩余连通块的框架。与 HLD 查询共用 Tree，题目需要的统计尚未实现。}
-\TemplApi{\begin{itemize}
-\item \texttt{Tree t; t.setN(n)} 后加入树边，设置 rt。
-\item 需要 LCA 时先 HLD\_build；DC\_build 从整棵树开始点分治。
-\item 在 get 中收集子树信息，在 DC 中实现合并、统计和清空逻辑。
-\end{itemize}}
-\textbf{粘贴本文件之前：}
-\begin{lstlisting}
-\end{lstlisting}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Tree t; t.setN(3);
-t.add_edge(1,2); t.add_edge(2,3);
-t.HLD_build(); assert(t.dist(1,3)==2);
-t.DC_build(); // traversal only, no problem answer
-\end{lstlisting}
-\TemplNote{本例只演示初始化和遍历，不会输出路径统计答案。不能原样当作“距离为 k 的点对计数”使用。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Centroid Decomposition, prepared by Otomachi Una
-// version 1.0 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   Tree tr; tr.setN(n); tr.add_edge(u,v); tr.HLD_build(); tr.DC_build();
-//   fill logic inside DC();
-//
-struct Tree{
-int n=0,rt=1,tot=0;
-vector<vector<int>> edg,st;
-vector<int> in,out,siz,ff,dep,dfn,hson,top,ed,msiz,csiz;
-vector<char> vis;int tsiz=0,cen=0;
-void setN(int _n){
-	assert(1<=_n&&_n<INT_MAX-1);n=_n;tot=0;rt=1;
-	edg.assign(n+1,{});st.resize(__lg(n)+1);
-	for(int i=0;i<(int)st.size();i++)st[i].assign(n-(1<<i)+2,0);
-	in.assign(n+1,0);
-	out.assign(n+1,0);
-	siz.assign(n+1,0);
-	ff.assign(n+1,0);
-	dep.assign(n+1,0);
-	dfn.assign(n+1,0);
-	hson.assign(n+1,0);
-	top.assign(n+1,0);
-	ed.assign(n+1,0);
-	msiz.assign(n+1,0);
-	csiz.assign(n+1,0);
-	vis.assign(n+1,0);tsiz=cen=0;
-}
-void add_edge(int u,int v){
-	assert(1<=min(u,v)&&max(u,v)<=n&&u!=v);
-	edg[u].push_back(v);
-	edg[v].push_back(u);
-}
-void HLD(int u,int fa){
-	vector<int> q{u};assert(!siz[u]);siz[u]=1;ff[u]=fa;
-	for(int i=0;i<(int)q.size();i++){
-		int x=q[i];
-		for(int v:edg[x])if(v!=ff[x]){
-			assert(!siz[v]);siz[v]=1;ff[v]=x;dep[v]=dep[x]+1;q.push_back(v);
-		}
-	}
-	for(int i=(int)q.size()-1;i>0;i--){
-		int x=q[i],p=ff[x];siz[p]+=siz[x];
-		if(siz[x]>siz[hson[p]])hson[p]=x;
-	}
-} 
-void HLD1(int u,int fa){
-	int start=tot;vector<int> q{u};ff[u]=fa;
-	while(!q.empty()){
-		int x=q.back();q.pop_back();in[x]=++tot;dfn[tot]=x;st[0][tot]=ff[x];
-		for(int i=(int)edg[x].size()-1;i>=0;i--){
-			int v=edg[x][i];if(v==ff[x]||v==hson[x])continue;
-			top[v]=v;q.push_back(v);
-		}
-		if(hson[x]){top[hson[x]]=top[x];q.push_back(hson[x]);}
-		out[x]=in[x]+siz[x]-1;
-	}
-	for(int i=tot;i>start;i--){int x=dfn[i];ed[x]=hson[x]?ed[hson[x]]:x;}
-}
-inline int higher(int x,int y){return dep[x]<dep[y]?x:y;}
-void HLD_build(){
-	// build all basic information in O(nlogn) (without lca O(n))
-	assert(1<=rt&&rt<=n);tot=0;
-	fill(hson.begin(),hson.end(),0);fill(siz.begin(),siz.end(),0);
-	dep[rt]=1;top[rt]=rt;HLD(rt,0);HLD1(rt,0);assert(tot==n);
-	for(int i=1;i<(int)st.size();i++) for(int j=1;j<=n-(1<<i)+1;j++)
-		st[i][j]=higher(st[i-1][j],st[i-1][j+(1<<(i-1))]);
-}
-inline int lca(int x,int y){
-	// find lca ancestor in O(1)
-	assert(1<=min(x,y)&&max(x,y)<=n);
-	if(x==y) return x;
-	x=in[x],y=in[y];
-	if(x>y) swap(x,y);
-	x++;int k=__lg(y-x+1);
-	return higher(st[k][x],st[k][y-(1<<k)+1]);
-}
-inline int dist(int u,int v){
-	return dep[u]+dep[v]-2*dep[lca(u,v)];
-}
-inline int kth_anc(int u,int k){
-	// find k-th ancestor in O(logn)
-	assert(1<=u&&u<=n&&0<=k&&k<dep[u]);
-	while(1){
-		if(dep[u]-dep[top[u]]>=k) return dfn[in[u]-k];
-		k-=dep[u]-dep[top[u]]+1;
-		u=ff[top[u]];
-		if(!u) return rt;
-	}
-}
-void get_size(int u,int fa){
-	vector<array<int,2>> q{{u,fa}};
-	for(int i=0;i<(int)q.size();i++){
-		auto [x,p]=q[i];csiz[x]=1;msiz[x]=0;
-		for(int v:edg[x])if(v!=p&&!vis[v])q.push_back({v,x});
-	}
-	for(int i=(int)q.size()-1;i>=0;i--){
-		auto [x,p]=q[i];msiz[x]=max(msiz[x],tsiz-csiz[x]);
-		if(msiz[x]<msiz[cen])cen=x;
-		if(i){csiz[p]+=csiz[x];msiz[p]=max(msiz[p],csiz[x]);}
-	}
-}
-void get(int u,int fa){
-	vector<array<int,2>> q{{u,fa}};
-	for(int i=0;i<(int)q.size();i++){
-		auto [x,p]=q[i];
-		// collect information at x here
-		for(int v:edg[x])if(v!=p&&!vis[v])q.push_back({v,x});
-	}
-}
-void DC(int u){
-	vis[u]=true;
-	for(int v:edg[u]) if(!vis[v]){
-		// get some info?
-		get(v,0);
-	}
-	// solve whole
-	for(int v:edg[u]) if(!vis[v]){
-		tsiz=csiz[v];cen=0;
-		get_size(v,0);get_size(cen,0);DC(cen);
-	}
-	// cerr<<"finish"<<endl;
-}
-void DC_build(){
-	assert(1<=rt&&rt<=n);fill(vis.begin(),vis.end(),0);
-	tsiz=n;msiz[cen=0]=1e9;get_size(rt,0);get_size(cen,0);DC(cen);
-}
-void output(){
-	cerr<<"***********************************\n";
-	cerr<<"structure:"<<endl;
-	cerr<<"root = "<<rt<<endl;
-	for(int i=1;i<=n;i++) for(int j:edg[i]) if(i<j)
-		cerr<<i<<' '<<j<<'\n';
-	cerr<<"***********************************\n";
-	cerr<<"dfn-order: ";
-	for(int i=1;i<=n;i++) cerr<<dfn[i]<<" \n"[i==n];
-	cerr<<"top: ";
-	for(int i=1;i<=n;i++) cerr<<top[i]<<" \n"[i==n];
-}
-// modify from here
-void solve(){
-	// do not forget setN
-	// use add_edge(u,v) to add a edge
-	// do not forget HLD_build()
-	int N;cin>>N;setN(N);
-	for(int i=1,f;i<=n;i++){
-		cin>>f;
-		if(f) add_edge(i,f);
-		else rt=i;
-	}
-	HLD_build();
-	DC_build();
-}
-};
-\end{lstlisting}\Needspace{10\baselineskip}
 \subsection{\texttt{trees/cartesian.cpp}}
-\textbf{小根堆笛卡尔树}
+\textbf{46 小根堆笛卡尔树}
 
 \TemplUsage{O(n) 构建，同时满足下标的中序顺序与值的小根堆序，空间 O(n)。}
 \TemplApi{\texttt{auto [ls,rs]=cartesian(a)} 接受从 0 开始的 vector，返回两个同长度 vector，分别为左右儿子下标。无儿子用 -1。相等值保留较早下标在上方。根是原数组中第一个最小值的位置。}
@@ -4511,20 +1960,10 @@ int rt=min_element(a.begin(),a.end())-a.begin();
 assert(rt==1 && ls[rt]==0 && rs[rt]==3 && ls[3]==2);
 \end{lstlisting}
 \TemplNote{空输入返回两个空 vector，此时没有根。构造无递归，单调数组形成长链也可直接构建；后续遍历要自行避免递归爆栈。类型只需支持小于比较。返回值不含原数组或额外哨兵。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Cartesian Tree (min heap)
-//
-// usage:
-//   auto [ls,rs]=cartesian(a); // 0-indexed, absent child = -1
-//   O(n); equal values keep the earlier index above the later one.
-//   The root is the first minimum; empty input returns two empty vectors.
-//
-////////////////////////////////////////////////////////////////
-template<typename T> pair<vector<int>,vector<int>> cartesian(const vector<T> &a){
+template<typename T> pair<vector<int>,vector<int>> cartesian(const vector<T>
+	&a){
 	assert(a.size()<(size_t)INT_MAX);int n=a.size();
 	vector<int> ls(n,-1),rs(n,-1),st;st.reserve(n);
 	for(int i=0;i<n;i++){
@@ -4536,17 +1975,13 @@ template<typename T> pair<vector<int>,vector<int>> cartesian(const vector<T> &a)
 	}
 	return {move(ls),move(rs)};
 }
-// end for trees/cartesian.cpp
-/////////////////////////
 \end{lstlisting}
-
 \par\vspace{1em}
-
 \clearpage
 \section{数论}
 \Needspace{10\baselineskip}
 \subsection{\texttt{number theory/basic.cpp}}
-\textbf{模逆元和扩展 CRT}
+\textbf{47 模逆元和扩展 CRT}
 
 \TemplUsage{提供 gcd、lcm、逆元与不要求模数互素的同余方程合并。}
 \TemplApi{\begin{itemize}
@@ -4562,17 +1997,8 @@ assert(c.accept(23) && inv(3,11)==4);
 assert((COE(0,2)+COE(1,2)).empty());
 \end{lstlisting}
 \TemplNote{合并后的模数须能放入 ll，内部乘法虽提升到 \_\_int128，但结果不是任意精度。inv 函数会与部分模数模板的全局 inv 数组重名，需要按实际组合改名。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for inv, CRT, etc.
-// version 1.0 (Last Update Jun 23rd, 2026)
-//
-// usage:
-//    inv(x,M); COE a(r,M); COE c=a+b;
-//   c.empty() if no solution
-//
 using ull=unsigned long long;
 inline ull gcd(ull x,ull y){
 	// Stein's Algorithm
@@ -4609,8 +2035,9 @@ ll r,M;
 COE():r(0),M(1){}
 COE(ll _r,ll _M):r(_r),M(_M){assert(M>0);r%=M;if(r<0)r+=M;}
 inline bool empty()const{return M==-1;}
-inline bool accept(ll x)const{if(empty())return false;x%=M;return (x<0?x+M:x)==r;}
-inline COE& operator +=(const COE &x){
+inline bool accept(ll x)const{if(empty())return false;x%=M;return
+	(x<0?x+M:x)==r;}
+inline COE& operator+=(const COE &x){
 	if(empty()||x.empty()){M=-1;return *this;}
 	ll g=gcd(M,x.M);
 	if(r%g!=x.r%g){M=-1;return *this;}
@@ -4621,59 +2048,15 @@ inline COE& operator +=(const COE &x){
 	if(r<0) r+=M;
 	return *this;
 }
-inline COE operator +(const COE &x)const{
+inline COE operator+(const COE &x)const{
 	return COE(*this)+=x;
 }
 };
 \end{lstlisting}
 \par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{number theory/linear sieve.cpp}}
-\textbf{线性筛素数}
-
-\TemplUsage{O(n) 时间和空间，适合需要枚举范围内全部素数。}
-\TemplApi{\begin{itemize}
-\item \texttt{init(n)} 重建范围 0..n，n>=1。
-\item \texttt{is\_prime[x]} 判断 x 是否为素数；\texttt{prime[1..m]} 为升序素数，prime[0] 是占位。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-init(20);
-assert(m==8 && prime[1]==2 && prime[m]==19);
-assert(is_prime[17] && !is_prime[1]);
-\end{lstlisting}
-\TemplNote{不是任意大整数判素接口，不能访问 n 以外。全局 init、m、is\_prime 名字较通用，与其他模板组合时应检查冲突。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Linear Sieve
-//
-// usage:
-//   init(n); is_prime[x]; prime[i]  // i-th prime, 1-index
-//
-vector<char> is_prime;
-vector<int> prime;
-int m=0;
-void init(int n){
-	assert(1<=n&&n<INT_MAX);
-	is_prime.assign(n+1,true);prime.assign(1,0);m=0;
-	is_prime[0]=is_prime[1]=false;
-	for(int i=2;i<=n;i++){
-		if(is_prime[i])prime.push_back(i),++m;
-		for(int j=1;j<=m&&prime[j]<=n/i;j++){
-			int x=i*prime[j];is_prime[x]=false;
-			if(i%prime[j]==0)break;
-		}
-	}
-}
-\end{lstlisting}
-\par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{number theory/pollard-rho.cpp}}
-\textbf{大整数判素与质因数分解}
+\textbf{49 大整数判素与质因数分解}
 
 \TemplUsage{Miller-Rabin 配合 Pollard-Rho，适用于范围内不适合筛到上界的整数。随机算法的运行时间依赖输入。}
 \TemplApi{\begin{itemize}
@@ -4688,16 +2071,8 @@ assert((f==vector<ull>{2,2,2,3,3,5}));
 assert(is_prime(1000000007ULL));
 \end{lstlisting}
 \TemplNote{factor 的输入要求 1<=n<2\textasciicircum{}62，不能传 0。不是完整 uint64 范围版本。判素函数与线性筛的 is\_prime 数组同名，不能原样同贴。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Pollard-Rho, prepared by Otomachi Una
-// version 1.0 (Last Update Jun 17th, 2026)
-//
-// usage:
-//   is_prime(n); auto f = factor(n);
-//
 using ull=unsigned long long;
 using u128=__uint128_t;
 inline ull rho_gcd(ull x,ull y){
@@ -4750,7 +2125,8 @@ bool is_prime(ull n){
 	if(n<4759123141ull){
 		for(auto b:{2,7,61})if(!miller_rabin(b%n))return false;
 	}else{
-		for(auto b:{2,325,9375,28178,450775,9780504,1795265022})if(!miller_rabin(b%n))return false;
+		for(auto b:{2,325,9375,28178,450775,9780504,1795265022}
+			)if(!miller_rabin(b%n))return false;
 	}
 	return true;
 }
@@ -4809,10 +2185,9 @@ vector<ull> factor(ull x){
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{number theory/floor sum.cpp}}
-\textbf{类欧几里得整除求和}
+\textbf{50 类欧几里得整除求和}
 
 \TemplUsage{计算闭区间 i=l..r 上 floor((a*i+b)/c) 的和，时间 O(log c)，返回 \_\_int128。}
 \TemplApi{\begin{itemize}
@@ -4825,16 +2200,8 @@ auto ans=floor_sum(1,4,3,1,2);
 assert(ans==16); // 2+3+5+6
 \end{lstlisting}
 \TemplNote{不能直接处理负系数或负下标。输出可配 int128\_IO；不要先在 ll 中计算 a*l。答案和内部累计值须在有符号 128 位范围内。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Floor Sum, O(log c)
-//
-// usage:
-//   floor_sum(l,r,a,b,c); // sum floor((a*i+b)/c), l<=i<=r
-//   0<=l,r,a,b; c>0; return __int128, answer must fit
-//
 __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 	assert(l>=0&&r>=0&&a>=0&&b>=0&&c>0);
 	if(l>r)return 0;
@@ -4850,10 +2217,9 @@ __int128 floor_sum(ll l,ll r,ll a,ll b,ll c){
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{number theory/du jiao sieve.cpp}}
-\textbf{\ensuremath{\mu}、\ensuremath{\varphi} 前缀和}
+\textbf{51 \ensuremath{\mu}、\ensuremath{\varphi} 前缀和}
 
 \TemplUsage{预筛小范围并缓存整除分块递归，分别查询 sum \ensuremath{\mu}(i)、sum \ensuremath{\varphi}(i)，i=1..n。}
 \TemplApi{\begin{itemize}
@@ -4869,18 +2235,8 @@ d.init_phi(3); assert(d.sum_phi(10)==32);
 assert(d.sum_mu(0)==0 && d.sum_phi(0)==0);
 \end{lstlisting}
 \TemplNote{必须先初始化对应函数。B 是预处理上界而非查询上限，常从 n\textasciicircum{}(2/3) 附近结合内存选择；预筛 O(B)，递归性能随 B 和查询集改变。重复初始化会清空该项缓存。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Du Jiao Sieve
-//
-// usage:
-//   du_jiao d; d.init_mu(B); ll mu=d.sum_mu(n);
-//   d.init_phi(B); __int128 phi=d.sum_phi(n);
-//   sum over [1,n], n>=0; init only what is needed
-//   B ~ n^(2/3); O(B+n/sqrt(B)) time, O(B+n/B) space
-//
 struct du_jiao{
 vector<int> mu;
 vector<ll> phi;
@@ -4945,12 +2301,11 @@ __int128 sum_phi(ll n){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \clearpage
 \section{多项式}
 \Needspace{10\baselineskip}
 \subsection{\texttt{polynomial/poly-fast.cpp}}
-\textbf{998244353 下的常用多项式}
+\textbf{52 998244353 下的常用多项式}
 
 \TemplUsage{适用于固定模数下的大规模卷积与形式幂级数。卷积 O(n log n)，BM 和普通插值为二次复杂度。}
 \TemplApi{\begin{itemize}
@@ -4960,6 +2315,8 @@ __int128 sum_phi(ll n){
 \item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
 \item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
 \end{itemize}}
+\textbf{抄写顺序：}先抄 09 的固定模数及组合数，取 MOD=998244353，再抄本节全部代码。
+
 \textbf{最小示例（放入 main）：}
 \begin{lstlisting}
 poly f{1,1,0,0};
@@ -4969,1307 +2326,75 @@ auto e=Exp(Ln(f));
 for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
 assert(FSPE({0,1},{1,-1,-1},10).x==55);
 \end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 NTT 长度不超过 2\textasciicircum{}23，Inv/Ln/Exp 的中间卷积也计入这个限制。lagrange(x,y) 要求取值点互异，允许零点。}
-\par\textbf{考场版：}本节已换成普通迭代 NTT；fft 输出按自然顺序排列，invFft 接受同样顺序。不能与原版变换内核混搭。
-
+\TemplNote{精度由 vector 长度决定。卷积结果长度最多 $2^{23}$，FPS 输入最多 $2^{22}$；ln/exp 还要求长度小于质数模数。operator/ 是相关运算，不是多项式长除。BM 返回 C[0]=1 的递推分母，阶数为 C.size()-1，末尾零系数不能删去；仅拟合已给样本，外推需要足够样本。lagrange 要求互异取值点，允许零点。}
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for ModInt
-// version 3.0 (Last Update Jun 15th, 2026)
-//
-// usage:
-//   init(n); mint a,b; C(n,k); binom(n,k);
-//
-template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-static_assert(1<MOD&&MOD<=INT_MAX);
-unsigned x;
-constexpr ModInt():x(0){}
-constexpr ModInt(unsigned y):x(y%MOD){}
-constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
-constexpr ModInt(unsigned long long y):x(y%MOD){}
-constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-bool operator ==(const ModInt &a)const{return x==a.x;}
-bool operator !=(const ModInt &a)const{return x!=a.x;}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
-	unsigned a=MOD,b=x;ll y=0,z=1;
-	while(b){
-		const unsigned q=a/b,c=a-q*b;
-		a=b,b=c;
-		const ll w=y-(ll)q*z;
-		y=z,z=w;
-	}
-	assert(a==1);return ModInt(y);
-}
-ModInt pow(long long k) const {
-	unsigned long long e=k;
-	ModInt a=*this,b=1;
-	if(k<0){a=a.inv();e=0-e;}
-	for(;e;e>>=1){if(e&1)b*=a;a*=a;}
-	return b;
-}
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
-
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){ll y;if(i>>y)x=ModInt(y);return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
-};
-
-const int MOD=998244353;
-using mint = ModInt<MOD>;
-vector<mint> fac{1},ifac{1},inv{0,1};
-void init(int n=0){
-	assert(0<=n&&n<MOD);
-	int m=fac.size();if(n<m)return;
-	n=max(n,(int)min(2ll*m,(ll)MOD-1));
-	fac.resize(n+1);ifac.resize(n+1);inv.resize(max(n+1,2));
-	for(int i=m;i<=n;i++){
-		fac[i]=fac[i-1]*i;
-		if(i>1)inv[i]=-(MOD/i)*inv[MOD%i];
-		ifac[i]=ifac[i-1]*inv[i];
-	}
-}
-inline mint C(int x,int y){
-	// choose x from y
-	if(x<0||y<x)return 0;
-	init(y);return fac[y]*ifac[x]*ifac[y-x];
-}
-inline mint binom(int y,int x){return C(x,y);}
-
-
-//
-// template for polynomial
-// version 7.0 (Last Update Jun 15th, 2026)
-// NTT core replaced with the faster version
-//
-// usage:
-//    init(n);
-//   poly h=f*g; Inv, Ln, Exp, BM, FSPE, value;
-//
-
-using ll=long long;
-using poly = vector<mint>;
-
-constexpr unsigned MO = 998244353U;
-constexpr unsigned MO2 = 2U * MO;
-constexpr int FFT_MAX=23;
-void ntt(mint *a,int n,bool inverse){
-	assert(1<=n&&n<=(1<<FFT_MAX)&&!(n&(n-1)));
-	for(int i=1,j=0;i<n;i++){
-		int k=n>>1;
-		for(;j&k;k>>=1)j^=k;
-		j^=k;if(i<j)swap(a[i],a[j]);
-	}
-	for(int len=2;len<=n;len<<=1){
-		mint step=mint(3).pow((MOD-1)/len);
-		if(inverse)step=step.inv();
-		for(int i=0;i<n;i+=len){
-			mint cur=1;
-			for(int j=0;j<len/2;j++,cur*=step){
-				mint x=a[i+j],y=a[i+j+len/2]*cur;
-				a[i+j]=x+y;a[i+j+len/2]=x-y;
-			}
-		}
-	}
-	if(inverse){mint v=mint(n).inv();for(int i=0;i<n;i++)a[i]*=v;}
-}
-void fft(mint *a,int n){ntt(a,n,false);}
-void invFft(mint *a,int n){ntt(a,n,true);}
-
-void fft(poly &as) {
-	fft(as.data(), as.size());
-}
-void invFft(poly &as) {
-	invFft(as.data(), as.size());
-}
-
-// ----------------------------------------------------------------
-
-poly operator *(poly f, poly g) {
-	if(f.empty()||g.empty())return {};
-	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
-	int n = f.size() + g.size();
-	int l = 0; while ((1 << l) < n-1) ++l;
-	f.resize(1 << l); g.resize(1 << l);
-	fft(f); fft(g);
-	for (int i = 0; i < (1 << l); i++) f[i] *= g[i];
-	invFft(f);
-	f.resize(n - 1);
-	return f;
-}
-
-poly operator /(poly f, poly g) {
-	if(f.empty()||g.empty())return poly(f.size());
-	int m = g.size();
-	reverse(g.begin(), g.end());
-	g = f * g;
-	for (int i = 0; i < (int)f.size(); i++) f[i] = g[i + m - 1];
-	return f;
-}
-
-void operator +=(poly &f, const poly &g) {
-	if (f.size() < g.size()) f.resize(g.size());
-	for (int i = 0; i < (int)g.size(); i++) f[i] += g[i];
-}
-
-poly operator +(poly f, const poly &g) { f += g; return f; }
-
-void operator -=(poly &f, const poly &g) {
-	if (f.size() < g.size()) f.resize(g.size());
-	for (int i = 0; i < (int)g.size(); i++) f[i] -= g[i];
-}
-
-poly operator -(poly f, const poly &g) { f -= g; return f; }
-
-poly operator *(poly f, mint x) {
-	for (mint &i : f) i *= x;
-	return f;
-}
-
-poly operator *(mint x, poly f) {
-	for (mint &i : f) i *= x;
-	return f;
-}
-
-mint value(const poly &f,mint x){
-	mint ans=0;
-	for(int i=f.size()-1;i>=0;i--) ans=ans*x+f[i];
-	return ans;
-}
-
-poly Inv(poly f) {
-	assert(!f.empty()&&f[0]);
-	int n = f.size();
-	int l = 0; while ((1 << l) < n) ++l;
-	f.resize(1 << l);
-	poly g{f[0].inv()}, _f;
-	for (int i = 1; i <= l; i++) {
-		_f = poly(begin(f), begin(f) + (1 << i));
-		g.resize(1 << (i+1)); _f.resize(1 << (i+1));
-		fft(g); fft(_f);
-		for (int j = 0; j < (1 << (i+1)); j++)
-			g[j] = mint(2) * g[j] - g[j] * g[j] * _f[j];
-		invFft(g);
-		fill(begin(g) + (1 << i), end(g), 0);
-	}
-	g.resize(n);
-	return g;
-}
-
-poly integ(poly f) {
-	int n = f.size(); ::init(n);f.resize(n + 1);
-	for (int i = n; i >= 1; i--) f[i] = f[i - 1] * ::inv[i];
-	f[0] = 0;
-	return f;
-}
-
-poly diff(poly f) {
-	if(f.empty())return {};
-	int n = f.size();
-	for (int i = 0; i < n - 1; i++)
-		f[i] = f[i + 1] * (i + 1);
-	f.pop_back();
-	return f;
-}
-
-poly Ln(poly f) {
-	assert(!f.empty()&&f[0].x==1);
-	poly f_ = diff(f), _f = Inv(f);
-	int n = f_.size(), m = _f.size();
-	int l = 0; while ((1 << l) < n + m) ++l;
-	f_.resize(1 << l); _f.resize(1 << l);
-	fft(f_); fft(_f);
-	for (int i = 0; i < (1 << l); i++) f_[i] *= _f[i];
-	invFft(f_);
-	f_ = integ(f_);
-	f_.resize(f.size());
-	return f_;
-}
-
-poly Exp(poly f) {
-	assert(!f.empty()&&!f[0]);
-	poly g{1}, _f, _g;
-	int n = f.size();
-	int l = 0; while ((1 << l) < n) ++l;
-	f.resize(1 << l);
-	for (int i = 1; i <= l; i++) {
-		_f = poly(begin(f), begin(f) + (1 << i));
-		_g = Ln(g);
-		g.resize(1 << (i+1)); _f.resize(1 << (i+1)); _g.resize(1 << (i+1));
-		fft(g); fft(_f); fft(_g);
-		for (int j = 0; j < (1 << (i+1)); j++)
-			g[j] *= mint(1) - _g[j] + _f[j];
-		invFft(g);
-		fill(begin(g) + (1 << i), end(g), 0);
-	}
-	g.resize(n);
-	return g;
-}
-
-poly BM(poly a) {
-	poly C{1}, B{1};
-	int L = 0, m = 1;
-	mint b = 1;
-	for (int n = 0; n < (int)a.size(); n++) {
-		mint d = 0;
-		for (int i = 0; i <= L; i++) d += C[i] * a[n - i];
-		if (!d) {
-			m++;
-		} else {
-			poly T = C;
-			mint coef = d * b.inv();
-			poly xmB(m, 0);
-			for (mint val : B) xmB.push_back(val);
-			if (C.size() < xmB.size()) C.resize(xmB.size(), 0);
-			for (int i = 0; i < (int)xmB.size(); i++) C[i] -= coef * xmB[i];
-			if (2 * L <= n) {
-				L = n + 1 - L; B = T; b = d; m = 1;
-			} else {
-				m++;
-			}
-		}
-	}
-	return C;
-}
-
-mint FSPE(poly F, poly G, ll t) {
-	// find [x^t] F/G
-	assert(t>=0&&!G.empty()&&G[0]);
-	if(F.empty())return 0;
-	while (t) {
-		poly G1 = G;
-		for (int i = 1; i < (int)G1.size(); i += 2) G1[i] = -G1[i];
-		F = F * G1; G = G * G1;
-		poly f, g;
-		for (int i = t & 1; i < (int)F.size(); i += 2) f.push_back(F[i]);
-		for (int i = 0; i < (int)G.size(); i += 2) g.push_back(G[i]);
-		t >>= 1;
-		F = f; G = g;
-		if(F.empty())return 0;
-	}
-	return F[0] / G[0];
-}
-
-mint RSPE(poly f, ll x) {
-	// find f[x] in O(n^2), note that f must be recursion
-	poly g = BM(f);
-	poly s(g.size()-1);
-	for (int i = 0; i < (int)s.size(); i++)
-		for (int j = 0; j <= i && j < (int)f.size(); j++)
-			s[i] += f[j] * g[i - j];
-	return FSPE(s, g, x);
-}
-
-poly lagrange(vector<mint> x,vector<mint> y){
-	int n=x.size();assert(y.size()==x.size());
-	if(!n)return {};
-	poly g(n+1),q(n),f(n);g[0]=1;
-	for(int i=0;i<n;i++){
-		for(int j=i+1;j>=1;j--)g[j]=g[j-1]-x[i]*g[j];
-		g[0]*=-x[i];
-	}
-	for(int i=0;i<n;i++){
-		q[n-1]=g[n];
-		for(int j=n-2;j>=0;j--)q[j]=g[j+1]+x[i]*q[j+1];
-		mint d=value(q,x[i]);assert(d);
-		mint c=y[i]/d;for(int j=0;j<n;j++)f[j]+=q[j]*c;
-	}
-	return f;
-}
-// use init(n) before accessing fac / ifac / inv directly
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{polynomial/poly-new.cpp}}
-\textbf{带长除、多点求值的多项式}
-
-\TemplUsage{同样固定模数 998244353，提供常用幂级数和 Sqrt、Div、Eval 等接口。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
-\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
-\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
-\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
-\item \texttt{Sqrt(f)} 当前仅接受 f[0]=1，取常数项为 1 的根。
-\item \texttt{Div(f,g,q,r)} 得到多项式长除的商与余式，g 最高次系数非零。\texttt{Eval(f,xs)} 返回各取值点的函数值。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-poly f{1,1,0,0};
-auto g=Inv(f); auto h=f*g; h.resize(4);
-assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
-auto e=Exp(Ln(f));
-for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
-assert(FSPE({0,1},{1,-1,-1},10).x==55);
-poly q,r; Div({1,2,1},{1,1},q,r);
-assert(q.size()==2 && q[0].x==1 && q[1].x==1);
-auto v=Eval({1,2,1},{0,1,2});
-assert(v[0].x==1 && v[1].x==4 && v[2].x==9);
-\end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
-\par\textbf{考场版：}本节已换成普通迭代 NTT；fft 输出按自然顺序排列，invFft 接受同样顺序。不能与原版变换内核混搭。
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for ModInt, prepared by Otomachi Una
-// version 3.0 (Last Update Jun 15th, 2026)
-//
-// usage:
-//   init(n); mint a,b; poly f={...};
-//
-template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-static_assert(1<MOD&&MOD<=INT_MAX);
-unsigned x;
-constexpr ModInt():x(0){}
-constexpr ModInt(unsigned y):x(y%MOD){}
-constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
-constexpr ModInt(unsigned long long y):x(y%MOD){}
-constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-bool operator ==(const ModInt &a)const{return x==a.x;}
-bool operator !=(const ModInt &a)const{return x!=a.x;}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
-	unsigned a=MOD,b=x;ll y=0,z=1;
-	while(b){
-		const unsigned q=a/b,c=a-q*b;
-		a=b,b=c;
-		const ll w=y-(ll)q*z;
-		y=z,z=w;
-	}
-	assert(a==1);return ModInt(y);
-}
-ModInt pow(long long k) const {
-	unsigned long long e=k;
-	ModInt a=*this,b=1;
-	if(k<0){a=a.inv();e=0-e;}
-	for(;e;e>>=1){if(e&1)b*=a;a*=a;}
-	return b;
-}
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
-
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){ll y;if(i>>y)x=ModInt(y);return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
-};
-
-const int MOD=998244353;
-using mint = ModInt<MOD>;
-vector<mint> fac{1},ifac{1},inv{0,1};
-void init(int n=0){
-	assert(0<=n&&n<MOD);
-	int m=fac.size();if(n<m)return;
-	n=max(n,(int)min(2ll*m,(ll)MOD-1));
-	fac.resize(n+1);ifac.resize(n+1);inv.resize(max(n+1,2));
-	for(int i=m;i<=n;i++){
-		fac[i]=fac[i-1]*i;
-		if(i>1)inv[i]=-(MOD/i)*inv[MOD%i];
-		ifac[i]=ifac[i-1]*inv[i];
-	}
-}
-inline mint C(int x,int y){
-	// choose x from y
-	if(x<0||y<x)return 0;
-	init(y);return fac[y]*ifac[x]*ifac[y-x];
-}
-inline mint binom(int y,int x){return C(x,y);}
-
-
-//
-// template for polynomial, prepared by Otomachi Una
-// version 6.1 (Last Update Jun 13th, 2026)
-// NTT core replaced with the "tech" version
-//
-// usage:
-//    init(n);
-//   Inv, Ln, Exp, Div, Sqrt, Eval, BM;
-//
-
-using poly = vector<mint>;
-
-// ---------- NTT constants and roots (tech version) ----------
-constexpr unsigned MO = 998244353U;
-constexpr unsigned MO2 = 2U * MO;
-constexpr int FFT_MAX=23;
-void ntt(mint *a,int n,bool inverse){
-	assert(1<=n&&n<=(1<<FFT_MAX)&&!(n&(n-1)));
-	for(int i=1,j=0;i<n;i++){
-		int k=n>>1;
-		for(;j&k;k>>=1)j^=k;
-		j^=k;if(i<j)swap(a[i],a[j]);
-	}
-	for(int len=2;len<=n;len<<=1){
-		mint step=mint(3).pow((MOD-1)/len);
-		if(inverse)step=step.inv();
-		for(int i=0;i<n;i+=len){
-			mint cur=1;
-			for(int j=0;j<len/2;j++,cur*=step){
-				mint x=a[i+j],y=a[i+j+len/2]*cur;
-				a[i+j]=x+y;a[i+j+len/2]=x-y;
-			}
-		}
-	}
-	if(inverse){mint v=mint(n).inv();for(int i=0;i<n;i++)a[i]*=v;}
-}
-void fft(mint *a,int n){ntt(a,n,false);}
-void invFft(mint *a,int n){ntt(a,n,true);}
-
-void fft(poly &as) {
-	fft(as.data(), as.size());
-}
-void invFft(poly &as) {
-	invFft(as.data(), as.size());
-}
-
-// ----------------------------------------------------------------
-
-poly operator *(poly f, poly g) {
-	if(f.empty()||g.empty())return {};
-	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
-	int n = f.size() + g.size();
-	int l = 0; while ((1 << l) < n-1) ++l;
-	f.resize(1 << l); g.resize(1 << l);
-	fft(f); fft(g);
-	for (int i = 0; i < (1 << l); i++) f[i] *= g[i];
-	invFft(f);
-	f.resize(n - 1);
-	return f;
-}
-
-poly operator /(poly f, poly g) {
-	if(f.empty()||g.empty())return poly(f.size());
-	int m = g.size();
-	reverse(g.begin(), g.end());
-	g = f * g;
-	for (int i = 0; i < (int)f.size(); i++) f[i] = g[i + m - 1];
-	return f;
-}
-
-void operator +=(poly &f, const poly &g) {
-	if (f.size() < g.size()) f.resize(g.size());
-	for (int i = 0; i < (int)g.size(); i++) f[i] += g[i];
-}
-
-poly operator +(poly f, const poly &g) { f += g; return f; }
-
-void operator -=(poly &f, const poly &g) {
-	if (f.size() < g.size()) f.resize(g.size());
-	for (int i = 0; i < (int)g.size(); i++) f[i] -= g[i];
-}
-
-poly operator -(poly f, const poly &g) { f -= g; return f; }
-
-poly operator *(poly f, mint x) {
-	for (mint &i : f) i *= x;
-	return f;
-}
-
-poly operator *(mint x, poly f) {
-	for (mint &i : f) i *= x;
-	return f;
-}
-
-mint value(const poly &f,mint x){
-	mint ans=0;
-	for(int i=f.size()-1;i>=0;i--) ans=ans*x+f[i];
-	return ans;
-}
-
-poly Inv(poly f) {
-	assert(!f.empty()&&f[0]);
-	int n = f.size();
-	int l = 0; while ((1 << l) < n) ++l;
-	f.resize(1 << l);
-	poly g{f[0].inv()}, _f;
-	for (int i = 1; i <= l; i++) {
-		_f = poly(begin(f), begin(f) + (1 << i));
-		g.resize(1 << (i+1)); _f.resize(1 << (i+1));
-		fft(g); fft(_f);
-		for (int j = 0; j < (1 << (i+1)); j++)
-			g[j] = mint(2) * g[j] - g[j] * g[j] * _f[j];
-		invFft(g);
-		fill(begin(g) + (1 << i), end(g), 0);
-	}
-	g.resize(n);
-	return g;
-}
-
-poly integ(poly f) {
-	int n = f.size(); ::init(n);f.resize(n + 1);
-	for (int i = n; i >= 1; i--) f[i] = f[i - 1] * ::inv[i];
-	f[0] = 0;
-	return f;
-}
-
-poly diff(poly f) {
-	if(f.empty())return {};
-	int n = f.size();
-	for (int i = 0; i < n - 1; i++)
-		f[i] = f[i + 1] * (i + 1);
-	f.pop_back();
-	return f;
-}
-
-poly Ln(poly f) {
-	assert(!f.empty()&&f[0].x==1);
-	poly f_ = diff(f), _f = Inv(f);
-	int n = f_.size(), m = _f.size();
-	int l = 0; while ((1 << l) < n + m) ++l;
-	f_.resize(1 << l); _f.resize(1 << l);
-	fft(f_); fft(_f);
-	for (int i = 0; i < (1 << l); i++) f_[i] *= _f[i];
-	invFft(f_);
-	f_ = integ(f_);
-	f_.resize(f.size());
-	return f_;
-}
-
-poly Exp(poly f) {
-	assert(!f.empty()&&!f[0]);
-	poly g{1}, _f, _g;
-	int n = f.size();
-	int l = 0; while ((1 << l) < n) ++l;
-	f.resize(1 << l);
-	for (int i = 1; i <= l; i++) {
-		_f = poly(begin(f), begin(f) + (1 << i));
-		_g = Ln(g);
-		g.resize(1 << (i+1)); _f.resize(1 << (i+1)); _g.resize(1 << (i+1));
-		fft(g); fft(_f); fft(_g);
-		for (int j = 0; j < (1 << (i+1)); j++)
-			g[j] *= mint(1) - _g[j] + _f[j];
-		invFft(g);
-		fill(begin(g) + (1 << i), end(g), 0);
-	}
-	g.resize(n);
-	return g;
-}
-
-poly Sqrt(poly f) {
-	assert(!f.empty()&&f[0].x==1);
-	poly g{1}, _f, _g;
-	int n = f.size();
-	int l = 0; while ((1 << l) < n) ++l;
-	f.resize(1 << l);
-	mint inv2 = mint(2).inv();
-	for (int i = 1; i <= l; i++) {
-		_f = poly(begin(f), begin(f) + (1 << i));
-		_g = Inv(g);
-		g.resize(1 << (i+1)); _f.resize(1 << (i+1)); _g.resize(1 << (i+1));
-		fft(_f); fft(_g); fft(g);
-		for (int j = 0; j < (1 << (i+1)); j++)
-			g[j] = (_f[j] + g[j] * g[j]) * inv2 * _g[j];
-		invFft(g);
-		fill(begin(g) + (1 << i), end(g), 0);
-	}
-	g.resize(n);
-	return g;
-}
-
-void Div(poly f, poly g, poly &q, poly &r) {
-	assert(!g.empty()&&g.back());
-	if(f.size()<g.size()){q={0};r=f;return;}
-	int n = f.size() - 1, m = g.size() - 1;
-	reverse(f.begin(), f.end());
-	reverse(g.begin(), g.end());
-	g.resize(n + 1);
-	q = f * Inv(g);
-	q.resize(n - m + 1);
-	reverse(q.begin(), q.end());
-	g.resize(m + 1);
-	reverse(g.begin(), g.end());
-	reverse(f.begin(), f.end());
-	poly h = q * g;
-	r.resize(m);
-	for (int i = 0; i < m; i++) r[i] = f[i] - h[i];
-}
-
-poly Eval(poly f, poly x) {
-	if(x.empty())return {};
-	vector<poly> func;
-	map<pair<int, int>, int> mp;
-	function<poly(int, int)> prod = [&](int l, int r) {
-		poly ans;
-		if (l == r) ans = poly{-x[l], 1};
-		else {
-			int mid = (l + r) >> 1;
-			ans = prod(l, mid) * prod(mid + 1, r);
-		}
-		func.push_back(ans);
-		mp[{l, r}] = func.size() - 1;
-		return ans;
-	};
-	prod(0, x.size() - 1);
-
-	function<poly(poly, int, int)> solve = [&](poly f, int l, int r) {
-		if (l == r) {
-			mint val = 0;
-			for (int i = f.size() - 1; i >= 0; i--)
-				val = val * x[l] + f[i];
-			return poly{val};
-		}
-		int mid = (l + r) >> 1;
-		poly p0 = func[mp[{l, mid}]], p1 = func[mp[{mid + 1, r}]];
-		poly d, q;
-		Div(f, p0, d, q);
-		poly ans = solve(q, l, mid);
-		Div(f, p1, d, q);
-		poly _ans = solve(q, mid + 1, r);
-		for (mint i : _ans) ans.push_back(i);
-		return ans;
-	};
-	return solve(f, 0, x.size() - 1);
-}
-
-poly BM(poly a) {
-	poly C{1}, B{1};
-	int L = 0, m = 1;
-	mint b = 1;
-	for (int n = 0; n < (int)a.size(); n++) {
-		mint d = 0;
-		for (int i = 0; i <= L; i++) d += C[i] * a[n - i];
-		if (!d) {
-			m++;
-		} else {
-			poly T = C;
-			mint coef = d * b.inv();
-			poly xmB(m, 0);
-			for (mint val : B) xmB.push_back(val);
-			if (C.size() < xmB.size()) C.resize(xmB.size(), 0);
-			for (int i = 0; i < (int)xmB.size(); i++) C[i] -= coef * xmB[i];
-			if (2 * L <= n) {
-				L = n + 1 - L; B = T; b = d; m = 1;
-			} else {
-				m++;
-			}
-		}
-	}
-	return C;
-}
-
-mint FSPE(poly F, poly G, ll t) {
-	// find [x^t] F/G
-	assert(t>=0&&!G.empty()&&G[0]);
-	if(F.empty())return 0;
-	while (t) {
-		poly G1 = G;
-		for (int i = 1; i < (int)G1.size(); i += 2) G1[i] = -G1[i];
-		F = F * G1; G = G * G1;
-		poly f, g;
-		for (int i = t & 1; i < (int)F.size(); i += 2) f.push_back(F[i]);
-		for (int i = 0; i < (int)G.size(); i += 2) g.push_back(G[i]);
-		t >>= 1;
-		F = f; G = g;
-		if(F.empty())return 0;
-	}
-	return F[0] / G[0];
-}
-
-mint RSPE(poly f, ll x) {
-	// find f[x] in O(n^2), note that f must be recursion
-	poly g = BM(f);
-	poly s(g.size()-1);
-	for (int i = 0; i < (int)s.size(); i++)
-		for (int j = 0; j <= i && j < (int)f.size(); j++)
-			s[i] += f[j] * g[i - j];
-	return FSPE(s, g, x);
-}
-
-poly lagrange(vector<mint> x,vector<mint> y){
-	int n=x.size();assert(y.size()==x.size());
-	if(!n)return {};
-	poly g(n+1),q(n),f(n);g[0]=1;
-	for(int i=0;i<n;i++){
-		for(int j=i+1;j>=1;j--)g[j]=g[j-1]-x[i]*g[j];
-		g[0]*=-x[i];
-	}
-	for(int i=0;i<n;i++){
-		q[n-1]=g[n];
-		for(int j=n-2;j>=0;j--)q[j]=g[j+1]+x[i]*q[j+1];
-		mint d=value(q,x[i]);assert(d);
-		mint c=y[i]/d;for(int j=0;j<n;j++)f[j]+=q[j]*c;
-	}
-	return f;
-}
-
-poly to_ex(poly f){ // f(e^x) 
-	int n=f.size();if(!n)return {};::init(n);
-	function<pair<poly,poly>(int,int)> solve=[&](int l,int r){
-		if(l==r) return make_pair(poly{f[l]},poly{1,MOD-l});
-		int mid=l+r>>1;
-		auto ls=solve(l,mid),rs=solve(mid+1,r);
-		return make_pair(ls.first*rs.second+ls.second*rs.first,ls.second*rs.second);
-	};
-	auto ans=solve(0,n-1);
-	poly g=ans.first*Inv(ans.second);
-	g.resize(n);
-	for(int i=0;i<n;i++) g[i]=g[i]*ifac[i]; 
-	return g;
-}
-
-poly S2line(int n){
-	// return S(n,i)
-	assert(n>=0);::init(n);
-	poly F(n+1),G(n+1);
-	// S(n,i) * binom(j,i) -> F(j)
-	for(int i=0;i<=n;i++){
-		G[i]=ifac[i];F[i]=mint(i).pow(n)*ifac[i];
-		if(i&1) F[i]*=-1;
-	}
-	F=F*G;
-	F.resize(n+1);
-	for(int i=0;i<=n;i++){
-		if(i&1) F[i]*=-1;
-	}
-	return F;
-}
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{polynomial/poly-old.cpp}}
-\textbf{ll 系数的旧版多项式}
-
-\TemplUsage{保留旧题适配接口，系数类型为 ll，默认 MOD=998244353。新题优先用 poly-fast 或 MTT。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly} 实际是 vector<long long>，输入系数应先归一化到 [0,MOD)。
-\item \texttt{f*g} 为卷积，\texttt{inv/ln/exp/sqrt} 使用小写命名。
-\item \texttt{init(n)} 准备 fac、ifac、Inv 表；注意 Inv 是整数逆元数组，inv 才是幂级数求逆函数。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-init(10); poly f{1,2},g{3,4}; auto h=f*g;
-assert(h[0]==3 && h[1]==10 && h[2]==8);
-poly a{1,1,0,0}; auto b=inv(a);
-assert(b[0]==1 && b[1]==MOD-1);
-\end{lstlisting}
-\TemplNote{不要根据其他版本的接口大小写直接替换。旧版保留许多历史实现，本手册的可运行示例验证乘法和求逆；做递推推项优先选已核对接口的 MTT/poly-fast，避免依赖旧示例 solve。文件含 poly、LL、MP 等宏，组合时应留意污染。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-#define LL __int128
-#define MP make_pair
-#define poly vector<long long>
-//
-// template for polynomial (ll NTT)
-// version 1.0 (last update: May 24th, 2026)
-//
-// usage:
-//   init(n); poly f,g; f*g; ln(f);
-//
-const ll MOD=998244353,inv2=(MOD+1)/2;
-vector<ll> fac{1},ifac{1},Inv{0,1};
-vector<int> bfly(1);vector<ll> inver{0,1};
-int clogg(int x){assert(x>0);return x==1?0:32-__builtin_clz(x-1);} 
-ll ksm(ll a,int b){ll res=1;while(b){if(b&1)res=res*a%MOD;a=a*a%MOD,b>>=1;}return res;}
-void butterfly(int l){
-	assert(0<=l&&l<=23);
-	static int las=-1;
-	if(las!=l){
-		las=l;bfly.assign(1<<l,0); 
-		for(int i=1;i<(1<<l);i++)
-			bfly[i]=(bfly[i>>1]>>1)|((i&1)<<l-1);
-	} 
-}
-void NTT(poly &f,int l,int typ){
-	butterfly(l);f.resize(1<<l);
-	for(int i=0;i<(1<<l);i++)
-		if(bfly[i]<i) swap(f[i],f[bfly[i]]);
-	for(int i=0;i<l;i++){
-		ll step=ksm(3,MOD-1+(MOD-1>>i+1)*typ);
-		for(int j=0;j<(1<<l);j+=(1<<i+1)){
-			ll cur=1,l=j+(1<<i);
-			for(int k=j;k<l;k++){
-				ll u=f[k],v=f[k|(1<<i)]*cur%MOD;
-				f[k]=(u+v>=MOD?u+v-MOD:u+v);
-				f[k|(1<<i)]=(u>=v?u-v:u-v+MOD);
-				cur=cur*step%MOD;
-			}
-		}
-	}
-	if(typ==-1){
-		ll val=ksm(1<<l,MOD-2);
-		for(int i=0;i<(1<<l);i++)
-			f[i]=val*f[i]%MOD;
-	}
-	return;
-}
-poly operator *(poly f,poly g){
-	// h[i+j] <- f[i]*g[j]
-	if(f.empty()||g.empty())return {};
-	assert(f.size()+g.size()-1<=(1<<23));
-	int n=f.size()+g.size(),l=clogg(f.size()+g.size()-1);
-	if(n<=64){
-		poly h(n-1);
-		for(int i=0;i<f.size();i++)
-			for(int j=0;j<g.size();j++)
-				h[i+j]+=f[i]*g[j]%MOD;
-		for(ll &i:h) i%=MOD;
-		return h;
-	}
-	NTT(f,l,1);NTT(g,l,1);
-	for(int i=0;i<(1<<l);i++)
-		f[i]=f[i]*g[i]%MOD;
-	NTT(f,l,-1);f.resize(n-1);
-	return f;
-}
-poly operator /(poly f,poly g){
-	if(f.empty()||g.empty())return poly(f.size());
-	// h[i-j] <- f[i]*g[j]
-	int m=g.size();
-	reverse(g.begin(),g.end());
-	g=f*g;
-	for(int i=0;i<f.size();i++) f[i]=g[i+m-1];
-	return f;
-}
-void operator +=(poly &f,const poly &g){
-	int n=max(f.size(),g.size());
-	f.resize(n);
-	for(int i=0;i<g.size();i++)
-		f[i]=(f[i]+g[i]>=MOD?f[i]+g[i]-MOD:f[i]+g[i]);
-	return;
-}
-poly operator +(poly f,poly g){
-	f+=g;
-	return f;
-}
-void operator -=(poly &f,const poly &g){
-	int n=max(f.size(),g.size());
-	f.resize(n);
-	for(int i=0;i<g.size();i++)
-		f[i]=(f[i]-g[i]<0?f[i]-g[i]+MOD:f[i]-g[i]);
-	return;
-}
-poly operator -(poly f,poly g){
-	f-=g;
-	return f;
-}
-poly operator *(poly f,ll x){
-	for(int i=0;i<f.size();i++) (f[i]*=x)%=MOD;
-	return f;
-}
-poly operator *(ll x,poly f){
-	for(int i=0;i<f.size();i++) (f[i]*=x)%=MOD;
-	return f;
-}
-poly inv(poly f){
-	assert(!f.empty()&&f[0]);
-	int n=f.size(),l=clogg(n);
-	f.resize(1<<l);
-	poly g{ksm(f[0],MOD-2)},_f;
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		NTT(g,i+1,1);NTT(_f,i+1,1);
-		for(int j=0;j<(1<<i+1);j++)
-			g[j]=(2*g[j]-g[j]*g[j]%MOD*_f[j]%MOD+MOD)%MOD;
-		NTT(g,i+1,-1);
-		fill(begin(g)+(1<<i),end(g),0);
-	}
-	g.resize(n);
-	return g;
-}
-poly integ(poly f){
-	int n=f.size();f.resize(n+1);
-	assert(n<MOD);
-	int m=inver.size();
-	if(n>=m){
-		int k=max(n,(int)min(2ll*m,MOD-1));inver.resize(k+1);
-		for(int i=m;i<=k;i++)inver[i]=MOD-(MOD/i)*inver[MOD%i]%MOD;
-	}
-	for(int i=n;i>=1;i--) f[i]=f[i-1]*inver[i]%MOD;
-	f[0]=0;
-	return f;
-}
-poly diff(poly f){
-	if(f.empty())return {};
-	int n=f.size();
-	for(int i=0;i<n-1;i++)
-		f[i]=f[i+1]*(i+1)%MOD;
-	f.pop_back();
-	return f;
-} 
-poly ln(poly f){
-	assert(!f.empty()&&f[0]==1);
-	poly f_=diff(f),_f=inv(f);
-	int n=f_.size(),m=_f.size();
-	int l=clogg(n+m);
-	NTT(f_,l,1);NTT(_f,l,1);
-	for(int i=0;i<(1<<l);i++)
-		f_[i]=f_[i]*_f[i]%MOD;
-	NTT(f_,l,-1);
-	f_=integ(f_);
-	f_.resize(f.size());
-	return f_;
-}
-poly exp(poly f){
-	assert(!f.empty()&&f[0]==0);
-	poly g{1},_f,_g;
-	int n=f.size(),l=clogg(n);
-	f.resize(1<<l);
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		_g=ln(g);
-		NTT(g,i+1,1);NTT(_f,i+1,1);NTT(_g,i+1,1);
-		for(int j=0;j<(1<<i+1);j++)
-			g[j]=g[j]*(1-_g[j]+_f[j]+MOD)%MOD;
-		NTT(g,i+1,-1);
-		fill(begin(g)+(1<<i),end(g),0);
-	}
-	g.resize(n);
-	return g;
-}
-poly sqrt(poly f){
-	assert(!f.empty()&&f[0]==1);
-	poly g{1},_f,_g;
-	int n=f.size(),l=clogg(n);
-	f.resize(1<<l);
-	for(int i=1;i<=l;i++){
-		_f=poly(begin(f),begin(f)+(1<<i));
-		_g=inv(g);
-		NTT(_f,i+1,1);NTT(_g,i+1,1);NTT(g,i+1,1);
-		for(int j=0;j<(1<<i+1);j++)
-			g[j]=(_f[j]+g[j]*g[j]%MOD)*inv2%MOD*_g[j]%MOD;
-		NTT(g,i+1,-1);
-		fill(begin(g)+(1<<i),end(g),0);
-	}
-	g.resize(n);
-	return g;
-} 
-void div(poly f,poly g,poly &q,poly &r){// ¹¹Ôì p,q Ê¹µÃ f=g*q+r; 
-	assert(!g.empty()&&g.back());
-	if(f.size()<g.size()){q={0};r=f;return;}
-	int n=f.size()-1,m=g.size()-1;
-	reverse(f.begin(),f.end());
-	reverse(g.begin(),g.end());
-	g.resize(n+1);
-	q=(f*inv(g));q.resize(n-m+1);
-	reverse(q.begin(),q.end());
-	g.resize(m+1);
-	reverse(g.begin(),g.end());
-	reverse(f.begin(),f.end());
-	poly h=q*g;
-	r.resize(m);
-	for(int i=0;i<m;i++) r[i]=(f[i]-h[i]+MOD)%MOD;
-	return;
-}
-poly eval(poly f,poly x){
-	if(x.empty())return {};
-	vector<poly> func; map<pair<int,int>,int> mp;
-	function<poly(int,int)> prod=[&](int l,int r){
-		poly ans;
-		if(l==r) ans=(poly){MOD-x[l],1};
-		else {
-			int mid=l+r>>1;
-			ans=prod(l,mid)*prod(mid+1,r);
-		} 
-		func.push_back(ans);
-		mp[MP(l,r)]=func.size()-1;
-		return ans;
-	};prod(0,x.size()-1);
-	int t=-1;
-	function<poly(poly,int,int)> solve=[&](poly f,int l,int r){
-		if(l==r){
-			ll val=0;
-			for(int i=f.size()-1;i>=0;i--)
-				val=(val*x[l]+f[i])%MOD;
-			return (poly){val};
-		}
-		int mid=l+r>>1;
-		poly p0=func[mp[MP(l,mid)]],p1=func[mp[MP(mid+1,r)]];
-		poly d,q;
-		div(f,p0,d,q);
-		poly ans=solve(q,l,mid);
-		div(f,p1,d,q);
-		poly _ans=solve(q,mid+1,r);
-		for(int i:_ans) ans.push_back(i);
-		return ans;
-	};
-	return solve(f,0,x.size()-1);
-}
-poly BM(poly a){
-	poly c{1},b{1};int l=0,m=1;ll last=1;
-	for(int i=0;i<(int)a.size();i++){
-		ll d=0;for(int j=0;j<=l;j++)d=(d+c[j]*a[i-j])%MOD;
-		if(!d){m++;continue;}
-		poly t=c;ll v=d*ksm(last,MOD-2)%MOD;
-		if(c.size()<b.size()+m)c.resize(b.size()+m);
-		for(int j=0;j<(int)b.size();j++)c[j+m]=(c[j+m]-v*b[j]%MOD+MOD)%MOD;
-		if(2*l<=i){l=i+1-l;b=move(t);last=d;m=1;}
-		else m++;
-	}
-	return c;
-}
-ll FSPE(poly F,poly G,ll t){// [x^t]F(x)/G(x)
-	assert(t>=0&&!G.empty()&&G[0]);
-	if(F.empty())return 0;
-	while(t){
-		poly G1=G;
-		for(int i=1;i<G1.size();i+=2) G1[i]=MOD-G1[i];
-		F=F*G1,G=G*G1;
-		poly f,g;
-		for(int i=t&1;i<F.size();i+=2) f.push_back(F[i]);
-		for(int i=0;i<G.size();i+=2) g.push_back(G[i]);
-		t>>=1;
-		F=f,G=g;
-		if(F.empty())return 0;
-	}
-	return F[0]*ksm(G[0],MOD-2)%MOD;
-
-}
-ll RSPE(poly f,ll x){
-	poly g=BM(f),s(g.size()-1);
-	for(int i=0;i<(int)s.size();i++)
-		for(int j=0;j<=i&&j<(int)f.size();j++)s[i]=(s[i]+f[j]*g[i-j])%MOD;
-	return FSPE(s,g,x);
-}
-mt19937 rnd(time(0));
-void init(int n=0){
-	assert(0<=n&&n<MOD);
-	int m=fac.size();if(n<m)return;
-	n=max(n,(int)min(2ll*m,MOD-1));
-	fac.resize(n+1);ifac.resize(n+1);Inv.resize(max(n+1,2));
-	for(int i=m;i<=n;i++){
-		fac[i]=fac[i-1]*i%MOD;
-		if(i>=2)Inv[i]=MOD-Inv[MOD%i]*(MOD/i)%MOD;
-		ifac[i]=ifac[i-1]*Inv[i]%MOD;
-	}
-}
-ll C(int x,int y){if(x<0||x>y)return 0;init(y);return fac[y]*ifac[x]%MOD*ifac[y-x]%MOD;} 
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{polynomial/MTT.cpp}}
-\textbf{非 NTT 模数下的多项式}
-
-\TemplUsage{默认目标模数 10\textasciicircum{}9+7，三模 NTT 后 CRT 还原；常用 FPS 功能与 poly-fast 对齐，但每次卷积都会回到目标模数。}
-\TemplApi{\begin{itemize}
-\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
-\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
-\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
-\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
-\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
-\item \texttt{Poly} 与 \texttt{poly} 是同一个类型；\texttt{lagrange(xs,ys)} 支持互异取值点，包括零点，返回次数小于点数的插值多项式。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-poly f{1,1,0,0};
-auto g=Inv(f); auto h=f*g; h.resize(4);
-assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
-auto e=Exp(Ln(f));
-for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
-assert(FSPE({0,1},{1,-1,-1},10).x==55);
-auto p=lagrange({0,1,2},{1,4,9});
-assert(p[0].x==1 && p[1].x==2 && p[2].x==1);
-\end{lstlisting}
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度还要小于目标质数。没有 poly-new 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
-\par\textbf{考场版：}本节已换成普通迭代 NTT；fft 输出按自然顺序排列，invFft 接受同样顺序。不能与原版变换内核混搭。
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for ModInt, use x.pow(k) / x.inv()
-// version 2.0 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   init(n); mint a,b; C(n,k); MOD=1e9+7
-//
-template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-static_assert(1<MOD&&MOD<=INT_MAX);
-unsigned x;
-constexpr ModInt():x(0){}
-constexpr ModInt(unsigned y):x(y%MOD){}
-constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
-constexpr ModInt(unsigned long long y):x(y%MOD){}
-constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-bool operator ==(const ModInt &a)const{return x==a.x;}
-bool operator !=(const ModInt &a)const{return x!=a.x;}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
-	unsigned a=MOD,b=x;ll y=0,z=1;
-	while(b){
-		const unsigned q=a/b,c=a-q*b;
-		a=b,b=c;
-		const ll w=y-(ll)q*z;
-		y=z,z=w;
-	}
-	assert(a==1);return ModInt(y);
-}
-ModInt pow(long long k) const {
-	unsigned long long e=k;
-	ModInt a=*this,b=1;
-	if(k<0){a=a.inv();e=0-e;}
-	for(;e;e>>=1){if(e&1)b*=a;a*=a;}
-	return b;
-}
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
-
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){ll y;if(i>>y)x=ModInt(y);return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
-};
-// Basic function, fac, ifac, binom
-// init(n) prepares fac / ifac / inv through n
-const int MOD=1e9+7;
-using mint=ModInt<MOD>;
 using poly=vector<mint>;
 using Poly=poly;
-vector<mint> fac{1},ifac{1},inv{0,1};
-void init(int n=0){
-	assert(0<=n&&n<MOD);
-	int m=fac.size();if(n<m)return;
-	n=max(n,(int)min(2ll*m,(ll)MOD-1));
-	fac.resize(n+1);ifac.resize(n+1);inv.resize(max(n+1,2));
-	for(int i=m;i<=n;i++){
-		fac[i]=fac[i-1]*i;
-		if(i>1)inv[i]=-(MOD/i)*inv[MOD%i];
-		ifac[i]=ifac[i-1]*inv[i];
-	}
-}
-inline mint C(int x,int y){
-	// choose x from y
-	if(x<0||y<x)return 0;
-	init(y);return fac[y]*ifac[x]*ifac[y-x];
-}
-inline mint binom(int y,int x){return C(x,y);}
-
-//
-// template for MTT (three-prime CRT)
-// usage:
-//   poly h=f*g; Inv(f); Ln(f); Exp(f);
-//   diff, integ, value, BM, FSPE, RSPE, lagrange;
-//   MOD is prime; Ln needs f[0]=1, Exp needs f[0]=0
-//   convolution length <= 2^23; FPS length <= 2^22
-//
 const int FFT_MAX=23;
-template<unsigned MO> struct MTT_NTT{
-using num=ModInt<MO>;
-void ntt(num *a,int n,bool inverse)const{
-	assert(1<=n&&n<=(1<<FFT_MAX)&&!(n&(n-1)));
+// Shared NTT; use in both the 998244353 and CRT versions.
+template<unsigned P>
+void ntt(vector<ModInt<P>> &a,bool rev=false){
+	using num=ModInt<P>;
+	int n=a.size();
+	assert(n&&!(n&(n-1))&&(P-1)%n==0&&n<=(1<<FFT_MAX));
 	for(int i=1,j=0;i<n;i++){
 		int k=n>>1;
 		for(;j&k;k>>=1)j^=k;
 		j^=k;if(i<j)swap(a[i],a[j]);
 	}
-	for(int len=2;len<=n;len<<=1){
-		num step=num(3).pow((MO-1)/len);
-		if(inverse)step=step.inv();
-		for(int i=0;i<n;i+=len){
-			num cur=1;
-			for(int j=0;j<len/2;j++,cur*=step){
-				num x=a[i+j],y=a[i+j+len/2]*cur;
-				a[i+j]=x+y;a[i+j+len/2]=x-y;
-			}
-		}
+	static vector<num> w{0,1};
+	for(int m=w.size();m<n;m<<=1){
+		w.resize(2*m);num z=num(3).pow((P-1)/(2*m));
+		for(int i=m/2;i<m;i++)w[2*i]=w[i],w[2*i+1]=w[i]*z;
 	}
-	if(inverse){num v=num(n).inv();for(int i=0;i<n;i++)a[i]*=v;}
+	for(int m=1;m<n;m<<=1)
+		for(int i=0;i<n;i+=2*m)
+			for(int j=0;j<m;j++){
+				num x=a[i+j],y=a[i+j+m]*w[m+j];
+				a[i+j]=x+y;a[i+j+m]=x-y;
+			}
+	if(rev){
+		reverse(a.begin()+1,a.end());num v=num(n).inv();
+		for(num &x:a)x*=v;
+	}
 }
-void fft(num *a,int n)const{ntt(a,n,false);}
-void invFft(num *a,int n)const{ntt(a,n,true);}
-};
-
-template<unsigned MO> vector<ModInt<MO>> convolution(const poly &f,const poly &g,int n){
-	static const MTT_NTT<MO> ntt;
-	vector<ModInt<MO>> a(n),b(n);
-	for(int i=0;i<(int)f.size();i++)a[i]=f[i].x;
-	for(int i=0;i<(int)g.size();i++)b[i]=g[i].x;
-	ntt.fft(a.data(),n);ntt.fft(b.data(),n);
-	for(int i=0;i<n;i++)a[i]*=b[i];
-	ntt.invFft(a.data(),n);a.resize(f.size()+g.size()-1);return a;
-}
-poly operator *(const poly &f,const poly &g){
+// 998244353 convolution. Replace this function by the MTT core if needed.
+poly operator*(poly f,poly g){
 	if(f.empty()||g.empty())return {};
-	assert(f.size()+g.size()-1<=(1<<FFT_MAX));
-	int m=f.size()+g.size()-1;
-	poly h(m);
+	int m=f.size()+g.size()-1,n=1;
+	assert(m<=(1<<FFT_MAX));
 	if(min(f.size(),g.size())<=32){
-		for(int i=0;i<(int)f.size();i++)for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
+		poly h(m);
+		for(int i=0;i<(int)f.size();i++)
+			for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
 		return h;
 	}
-	constexpr unsigned mod1=998244353,mod2=167772161,mod3=469762049;
-	constexpr unsigned long long mod12=1ull*mod1*mod2;
-	static const unsigned inv1=ModInt<mod2>(mod1).inv().x;
-	static const unsigned inv2=ModInt<mod3>(mod12).inv().x;
-	assert((__int128)min(f.size(),g.size())*(MOD-1)*(MOD-1)<(__int128)mod12*mod3);
-	int n=1;while(n<m)n<<=1;
-	auto a=convolution<mod1>(f,g,n);
-	auto b=convolution<mod2>(f,g,n);
-	auto c=convolution<mod3>(f,g,n);
-	for(int i=0;i<m;i++){
-		unsigned long long x=(b[i].x+mod2-a[i].x%mod2)*1ull*inv1%mod2;
-		x=x*mod1+a[i].x;
-		unsigned long long y=(c[i].x+mod3-x%mod3)*inv2%mod3;
-		h[i]=x%MOD+(mod12%MOD)*y%MOD;
-	}
-	return h;
+	while(n<m)n<<=1;
+	f.resize(n);g.resize(n);ntt(f);ntt(g);
+	for(int i=0;i<n;i++)f[i]*=g[i];
+	ntt(f,true);f.resize(m);return f;
 }
+
+// Shared FPS; also used with the MTT convolution.
 // Transposed multiplication: (f/g)[i] = sum_j f[i+j]*g[j].
-poly operator /(const poly &f,poly g){
+poly operator/(const poly &f,poly g){
 	if(f.empty()||g.empty())return poly(f.size());
 	int m=g.size();reverse(g.begin(),g.end());g=f*g;
 	return poly(g.begin()+m-1,g.end());
 }
-void operator +=(poly &f,const poly &g){
+void operator+=(poly &f,const poly &g){
 	if(f.size()<g.size())f.resize(g.size());
 	for(int i=0;i<(int)g.size();i++)f[i]+=g[i];
 }
-poly operator +(poly f,const poly &g){f+=g;return f;}
-void operator -=(poly &f,const poly &g){
+poly operator+(poly f,const poly &g){f+=g;return f;}
+void operator-=(poly &f,const poly &g){
 	if(f.size()<g.size())f.resize(g.size());
 	for(int i=0;i<(int)g.size();i++)f[i]-=g[i];
 }
-poly operator -(poly f,const poly &g){f-=g;return f;}
-poly operator *(poly f,mint x){for(auto &y:f)y*=x;return f;}
-poly operator *(mint x,poly f){for(auto &y:f)y*=x;return f;}
+poly operator-(poly f,const poly &g){f-=g;return f;}
+poly operator*(poly f,mint x){for(auto &y:f)y*=x;return f;}
+poly operator*(mint x,poly f){for(auto &y:f)y*=x;return f;}
 mint value(const poly &f,mint x){
 	mint ans=0;for(int i=(int)f.size()-1;i>=0;i--)ans=ans*x+f[i];return ans;
 }
@@ -6308,60 +2433,52 @@ poly Exp(const poly &f){
 	}
 	return g;
 }
-poly BM(poly a) {
-	poly C{1}, B{1};
-	int L = 0, m = 1;
-	mint b = 1;
-	for (int n = 0; n < (int)a.size(); n++) {
-		mint d = 0;
-		for (int i = 0; i <= L; i++) d += C[i] * a[n - i];
-		if (!d) {
-			m++;
-		} else {
-			poly T = C;
-			mint coef = d * b.inv();
-			poly xmB(m, 0);
-			for (mint val : B) xmB.push_back(val);
-			if (C.size() < xmB.size()) C.resize(xmB.size(), 0);
-			for (int i = 0; i < (int)xmB.size(); i++) C[i] -= coef * xmB[i];
-			if (2 * L <= n) {
-				L = n + 1 - L; B = T; b = d; m = 1;
-			} else {
-				m++;
-			}
-		}
+poly BM(const poly &a){
+	poly c{1},b{1};
+	int len=0,shift=1;
+	mint inv_d=1;
+	for(int i=0;i<(int)a.size();i++){
+		mint d=a[i];
+		for(int j=1;j<=len;j++)d+=c[j]*a[i-j];
+		if(!d){shift++;continue;}
+		bool grow=2*len<=i;
+		poly old;
+		if(grow)old=c;
+		mint v=d*inv_d;
+		if(c.size()<b.size()+shift)c.resize(b.size()+shift);
+		for(int j=0;j<(int)b.size();j++)c[j+shift]-=v*b[j];
+		if(grow){
+			len=i+1-len;b=move(old);inv_d=d.inv();shift=1;
+		}else shift++;
 	}
-	return C;
+	c.resize(len+1);
+	return c;
 }
 
-mint FSPE(poly F, poly G, ll t) {
-	// find [x^t] F/G
-	assert(t>=0&&!G.empty()&&G[0]);
-	if(F.empty())return 0;
-	while (t) {
-		poly G1 = G;
-		for (int i = 1; i < (int)G1.size(); i += 2) G1[i] = -G1[i];
-		F = F * G1; G = G * G1;
-		poly f, g;
-		for (int i = t & 1; i < (int)F.size(); i += 2) f.push_back(F[i]);
-		for (int i = 0; i < (int)G.size(); i += 2) g.push_back(G[i]);
-		t >>= 1;
-		F = f; G = g;
-		if(F.empty())return 0;
+// Return [x^k] f/g; g[0] must be invertible.
+mint FSPE(poly f,poly g,ll k){
+	assert(k>=0&&!g.empty()&&g[0]);
+	while(k&&!f.empty()){
+		poly h=g;
+		for(int i=1;i<(int)h.size();i+=2)h[i]=-h[i];
+		f=f*h;g=g*h;
+		int n=(f.size()+1-(k&1))/2,m=(g.size()+1)/2;
+		for(int i=0;i<n;i++)f[i]=f[2*i+(k&1)];
+		for(int i=0;i<m;i++)g[i]=g[2*i];
+		f.resize(n);g.resize(m);k>>=1;
 	}
-	return F[0] / G[0];
+	return f.empty()?mint(0):f[0]/g[0];
 }
 
-mint RSPE(poly f, ll x) {
-	// find f[x] in O(n^2), note that f must be recursion
-	poly g = BM(f);
-	poly s(g.size()-1);
-	for (int i = 0; i < (int)s.size(); i++)
-		for (int j = 0; j <= i && j < (int)f.size(); j++)
-			s[i] += f[j] * g[i - j];
-	return FSPE(s, g, x);
+mint RSPE(poly f,ll x){
+	// Infer a recurrence, then return f[x].
+	assert(x>=0);
+	if(x<(ll)f.size())return f[x];
+	poly g=BM(f);
+	f.resize(g.size()-1);
+	poly s=f*g;s.resize(g.size()-1);
+	return FSPE(move(s),move(g),x);
 }
-
 
 poly lagrange(const vector<mint> &x,const vector<mint> &y){
 	int n=x.size();assert(y.size()==x.size());
@@ -6381,10 +2498,75 @@ poly lagrange(const vector<mint> &x,const vector<mint> &y){
 }
 \end{lstlisting}
 \par\vspace{1em}
+\Needspace{10\baselineskip}
+\subsection{\texttt{polynomial/MTT.cpp}}
+\textbf{55 非 NTT 模数下的多项式}
 
+\TemplUsage{默认目标模数 10\textasciicircum{}9+7，三模 NTT 后 CRT 还原；常用 FPS 功能与 poly-fast 对齐，但每次卷积都会回到目标模数。}
+\TemplApi{\begin{itemize}
+\item \texttt{poly f=\{a0,a1,...\}} 表示 a0+a1*x+...，下标就是次数。
+\item \texttt{f*g} 是卷积；加减和数乘也支持。\texttt{Inv(f)} 返回模 x\textasciicircum{}n 的倒数，n=f.size()，f[0] 必须非零。
+\item \texttt{Ln(f)} 要求 f[0]=1；\texttt{Exp(f)} 要求 f[0]=0；返回长度与输入相同。
+\item \texttt{diff/integ} 求导/积分，积分常数取零；\texttt{value(f,x)} 是单点求值。
+\item \texttt{BM(seq)} 求线性递推的分母多项式，\texttt{FSPE(F,G,k)} 求 F/G 的第 k 项，\texttt{RSPE(seq,k)} 从已有递推样本推第 k 项，k 从 0 开始。
+\item \texttt{Poly} 与 \texttt{poly} 是同一个类型；\texttt{lagrange(xs,ys)} 支持互异取值点，包括零点，返回次数小于点数的插值多项式。
+\end{itemize}}
+\textbf{抄写顺序：}先抄 09，把 MOD 改为目标模数（如 1000000007）；抄 52 开头的 poly/Poly、FFT\_MAX 与 ntt；随后抄本节卷积；最后抄 52 标注 Shared FPS 的部分。不要同时抄 52 的 operator* 卷积。
+
+\textbf{最小示例（放入 main）：}
+\begin{lstlisting}
+poly f{1,1,0,0};
+auto g=Inv(f); auto h=f*g; h.resize(4);
+assert(h[0].x==1 && !h[1] && !h[2] && !h[3]);
+auto e=Exp(Ln(f));
+for(int i=0;i<4;i++)assert(e[i].x==f[i].x);
+assert(FSPE({0,1},{1,-1,-1},10).x==55);
+auto p=lagrange({0,1,2},{1,4,9});
+assert(p[0].x==1 && p[1].x==2 && p[2].x==1);
+\end{lstlisting}
+\TemplNote{精度由 vector 长度决定。卷积结果长度最多 $2^{23}$，FPS 输入最多 $2^{22}$；ln/exp 还要求长度小于质数模数。operator/ 是相关运算，不是多项式长除。BM 返回 C[0]=1 的递推分母，阶数为 C.size()-1，末尾零系数不能删去；仅拟合已给样本，外推需要足够样本。lagrange 要求互异取值点，允许零点。}
+\Needspace{6\baselineskip}\textbf{完整代码}
+\begin{lstlisting}[firstnumber=1]
+template<unsigned P>
+vector<ModInt<P>> convolution(const poly &f,const poly &g,int n){
+	vector<ModInt<P>> a(n),b(n);
+	for(int i=0;i<(int)f.size();i++)a[i]=f[i].x;
+	for(int i=0;i<(int)g.size();i++)b[i]=g[i].x;
+	ntt(a);ntt(b);
+	for(int i=0;i<n;i++)a[i]*=b[i];
+	ntt(a,true);a.resize(f.size()+g.size()-1);return a;
+}
+poly operator*(const poly &f,const poly &g){
+	if(f.empty()||g.empty())return {};
+	int m=f.size()+g.size()-1,n=1;
+	assert(m<=(1<<FFT_MAX));
+	poly h(m);
+	if(min(f.size(),g.size())<=32){
+		for(int i=0;i<(int)f.size();i++)
+			for(int j=0;j<(int)g.size();j++)h[i+j]+=f[i]*g[j];
+		return h;
+	}
+	constexpr unsigned p1=998244353,p2=167772161,p3=469762049;
+	constexpr ull p12=1ull*p1*p2;
+	static const unsigned v1=ModInt<p2>(p1).inv().x;
+	static const unsigned v2=ModInt<p3>(p12).inv().x;
+	while(n<m)n<<=1;
+	auto a=convolution<p1>(f,g,n);
+	auto b=convolution<p2>(f,g,n);
+	auto c=convolution<p3>(f,g,n);
+	for(int i=0;i<m;i++){
+		ull x=(b[i].x+p2-a[i].x%p2)*1ull*v1%p2;
+		x=x*p1+a[i].x;
+		ull y=(c[i].x+p3-x%p3)*v2%p3;
+		h[i]=x%MOD+(p12%MOD)*y%MOD;
+	}
+	return h;
+}
+\end{lstlisting}
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{polynomial/FWT.cpp}}
-\textbf{按位 AND / OR / XOR 卷积}
+\textbf{56 按位 AND / OR / XOR 卷积}
 
 \TemplUsage{求 $c_k=\sum_{i\mathbin{\mathrm{op}}j=k}a_i b_j$，其中 op 为按位 AND、OR 或 XOR。长度 $n=2^k$，每次变换 $O(n\log n)$，额外空间 $O(1)$。}
 \TemplApi{\begin{itemize}
@@ -6405,17 +2587,6 @@ c=convolution_xor(a,b); assert((c==vector<int>{11,10}));
 \TemplNote{下标从 0 开始。int/ll 表示普通整数运算，不会自动取模，正变换和逐点乘法的中间值也必须不溢出。整数 XOR 逆变换逐层除以 2，要求每步可整除，不能把任意整数数组当成合法频域数据。XOR 模运算要求 2 可逆，通常使用奇数模数；AND/OR 无此限制。不需要归一化第二次。}
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for FWT and bitwise convolution
-//
-// usage:
-//   auto c=convolution_and(a,b); // convolution_or / convolution_xor
-//   fwt_and(a); fwt_and(a,true); // forward / inverse; also or / xor
-//   vector<int>, vector<ll> or vector<mint>; 0-indexed
-//   convolution pads to a power of 2; empty input returns {}
-//   transform size must be a positive power of 2
-//   integer intermediates must fit the type; mint XOR needs inverse of 2
-//
 template<typename T>
 void fwt_and(vector<T> &a,bool inverse=false){
 	assert(!a.empty()&&a.size()<=INT_MAX&&!(a.size()&(a.size()-1)));
@@ -6494,13 +2665,14 @@ vector<T> convolution_xor(vector<T> a,vector<T> b){
 	fwt_xor(a,true);return a;
 }
 \end{lstlisting}
+\par\vspace{1em}
 \clearpage
 \section{字符串}
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/sa.cpp}}
-\textbf{后缀数组和 O(1) LCP}
+\textbf{57 后缀数组和 O(1) LCP}
 
-\TemplUsage{计数排序倍增构建后缀排序；附带 SA\_LCP，用 height 数组和 ST 表查询两个后缀的最长公共前缀。}
+\TemplUsage{计数排序倍增求后缀数组；SA\_LCP 由 height 与四毛子 RMQ 查询两后缀的最长公共前缀。先抄 03 的 Linear\_RMQ。}
 \TemplApi{\begin{itemize}
 \item \texttt{SA sa; sa.build(" "+s)} 输入前面补一个占位空格，真实字符下标 1..n。
 \item \texttt{sa.sa[r]} 是排名第 r 的后缀起点；\texttt{sa.rk[i]} 是后缀 i 的排名。
@@ -6515,8 +2687,7 @@ SA_LCP l; l.build(sa);
 assert(l.lcp(2,4)==3); // anana / ana
 assert(l.lcp(3,3)==4);
 \end{lstlisting}
-\TemplNote{SA 构建 O(n log n)，工作空间 O(n)，LCP 结构构建与空间 O(n log n)，查询 O(1)。不要把后缀排名传给 lcp。默认字符编码范围 1..127，任意非零字节传 M=256；不支持串内零字节。修改原串后须重建两者。}
-
+\TemplNote{SA 构建 O(n log n)，工作空间 O(n)，LCP 结构构建与空间 O(n)，查询 O(1)。不要把后缀排名传给 lcp。默认字符编码范围 1..127，任意非零字节传 M=256；不支持串内零字节。修改原串后须重建两者。}
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
 struct SA{
@@ -6564,13 +2735,13 @@ void output(){
 void solve(){for(int i=1;i<=n;i++)cout<<sa[i]<<" \n"[i==n];}
 };
 // SA_LCP L; L.build(sa); L.lcp(i,j); // 1-indexed
-// O(n log n) build, O(1) query
+// O(n) LCP build, O(1) query; paste Linear_RMQ first.
 struct SA_LCP{
 int n=0;
 vector<int> rk,height;
-vector<vector<int>> st;
+Linear_RMQ<int> st;
 void build(const SA &S){
-	n=S.n;rk=S.rk;height.assign(n+1,0);st.clear();
+	n=S.n;rk=S.rk;height.assign(n+1,0);st.set();
 	assert((int)S.sa.size()==n+1&&(int)rk.size()==n+1);
 	for(int i=1,k=0;i<=n;i++){
 		int r=rk[i];
@@ -6579,28 +2750,22 @@ void build(const SA &S){
 		while(i+k<=n&&j+k<=n&&S.s[i+k-1]==S.s[j+k-1])k++;
 		height[r]=k;if(k)k--;
 	}
-	if(!n)return;
-	st.push_back(height);
-	for(int k=1;(1<<k)<=n;k++){
-		st.emplace_back(n-(1<<k)+2);
-		for(int i=1;i+(1<<k)-1<=n;i++)st[k][i]=min(st[k-1][i],st[k-1][i+(1<<(k-1))]);
-	}
+	st.build(height);
 }
 void build(const string &s,int M=128){SA S;S.build(s,M);build(S);}
 int lcp(int i,int j)const{
 	assert(1<=min(i,j)&&max(i,j)<=n);
 	if(i==j)return n-i+1;
 	int l=rk[i],r=rk[j];if(l>r)swap(l,r);l++;
-	int k=__lg(r-l+1);return min(st[k][l],st[k][r-(1<<k)+1]);
+	return st.ask(l,r);
 }
 int ask(int i,int j)const{return lcp(i,j);}
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/sam.cpp}}
-\textbf{单串后缀自动机}
+\textbf{58 单串后缀自动机}
 
 \TemplUsage{构建单个小写字母串的子串状态图，并统计每个状态对应子串的出现次数。时间及空间 O(n)，字母表固定 26。}
 \TemplApi{\begin{itemize}
@@ -6618,17 +2783,8 @@ for(int i=1;i<=t.tot;i++)distinct+=t.len[i]-t.len[t.fail[i]];
 assert(distinct==9);
 \end{lstlisting}
 \TemplNote{匹配模式串时遇到不存在转移应立即判定不出现。build 内已累计 siz，不能再次累计。裸调用 extend 不会自动维护整套出现次数；多串应用请用 GSAM。solve 是“重复子串长度乘次数最大值”的特定示例，不是通用查询。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-// string algorithm template by Otomachi Una (Junlin Ye)
-// version 1.0 (last update May 24th 2026)
-//
-// usage:
-//   SAM sam; sam.build(" abaab");  // leading space, lowercase
-//   sam.len[u], sam.fail[u], sam.siz[u]
-//
-// your string should index from 1, begin with a space
 struct SAM{
 // this SAM rooted at 0
 string s;
@@ -6639,7 +2795,8 @@ vector<vector<int>> son;
 SAM(){set();}
 void set(int m=0){
 	assert(0<=m&&m<(INT_MAX-1)/2);n=tot=lst=0;
-	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);siz.assign(1,0);son.assign(1,{});
+	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);siz.assign(1,0);
+		son.assign(1,{});
 	ch.reserve(2*m+1);fail.reserve(2*m+1);len.reserve(2*m+1);
 	siz.reserve(2*m+1);son.reserve(2*m+1);
 }
@@ -6704,10 +2861,9 @@ void solve(){
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/ac.cpp}}
-\textbf{多模式串 AC 自动机}
+\textbf{59 多模式串 AC 自动机}
 
 \TemplUsage{一次加入多个模式串，再统计它们在文本中的出现次数。允许重叠出现；构建 O(26*节点数)，每次 count 为 O(文本长度+节点数)。}
 \TemplApi{\begin{itemize}
@@ -6723,16 +2879,8 @@ ac.build(); auto cnt=ac.count(" ababa");
 assert(cnt[a]==2 && cnt[b]==2);
 \end{lstlisting}
 \TemplNote{模式和文本都只支持小写字母，前导空格不参加匹配。重复模式串返回同一编号，但它们各自的答案仍是该模式在文本中的出现次数。空模式返回根编号 0，次数为文本长度+1。不同 count 之间不会累计。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Aho-Corasick
-// usage:
-//   AC ac; int id=ac.insert(" aba"); ac.build();
-//   auto cnt=ac.count(" ababa"); cnt[id];
-//   leading space, lowercase; insert before build
-//
 struct AC{
 int tot=0;
 bool built=false;
@@ -6782,10 +2930,9 @@ vector<ll> count(const string &s)const{
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/gsam.cpp}}
-\textbf{广义后缀自动机}
+\textbf{60 广义后缀自动机}
 
 \TemplUsage{维护多个小写串的所有子串；出现次数是这些串中次数之和，重复插入的串也重复计数，不允许跨串边界匹配。}
 \TemplApi{\begin{itemize}
@@ -6802,16 +2949,8 @@ assert(t.count(" abab")==0 && t.distinct()==6);
 t.insert(" aba"); t.build(); assert(t.count(" aba")==2);
 \end{lstlisting}
 \TemplNote{count 不是“包含该子串的字符串个数”。根为 0，fail[0]=-1；别把普通 SAM 简单重置 lst 的做法当成这里的插入实现。set(m) 的 m 用于预留总字符量级的空间，build 的计数按当前全部插入内容重新计算。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Generalized SAM
-// usage:
-//   GSAM sam; sam.insert(" aba"); sam.insert(" bab"); sam.build();
-//   sam.count(" ab"); sam.distinct();
-//   leading space, lowercase; count includes repeated strings
-//
 struct GSAM{
 int n=0,tot=0;
 ll strings=0;
@@ -6822,11 +2961,13 @@ vector<ll> cnt,siz;
 GSAM(){set();}
 void set(int m=0){
 	assert(0<=m&&m<(INT_MAX-1)/2);n=tot=0;strings=0;built=false;
-	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);cnt.assign(1,0);siz.clear();
+	ch.assign(1,{});fail.assign(1,-1);len.assign(1,0);cnt.assign(1,0);
+		siz.clear();
 	ch.reserve(2*m+1);fail.reserve(2*m+1);len.reserve(2*m+1);cnt.reserve(2*m+1);
 }
 int new_node(){
-	assert(tot<INT_MAX-1);ch.push_back({});fail.push_back(0);len.push_back(0);cnt.push_back(0);return ++tot;
+	assert(tot<INT_MAX-1);ch.push_back({});fail.push_back(0);len.push_back(0);
+		cnt.push_back(0);return ++tot;
 }
 int clone(int x,int l){
 	int y=new_node();ch[y]=ch[x];fail[y]=fail[x];len[y]=l;return y;
@@ -6884,10 +3025,9 @@ ll distinct()const{
 };
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/kmp.cpp}}
-\textbf{前缀函数和 Z 函数}
+\textbf{61 前缀函数和 Z 函数}
 
 \TemplUsage{线性时间计算字符串的 border 与各后缀和全串的公共前缀长度。}
 \TemplApi{\begin{itemize}
@@ -6901,17 +3041,8 @@ auto pi=border(" ababa"); auto z=z_function(" ababa");
 assert(pi[5]==3 && z[3]==3);
 \end{lstlisting}
 \TemplNote{这个实现 z[1]=0，而不是全串长度。没有封装“模式串在文本的所有位置”：可自行 KMP 扫描，或拼接 pattern+分隔符+text 后用 Z；分隔符不能出现在两个原串里。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-// string algorithm template by Otomachi Una (Junlin Ye)
-// version 1.0 (last update May 24th 2026)
-//
-// usage:
-//   string s = " ababa"; auto b = border(s); auto z = z_function(s);
-//   1-indexed with leading space
-//
-// your string should index from 1, begin with a space
 vector<int> border(string s){
 	// s is a string with length n+1,
 	// this function return a vector with length n+1
@@ -6944,10 +3075,9 @@ vector<int> z_function(string s){
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/hash.cpp}}
-\textbf{双模前缀哈希}
+\textbf{62 双模前缀哈希}
 
 \TemplUsage{提供子串指纹与拼接，不是无碰撞的字符串判等。构建前缀数组 O(n)，常规子串取值 O(1)。}
 \TemplApi{\begin{itemize}
@@ -6963,17 +3093,8 @@ auto a=h[3]-h[0],b=h[5]-h[2];
 assert(a.l==b.l && a.v()==b.v());
 \end{lstlisting}
 \TemplNote{比较子串时同时比较长度和哈希。底数每个进程随机，不能把数值用于跨进程永久存储。减法只表示删去前缀，不是任意删除；Hash 对象应使用 \{\} 零初始化。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for Hash, prepared by Otomachi_Una
-// version 1.2 (Last Update Jun 13th, 2026)
-//
-// usage:
-//   init_hash(); auto H = Hash_of(" abc"); Hash sub = H[r]-H[l-1];
-//   sub.v() for compare; random bases each run
-//
 mt19937 rnd(time(0));
 const int MOD1 = 998244353;
 const int MOD2 = 1e9 + 7;
@@ -7034,16 +3155,15 @@ vector<Hash> Hash_of(const string &s) {
 	int n = (int)s.length() - 1;
 	assert(!s.empty()&&s[0]==' '&&s.size()<=INT_MAX);init_hash(n);
 	vector<Hash> a(n+1);
-	for (int i = 1; i <= n; ++i)
+	for(int i = 1; i <= n; ++i)
 		a[i] = a[i-1] + (unsigned char)s[i];
 	return a;
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/pam.cpp}}
-\textbf{回文自动机}
+\textbf{63 回文自动机}
 
 \TemplUsage{在线维护不同回文子串、最长回文后缀及回文出现次数。字符集为小写字母，建树与空间均为 $O(n)$。}
 \TemplApi{\begin{itemize}
@@ -7063,20 +3183,8 @@ p.extend('b'); cnt=p.count(); // still safe after count()
 assert(p.len[p.lst]==5 && cnt[u]==3);
 \end{lstlisting}
 \TemplNote{\texttt{siz} 只记录结点作为最长后缀的次数，不能直接作为总出现次数。count 在副本上沿 fail 累加，单次 $O(n)$，可以重复调用，也能继续 extend；不要每加入一个字符都调用 count。所有回文出现次数之和用 ll 保存。空串写作一个空格。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Palindromic Automaton
-// usage:
-//   PAM pam; pam.build(" ababa"); auto cnt=pam.count();
-//   Or pam.set(n), then pam.extend(c); returns the longest suffix node.
-//   Leading space, lowercase; real nodes are 2..tot, count() is repeatable.
-//   len / fail / num / pos: length, suffix link, suffix count, first end.
-//   O(n) build / space for a fixed alphabet, O(n) count.
-//
-////////////////////////////////////////////////////////////////
 struct PAM{
 int n=0,tot=1,lst=0;
 string s;
@@ -7117,13 +3225,11 @@ vector<int> count()const{
 	cnt[0]=cnt[1]=0;return cnt;
 }
 };
-// end for string/pam.cpp
-/////////////////////////
 \end{lstlisting}
-
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/manacher.cpp}}
-\textbf{Manacher 回文半径}
+\textbf{64 Manacher 回文半径}
 
 \TemplUsage{线性求出所有奇数、偶数长度回文的最大半径，并以 $O(1)$ 判断某个子串是否回文。}
 \TemplApi{\begin{itemize}
@@ -7143,19 +3249,8 @@ for(int i=1;i<=t.n;i++)cnt+=t.d1[i]+t.d2[i];
 assert(cnt==6);
 \end{lstlisting}
 \TemplNote{时间、空间均为 $O(n)$；不插入分隔字符，可处理任意字节。奇偶半径含义不同，不能直接把 d1 当成回文长度。空串允许 build，但没有可查询的非空区间。求最长回文取所有 2*d1[i]-1 与 2*d2[i] 的最大值，空串答案为 0。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Manacher
-// usage:
-//   Manacher t; t.build(" abba"); t.ask(1,4);
-//   Leading space, 1-indexed; ask(l,r) checks a nonempty closed interval.
-//   Odd: [i-d1[i]+1,i+d1[i]-1]; even: [i-d2[i],i+d2[i]-1].
-//   O(n) build / space, O(1) query.
-//
-////////////////////////////////////////////////////////////////
 struct Manacher{
 int n=0;
 vector<int> d1,d2;
@@ -7181,13 +3276,11 @@ bool ask(int l,int r)const{
 	return k&1?d1[(l+r)/2]>=k/2+1:d2[(l+r+1)/2]>=k/2;
 }
 };
-// end for string/manacher.cpp
-/////////////////////////
 \end{lstlisting}
-
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/runs.cpp}}
-\textbf{Runs 极大周期子串}
+\textbf{65 Runs 极大周期子串}
 
 \TemplUsage{枚举所有长度至少为最小周期两倍、且不能保持该周期向左或向右扩展的子串。返回若干三元组 $(l,r,p)$，其中 p 必须是最小周期。}
 \TemplApi{先抄 \texttt{string/sa.cpp} 和 \texttt{basic/ST table (linear).cpp}，再抄本文件。调用 \texttt{Runs t; auto a=t.build(s)}，返回 \texttt{vector<array<int,3>>}，依次为 l、r、p。输入有前导空格，区间为 1 下标闭区间，结果按三元组字典序排序并去重。空串、单字符及无重复的串返回空向量。}
@@ -7200,20 +3293,8 @@ assert((a==vector<array<int,3>>{{1,2,1},{4,5,1}}));
 assert(t.build(" abc").empty());
 \end{lstlisting}
 \TemplNote{实际字符限字节 1..255，0 留给 SA 哨兵。采用两种字母序下的最长 Lyndon 前缀，加正反串 LCP 向两侧扩展；LCP 使用四毛子，不使用哈希。源码版时间 $O(n\log n)$（最后排序），空间 $O(n)$；考场倍增 SA 也满足此界。Runs 不包括所有周期区间，只给出极大区间；长度不必是 p 的倍数，例如 ababa 返回 (1,5,2)。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Runs
-// usage:
-//   Paste string/sa.cpp and basic/ST table (linear).cpp first.
-//   Runs t; auto a=t.build(" ababab"); // {1,6,2}
-//   Leading space, bytes 1..255; returns vector<array<int,3>> of {l,r,p}.
-//   [l,r] is maximal with least period p, r-l+1>=2*p; 1-indexed.
-//   Sorted and unique; O(n log n) time, O(n) space.
-//
-////////////////////////////////////////////////////////////////
 struct Runs{
 private:
 struct LCP{
@@ -7266,17 +3347,16 @@ vector<array<int,3>> build(const string &s)const{
 			st.push_back(i);
 		}
 	}
-	sort(ans.begin(),ans.end());ans.erase(unique(ans.begin(),ans.end()),ans.end());
+	sort(ans.begin(),ans.end());ans.erase(unique(ans.begin(),ans.end()),
+		ans.end());
 	return ans;
 }
 };
-// end for string/runs.cpp
-/////////////////////////
 \end{lstlisting}
-
+\par\vspace{1em}
 \Needspace{10\baselineskip}
 \subsection{\texttt{string/lyndon.cpp}}
-\textbf{Lyndon 分解}
+\textbf{66 Lyndon 分解}
 
 \TemplUsage{用 Duval 将串唯一分解为字典序不增的 Lyndon 串。Lyndon 串严格小于自己的每个非空真后缀，相同因子可以连续出现。}
 \TemplApi{\texttt{auto a=lyndon(s)}；s 带前导空格。返回 \texttt{vector<pair<int,int>>}，各项为一个因子的 1 下标闭区间 [l,r]，按原串从左到右排列且恰好覆盖全串。需要内容时用 \texttt{s.substr(l,r-l+1)}。}
@@ -7288,19 +3368,8 @@ assert((lyndon(" cba")==vector<pair<int,int>>{{1,1},{2,2},{3,3}}));
 assert(lyndon(" ").empty());
 \end{lstlisting}
 \TemplNote{时间 $O(n)$，除返回区间外额外空间 $O(1)$。比较按 unsigned char 的字节顺序，可处理任意字节；不要求小写字母。同样的因子不会合并，ababab 分为三个 ab，而 aaaa 分为四个 a。空串返回空向量。本接口是整串分解，不是每个位置的最长 Lyndon 前缀数组。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-////////////////////////////////////////////////////////////////
-//
-// template for Lyndon Factorization
-// usage:
-//   auto a=lyndon(" ababab"); // [1,2], [3,4], [5,6]
-//   Leading space, 1-indexed closed intervals, ordered from left to right.
-//   The factors are Lyndon words in non-increasing lexicographic order.
-//   O(n) time, O(1) extra space excluding the returned intervals.
-//
-////////////////////////////////////////////////////////////////
 vector<pair<int,int>> lyndon(const string &s){
 	assert(!s.empty()&&s[0]==' '&&s.size()<INT_MAX);
 	int n=(int)s.size()-1;vector<pair<int,int>> ans;
@@ -7314,301 +3383,13 @@ vector<pair<int,int>> lyndon(const string &s){
 	}
 	return ans;
 }
-// end for string/lyndon.cpp
-/////////////////////////
-\end{lstlisting}
-\clearpage
-\section{线性代数}
-\Needspace{10\baselineskip}
-\subsection{\texttt{math/gauss.cpp}}
-\textbf{线性方程组与行列式}
-
-\TemplUsage{用消元求 Ax=b 的一组解，或计算方阵行列式。支持质数模数下的 mint 以及浮点类型；不能用 int/ll 实例化。}
-\TemplApi{\begin{itemize}
-\item \texttt{Gauss<T> g; res=g.solve(a,m)}，a 是 n 行 m+1 列的增广矩阵，最后一列为 b。
-\item 返回 -1 无解（x 被清空），0 多解，1 唯一解；解存 g.x，长度 m，下标 0..m-1。
-\item 多解时自由变量取 0；g.rank 是系数矩阵秩，where[j]=-1 表示自由变量。
-\item \texttt{g.det(a)} 接受 n*n 方阵，返回 T，不改变 x/rank。空方阵行列式为 1。
-\end{itemize}}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Gauss<long double> g;
-// x+y=3, 2x-y=0
-int res=g.solve({{1,1,3},{2,-1,0}},2);
-assert(res==1 && abs(g.x[0]-1)<1e-9L);
-assert(abs(g.x[1]-2)<1e-9L);
-assert(abs(g.det({{1,2},{3,4}})+2)<1e-9L);
-\end{lstlisting}
-\TemplNote{Gauss<mint> 需要先粘贴 ModInt 或一个内置 mint 的多项式文件。浮点使用最大绝对值选主元和绝对阈值 eps（默认 1e-12），尺度差异大或病态方程需要自行缩放并检查残差。方阵时间 O(n\textasciicircum{}3)，复制矩阵后原输入保持不变；多个 RHS 要自行扩展。}
-
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-//
-// template for Gaussian elimination and determinant
-// usage:
-//   Gauss<mint> G; // prime modulus, or Gauss<long double>
-//   int res=G.solve(a,m); // augmented matrix, m variables
-//   -1: no solution, 0: multiple, 1: unique; answer in G.x
-//   free variables are set to zero; G.rank, G.where
-//   G.det(a); // square matrix; floating point uses G.eps
-//
-template<typename T> struct Gauss{
-static_assert(!is_integral_v<T>,"use a field type");
-long double eps=1e-12L;
-int rank=0;
-vector<int> where;
-vector<T> x;
-bool zero(const T &v)const{
-	if constexpr(is_floating_point_v<T>)return abs(v)<=eps;
-	else return !v;
-}
-int pivot(const vector<vector<T>> &a,int r,int c)const{
-	int p=-1;
-	for(int i=r;i<(int)a.size();i++)if(!zero(a[i][c])){
-		if constexpr(is_floating_point_v<T>){if(p==-1||abs(a[i][c])>abs(a[p][c]))p=i;}
-		else return i;
-	}
-	return p;
-}
-int solve(vector<vector<T>> a,int m){
-	assert(m>=0&&m<INT_MAX&&a.size()<INT_MAX&&eps>=0);
-	int n=a.size();for(auto &v:a)assert(v.size()==(size_t)m+1);
-	rank=0;where.assign(m,-1);x.assign(m,T(0));
-	for(int c=0;c<m&&rank<n;c++){
-		int p=pivot(a,rank,c);if(p==-1)continue;
-		swap(a[p],a[rank]);where[c]=rank;
-		T z=T(1)/a[rank][c];a[rank][c]=T(1);
-		for(int j=c+1;j<=m;j++)a[rank][j]*=z;
-		for(int i=rank+1;i<n;i++){
-			T v=a[i][c];a[i][c]=T(0);if(zero(v))continue;
-			for(int j=c+1;j<=m;j++)a[i][j]-=v*a[rank][j];
-		}
-		rank++;
-	}
-	for(int i=rank;i<n;i++)if(!zero(a[i][m])){x.clear();return -1;}
-	for(int c=m-1;c>=0;c--)if(where[c]!=-1){
-		int r=where[c];x[c]=a[r][m];
-		for(int j=c+1;j<m;j++)x[c]-=a[r][j]*x[j];
-	}
-	return rank==m?1:0;
-}
-T det(vector<vector<T>> a)const{
-	assert(a.size()<INT_MAX&&eps>=0);int n=a.size();
-	for(auto &v:a)assert(v.size()==(size_t)n);
-	T ans=1;
-	for(int c=0;c<n;c++){
-		int p=pivot(a,c,c);if(p==-1)return T(0);
-		if(p!=c){swap(a[p],a[c]);ans=-ans;}
-		ans*=a[c][c];T z=T(1)/a[c][c];
-		for(int i=c+1;i<n;i++){
-			T v=a[i][c];a[i][c]=T(0);if(zero(v))continue;v*=z;
-			for(int j=c+1;j<n;j++)a[i][j]-=v*a[c][j];
-		}
-	}
-	return ans;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-
-\Needspace{10\baselineskip}
-\subsection{\texttt{math/linear basis/xor.cpp}}
-\textbf{异或线性基}
-\TemplApi{维护 64 位无符号整数的异或张成空间。\texttt{Xor\_Basis B} 默认空基；\texttt{set()} 清空，\texttt{insert(x)} 返回是否增秩，\texttt{rank} 为当前秩。\texttt{contains(x)} 判断能否异或得到 x；\texttt{ask(x=0)} 返回 x 与基中任意子集异或的最大值，允许空集。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Xor_Basis B;
-assert(B.insert(1) && B.insert(2));
-assert(!B.insert(3) && B.rank==2);
-assert(B.contains(3) && !B.contains(4));
-assert(B.ask()==3 && B.ask(4)==7);
-\end{lstlisting}
-\TemplNote{插入、查询均 O(64)，空间 O(64)。输入用 ull，不按有符号大小比较；第 63 位也可用。零向量不增秩。a 中存的是消元后的向量，不是原输入元素。}
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-// Xor_Basis B; B.insert(x); B.contains(x); B.ask(x);
-struct Xor_Basis{
-int rank=0;
-vector<ull> a=vector<ull>(64);
-void set(){rank=0;fill(a.begin(),a.end(),0);}
-bool insert(ull x){
-	for(int i=63;i>=0;i--)if(x>>i&1){
-		if(a[i])x^=a[i];
-		else{a[i]=x;rank++;return true;}
-	}
-	return false;
-}
-bool contains(ull x)const{
-	for(int i=63;i>=0;i--)if(x>>i&1)x^=a[i];
-	return x==0;
-}
-ull ask(ull x=0)const{
-	for(int i=63;i>=0;i--)x=max(x,x^a[i]);
-	return x;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-\Needspace{10\baselineskip}
-\subsection{\texttt{math/linear basis/xor-prefix.cpp}}
-\textbf{前缀异或线性基}
-\TemplApi{\texttt{Prefix\_Xor\_Basis B}；按加入顺序调用 \texttt{insert(x,id)}，id 必须为严格递增的正整数，可不连续。增秩返回 0，否则返回本次相关关系中最早且可删除的元素编号；零向量返回自身编号。\texttt{set()} 清空并重置编号。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Prefix_Xor_Basis B;
-assert(B.insert(1,1)==0 && B.insert(2,2)==0);
-assert(B.insert(2,3)==2); // removing id=1 would lower rank
-assert(B.insert(3,4)==1);
-assert(B.get_rank(3)==2 && B.contains(1,3));
-assert(!B.contains(1,4) && B.ask(0,4)==3);
-assert(B.insert(0,5)==5);
-\end{lstlisting}
-\TemplNote{处理到右端点 r 后，\texttt{get\_rank(l)}、\texttt{contains(x,l)}、\texttt{ask(x,l)} 分别查询编号 [l,r] 的秩、可表示性和最大异或值。l 默认 1；l 大于 r 时视为空基。\texttt{rank} 是全部已插入元素的秩。pos 中的正编号是保留的原元素编号，a 是消元后的基。单次 O(64)，空间 O(64)；查询历史右端点须离线按 r 扫描或自己保存副本，没有持久化。}
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-// Prefix_Xor_Basis B; int removed=B.insert(x,id);
-// id must increase; 0: rank increased, otherwise removed id
-struct Prefix_Xor_Basis{
-int rank=0,last=0;
-vector<ull> a=vector<ull>(64);
-vector<int> pos=vector<int>(64);
-void set(){rank=last=0;fill(a.begin(),a.end(),0);fill(pos.begin(),pos.end(),0);}
-int insert(ull x,int id){
-	assert(id>last);last=id;
-	for(int i=63;i>=0;i--)if(x>>i&1){
-		if(!a[i]){a[i]=x;pos[i]=id;rank++;return 0;}
-		if(pos[i]<id){swap(a[i],x);swap(pos[i],id);}
-		x^=a[i];
-	}
-	return id;
-}
-int get_rank(int l=1)const{
-	assert(l>=1);int ans=0;
-	for(int i=0;i<64;i++)ans+=pos[i]>=l;
-	return ans;
-}
-bool contains(ull x,int l=1)const{
-	assert(l>=1);
-	for(int i=63;i>=0;i--)if((x>>i&1)&&pos[i]>=l)x^=a[i];
-	return x==0;
-}
-ull ask(ull x=0,int l=1)const{
-	assert(l>=1);
-	for(int i=63;i>=0;i--)if(pos[i]>=l)x=max(x,x^a[i]);
-	return x;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-\Needspace{10\baselineskip}
-\subsection{\texttt{math/linear basis/linear.cpp}}
-\textbf{模意义线性基}
-\TemplApi{先抄一份 ModInt；\texttt{Linear\_Basis<mint> B; B.setN(n)} 设置向量维数。\texttt{insert(x)} 返回是否增秩；\texttt{contains(x)} 判断 x 是否在张成空间中；\texttt{rank} 是当前秩。输入 vector 长度必须为 n，坐标下标 0..n-1。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Linear_Basis<mint> B; B.setN(2);
-assert(B.insert({1,0}) && B.insert({0,1}));
-assert(!B.insert({2,3}) && B.rank==2);
-assert(B.contains({7,9}));
-B.setN(2); assert(!B.contains({1,0}));
-\end{lstlisting}
-\TemplNote{T 要求精确域上的运算，通常使用质数模数 mint；不支持普通 int/ll、合数模数或浮点数。插入和查询 O(n²)，空间 O(n²)，占用的主元行按实际长度存储。n=0 允许，空向量不增秩。只维护张成空间，不返回具体线性组合系数。}
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-// Linear_Basis<mint> B; B.setN(n); B.insert(x); B.contains(x);
-// T must be an exact field type; coordinates are 0..n-1
-template<typename T> struct Linear_Basis{
-static_assert(!is_integral_v<T>&&!is_floating_point_v<T>,"use an exact field type");
-int n=0,rank=0;
-vector<vector<T>> a;
-void setN(int _n){assert(_n>=0);n=_n;rank=0;a.assign(n,{});}
-bool insert(vector<T> x){
-	assert(x.size()==(size_t)n);
-	for(int i=n-1;i>=0;i--)if(x[i]){
-		if(a[i].empty()){
-			T v=T(1)/x[i];for(int j=0;j<i;j++)x[j]*=v;
-			x[i]=T(1);x.resize(i+1);a[i]=move(x);rank++;return true;
-		}
-		T v=x[i];for(int j=0;j<i;j++)x[j]-=v*a[i][j];
-		x[i]=T(0);
-	}
-	return false;
-}
-bool contains(vector<T> x)const{
-	assert(x.size()==(size_t)n);
-	for(int i=n-1;i>=0;i--)if(x[i]){
-		if(a[i].empty())return false;
-		T v=x[i];for(int j=0;j<i;j++)x[j]-=v*a[i][j];
-		x[i]=T(0);
-	}
-	return true;
-}
-};
-\end{lstlisting}
-\par\vspace{1em}
-\Needspace{10\baselineskip}
-\subsection{\texttt{math/linear basis/linear-prefix.cpp}}
-\textbf{前缀模意义线性基}
-\TemplApi{先抄 ModInt。\texttt{Prefix\_Linear\_Basis<mint> B; B.setN(n)}，依次 \texttt{insert(x,id)}。id 必须为严格递增的正整数；增秩返回 0，否则返回最早可替换元素的编号。规则与前缀异或版相同，只是异或消元换成域上的线性消元。}
-\textbf{最小示例（放入 main）：}
-\begin{lstlisting}
-Prefix_Linear_Basis<mint> B; B.setN(2);
-assert(B.insert({1,0},1)==0);
-assert(B.insert({0,1},2)==0);
-assert(B.insert({0,2},3)==2);
-assert(B.insert({1,2},4)==1);
-assert(B.get_rank(3)==2 && B.contains({1,0},3));
-assert(!B.contains({1,0},4));
-assert(B.insert({0,0},5)==5);
-\end{lstlisting}
-\TemplNote{处理到编号 r 时，\texttt{get\_rank(l)} 查询 [l,r] 的秩，\texttt{contains(x,l)} 判断 x 是否在该区间张成空间中。l 默认 1，超出 r 时为空基。插入和可表示性查询 O(n²)，秩查询 O(n)，空间 O(n²)。只用于精确域，通常用质数模数 mint；setN 清空所有状态。pos 保留原编号，a 是消元后的向量。不是任意删除或持久化结构。}
-\Needspace{6\baselineskip}\textbf{完整代码}
-\begin{lstlisting}[firstnumber=1]
-// Prefix_Linear_Basis<mint> B; B.setN(n); int removed=B.insert(x,id);
-// id must increase; 0: rank increased, otherwise removed id
-template<typename T> struct Prefix_Linear_Basis{
-static_assert(!is_integral_v<T>&&!is_floating_point_v<T>,"use an exact field type");
-int n=0,rank=0,last=0;
-vector<vector<T>> a;
-vector<int> pos;
-void setN(int _n){assert(_n>=0);n=_n;rank=last=0;a.assign(n,{});pos.assign(n,0);}
-int insert(vector<T> x,int id){
-	assert(x.size()==(size_t)n&&id>last);last=id;
-	for(int i=n-1;i>=0;i--)if(x[i]){
-		if(a[i].empty()){
-			T v=T(1)/x[i];for(int j=0;j<i;j++)x[j]*=v;
-			x[i]=T(1);x.resize(i+1);a[i]=move(x);pos[i]=id;rank++;return 0;
-		}
-		if(pos[i]<id){
-			x.resize(i+1);swap(a[i],x);swap(pos[i],id);
-			T v=T(1)/a[i][i];for(int j=0;j<i;j++)a[i][j]*=v;
-			a[i][i]=T(1);
-		}
-		T v=x[i];for(int j=0;j<i;j++)x[j]-=v*a[i][j];
-		x[i]=T(0);
-	}
-	return id;
-}
-int get_rank(int l=1)const{
-	assert(l>=1);int ans=0;for(int p:pos)ans+=p>=l;return ans;
-}
-bool contains(vector<T> x,int l=1)const{
-	assert(x.size()==(size_t)n&&l>=1);
-	for(int i=n-1;i>=0;i--)if(x[i]){
-		if(pos[i]<l)return false;
-		T v=x[i];for(int j=0;j<i;j++)x[j]-=v*a[i][j];
-		x[i]=T(0);
-	}
-	return true;
-}
-};
 \end{lstlisting}
 \par\vspace{1em}
 \clearpage
 \section{计算几何}
 \Needspace{10\baselineskip}
 \subsection{\texttt{geometry/geometry-main.cpp}}
-\textbf{整数二维几何基础}
+\textbf{72 整数二维几何基础}
 
 \TemplUsage{点坐标和叉积均为 ll，提供凸包、面积与基本相交判断；需要另定义 ld=long double。}
 \TemplApi{\begin{itemize}
@@ -7627,22 +3408,14 @@ auto h=convex(a); assert(convec_area(h)==8);
 assert(on_segment(Point(1,0),Point(0,0),Point(2,0)));
 \end{lstlisting}
 \TemplNote{convex 自动排序去重。min\_cross 要求顶点按凸包环序排列且没有共线中间点，支持旋转起点、顺逆时针，O(log n)。射线包含端点，零方向按单点处理；退化三角形按三条边处理。坐标叉积、点积仍须保证不溢出 ll。Point 输出两个坐标，中间有空格；output 用于调试。}
-
 \Needspace{6\baselineskip}\textbf{完整代码}
 \begin{lstlisting}[firstnumber=1]
-//
-// template for 2D geometry
-// version 1.0 (Last Update Jun 16th, 2026)
-//
-// usage:
-//   Point A,B; convex(hull); convec_area(hull);
-//   needs bits/stdc++.h, typedef ll/ld
-//
 const ld pi=acos(-1),dx=1e-9;
 struct Point{
 	ll x,y;
 	friend istream& operator >>(istream &i,Point &P){i>>P.x>>P.y;return i;}
-	friend ostream& operator <<(ostream &o,const Point &P){o<<P.x<<' '<<P.y;return o;}
+	friend ostream& operator <<(ostream &o,const Point &P){o<<P.x<<' '<<P.y;
+		return o;}
 	// void read(){cin>>x>>y;}
 	// void output(){cout<<x<<' '<<y<<'\n';}
 	void output(string s=""){cerr<<"Point "<<s<<": ("<<x<<","<<y<<")"<<endl;}
@@ -7650,20 +3423,25 @@ struct Point{
 	Point (ll _x=0,ll _y=0){x=_x,y=_y;}
 };
 
-inline bool operator ==(const Point &x,const Point &y){return x.x==y.x&&x.y==y.y;}
-inline bool operator !=(const Point &x,const Point &y){return x.x!=y.x||x.y!=y.y;}
+inline bool operator==(const Point &x,const Point &y){return
+	x.x==y.x&&x.y==y.y;}
+inline bool operator!=(const Point &x,const Point &y){return
+	x.x!=y.x||x.y!=y.y;}
 
-inline bool operator <(const Point &x,const Point &y){return (x.x!=y.x?x.x<y.x:x.y<y.y);}
-inline Point operator -(const Point &x,const Point &y){return Point(x.x-y.x,x.y-y.y);}
-inline Point operator +(const Point &x,const Point &y){return Point(x.x+y.x,x.y+y.y);}
-inline void operator -=(Point &x,const Point &y){x=x-y;}
-inline void operator +=(Point &x,const Point &y){x=x+y;}
-inline Point operator *(const Point &x,ll y){return Point(x.x*y,x.y*y);}
-inline void operator *=(Point &x,ll y){x=x*y;}
-inline Point operator *(ll y,const Point &x){return Point(x.x*y,x.y*y);}
-inline void operator *=(ll y,Point &x){x=x*y;}
+inline bool operator <(const Point &x,const Point &y){return
+	(x.x!=y.x?x.x<y.x:x.y<y.y);}
+inline Point operator-(const Point &x,const Point &y){return Point(x.x-y.x,
+	x.y-y.y);}
+inline Point operator+(const Point &x,const Point &y){return Point(x.x+y.x,
+	x.y+y.y);}
+inline void operator-=(Point &x,const Point &y){x=x-y;}
+inline void operator+=(Point &x,const Point &y){x=x+y;}
+inline Point operator*(const Point &x,ll y){return Point(x.x*y,x.y*y);}
+inline void operator*=(Point &x,ll y){x=x*y;}
+inline Point operator*(ll y,const Point &x){return Point(x.x*y,x.y*y);}
+inline void operator*=(ll y,Point &x){x=x*y;}
 
-inline ll operator *(const Point &x,const Point &y){
+inline ll operator*(const Point &x,const Point &y){
 	// return OX · OY · sin(XOY) = 2 * area(OXY)
 	return x.x*y.y-x.y*y.x;
 }
@@ -7690,7 +3468,7 @@ inline ld dist(const Point &x){return sqrt((ld)x.x*x.x+(ld)x.y*x.y);}
 inline ll dist2(const Point &x){return x.x*x.x+x.y*x.y;}
 
 inline int dir(const Point &x,const Point &y,const Point &z){
-	// return is YX clockwise direction to YZ 
+	// return is YX clockwise direction to YZ
 	return sgn((x-y)*(y-z));
 }
 inline int suf(int x,int n){return (x+1==n?0:x+1);}
@@ -7712,7 +3490,7 @@ vector<Point> convex(vector<Point> a){
 			b.push_back(p);t++;
 		}
 		b.pop_back();t--;
-	} 
+	}
 	return b;
 }
 inline bool on_segment(const Point &X,const Point &A,const Point &B){
@@ -7751,7 +3529,8 @@ inline bool in_triangle(const Point &P,const Point &A,
 	const Point &B,const Point &C){
 	// check if P in triangle ABC
 	// P may lie on bound
-	if(!area(A,B,C))return on_segment(P,A,B)||on_segment(P,B,C)||on_segment(P,C,A);
+	if(!area(A,B,C))return on_segment(P,A,B)||on_segment(P,B,C)||on_segment(P,
+		C,A);
 	return area(A,B,C)==area(P,A,B)+area(P,B,C)+area(P,C,A);
 }
 template<typename F> int convex_min(int n,F val){
@@ -7780,5 +3559,4 @@ inline ld min_cross(const vector<Point> &I,ld x,ld y){
 }
 \end{lstlisting}
 \par\vspace{1em}
-
 \end{document}

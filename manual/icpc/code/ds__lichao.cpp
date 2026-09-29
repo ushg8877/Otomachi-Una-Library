@@ -11,7 +11,7 @@ vector<int> ls{0},rs{0},p{0};int tot=0,cnt=0,rt=0;
 vector<line> L{{0,inf}};
 // if you don't use range add, this can up to n
 inline ll gv(const int &id,const ll &v){return L[id].f(v);}
-void init(){
+void set(){
 	ls.assign(1,0);rs.assign(1,0);p.assign(1,0);
 	L.assign(1,{0,inf});tot=cnt=rt=0;
 }
@@ -48,8 +48,6 @@ ll ask(int x,int id,int l,int r){
 	else ans=min(ans,ask(x,rs[id],mid+1,r));
 	return ans;
 }
-
-//////////////////////////////////////////////////
 
 void add(line x,int l=-V,int r=V){
 	assert(-V<=l&&l<=r&&r<=V);

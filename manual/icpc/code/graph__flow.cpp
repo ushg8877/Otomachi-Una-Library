@@ -32,12 +32,12 @@ ll DFS(int u,ll flow){
 	return now;
 }
 public:
-void clear(){
+void set(){
 	n=S=T=0;m=1;ans=0;is_flowed=false;e.assign(2,{0,0,0});
 	lst.assign(1,0);level.assign(1,0);cur.assign(1,0);
 }
 void setN(int _n){
-	assert(0<=_n&&_n<INT_MAX);clear();n=_n;
+	assert(0<=_n&&_n<INT_MAX);set();n=_n;
 	lst.assign(n+1,0);level.assign(n+1,0);cur.assign(n+1,0);
 }
 void setST(int _S,int _T){
@@ -50,7 +50,8 @@ void setST(int _S,int _T){
 	lst.resize(n+1);level.resize(n+1);cur.resize(n+1);is_flowed=false;
 }
 int new_node(){
-	assert(n<INT_MAX-1);++n;lst.push_back(0);level.push_back(0);cur.push_back(0);
+	assert(n<INT_MAX-1);++n;lst.push_back(0);level.push_back(0);
+		cur.push_back(0);
 	is_flowed=false;return n;
 }
 ll edge_flow(int id){

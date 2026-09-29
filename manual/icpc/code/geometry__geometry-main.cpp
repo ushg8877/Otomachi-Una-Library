@@ -2,28 +2,34 @@ const ld pi=acos(-1),dx=1e-9;
 struct Point{
 	ll x,y;
 	friend istream& operator >>(istream &i,Point &P){i>>P.x>>P.y;return i;}
-	friend ostream& operator <<(ostream &o,Point &P){o<<P.x<<P.y;return o;}
+	friend ostream& operator <<(ostream &o,const Point &P){o<<P.x<<' '<<P.y;
+		return o;}
 	// void read(){cin>>x>>y;}
 	// void output(){cout<<x<<' '<<y<<'\n';}
-	void debug(string s=""){cerr<<"Point "<<s<<": ("<<x<<","<<y<<")"<<endl;}
+	void output(string s=""){cerr<<"Point "<<s<<": ("<<x<<","<<y<<")"<<endl;}
 	double arg(){return atan2(y,x);}
 	Point (ll _x=0,ll _y=0){x=_x,y=_y;}
 };
 
-inline bool operator ==(const Point &x,const Point &y){return x.x==y.x&&x.y==y.y;}
-inline bool operator !=(const Point &x,const Point &y){return x.x!=y.x||x.y!=y.y;}
+inline bool operator==(const Point &x,const Point &y){return
+	x.x==y.x&&x.y==y.y;}
+inline bool operator!=(const Point &x,const Point &y){return
+	x.x!=y.x||x.y!=y.y;}
 
-inline bool operator <(const Point &x,const Point &y){return (x.x!=y.x?x.x<y.x:x.y<y.y);}
-inline Point operator -(const Point &x,const Point &y){return Point(x.x-y.x,x.y-y.y);}
-inline Point operator +(const Point &x,const Point &y){return Point(x.x+y.x,x.y+y.y);}
-inline void operator -=(Point &x,const Point &y){x=x-y;}
-inline void operator +=(Point &x,const Point &y){x=x+y;}
-inline Point operator *(const Point &x,ll y){return Point(x.x*y,x.y*y);}
-inline void operator *=(Point &x,ll y){x=x*y;}
-inline Point operator *(ll y,const Point &x){return Point(x.x*y,x.y*y);}
-inline void operator *=(ll y,Point &x){x=x*y;}
+inline bool operator <(const Point &x,const Point &y){return
+	(x.x!=y.x?x.x<y.x:x.y<y.y);}
+inline Point operator-(const Point &x,const Point &y){return Point(x.x-y.x,
+	x.y-y.y);}
+inline Point operator+(const Point &x,const Point &y){return Point(x.x+y.x,
+	x.y+y.y);}
+inline void operator-=(Point &x,const Point &y){x=x-y;}
+inline void operator+=(Point &x,const Point &y){x=x+y;}
+inline Point operator*(const Point &x,ll y){return Point(x.x*y,x.y*y);}
+inline void operator*=(Point &x,ll y){x=x*y;}
+inline Point operator*(ll y,const Point &x){return Point(x.x*y,x.y*y);}
+inline void operator*=(ll y,Point &x){x=x*y;}
 
-inline ll operator *(const Point &x,const Point &y){
+inline ll operator*(const Point &x,const Point &y){
 	// return OX · OY · sin(XOY) = 2 * area(OXY)
 	return x.x*y.y-x.y*y.x;
 }
@@ -46,25 +52,25 @@ inline ll area(const Point &x,const Point &y,const Point &z){
 	return abs((x-y)*(x-z));
 }
 
-inline ld dist(const Point &x){return sqrt(x.x*x.x+x.y*x.y);}
+inline ld dist(const Point &x){return sqrt((ld)x.x*x.x+(ld)x.y*x.y);}
 inline ll dist2(const Point &x){return x.x*x.x+x.y*x.y;}
 
 inline int dir(const Point &x,const Point &y,const Point &z){
-	// return is YX clockwise direction to YZ 
+	// return is YX clockwise direction to YZ
 	return sgn((x-y)*(y-z));
 }
 inline int suf(int x,int n){return (x+1==n?0:x+1);}
 inline int pre(int x,int n){return (x==0?n-1:x-1);}
-ll convec_area(vector<Point> a){
+ll convec_area(const vector<Point> &a){
 	// return convex A area **times 2**
 	ll s=0;int n=a.size();
 	for(int i=0;i<n;i++) s+=area(a[0],a[i],a[suf(i,n)]);
 	return s;
 }
 vector<Point> convex(vector<Point> a){
+	sort(a.begin(),a.end());a.erase(unique(a.begin(),a.end()),a.end());
 	int n=a.size();
-	if(n<=2) return a;
-	sort(a.begin(),a.end());
+	if(n<=2)return a;
 	vector<Point> b;int s=0,t=0;
 	for(int i=2;i--;s=t,reverse(a.begin(),a.end())){
 		for(Point p:a){
@@ -72,7 +78,7 @@ vector<Point> convex(vector<Point> a){
 			b.push_back(p);t++;
 		}
 		b.pop_back();t--;
-	} 
+	}
 	return b;
 }
 inline bool on_segment(const Point &X,const Point &A,const Point &B){
@@ -98,53 +104,44 @@ inline bool parallel(Point A,Point B,
 	B-=A,D-=C;A-=C;C=-1*D;
 	return sgn(B*C)==0&&sgn(A*B)!=0;
 }
-inline bool ray_intersect(Point A,Point B,
-	Point C,Point D){
-	// check if ray AB,CD (include endpoints) intersect
-	B-=A,D-=C;A-=C;C=-1*D;
-	// judge exist non-negtive real number x,y s.t. A+xB+yC=O;
-	if(sgn(B*C)==0){
-		if(sgn(A*B)==0) return true; // coincide
-		return false; // parallel
-	}
-	return sgn(C*B)*sgn(A*B)<=0&&sgn(B*C)*sgn(A*C)<=0;
+inline bool ray_intersect(Point A,Point B,Point C,Point D){
+	// closed rays; a zero direction is a single point
+	Point u=B-A,v=D-C,w=C-A;
+	if(u==Point())return v==Point()?A==C:((A-C)*v==0&&((A-C)^v)>=0);
+	if(v==Point())return w*u==0&&(w^u)>=0;
+	ll d=u*v;
+	if(!d)return w*u==0&&((u^v)>0||(w^u)>=0);
+	return sgn(w*v)*sgn(d)>=0&&sgn(w*u)*sgn(d)>=0;
 }
 inline bool in_triangle(const Point &P,const Point &A,
 	const Point &B,const Point &C){
 	// check if P in triangle ABC
 	// P may lie on bound
+	if(!area(A,B,C))return on_segment(P,A,B)||on_segment(P,B,C)||on_segment(P,
+		C,A);
 	return area(A,B,C)==area(P,A,B)+area(P,B,C)+area(P,C,A);
 }
-inline ll min_cross(const vector<Point> &I,Point X){
-	// please make sure I is convex, find min i\in I, i*X
-	int n=I.size();assert(n>0);
-	auto id=[&](int x){
-		if(x<0) x+=n;
-		if(x>=n) x-=n;
-		return x;
-	};
-	int p=0;
-	for(int i=__lg(n);i>=0;i--){
-		if(I[p]*X>=I[id(p+(1<<i))]*X) p=id(p+(1<<i));
-		if(I[p]*X>=I[id(p-(1<<i))]*X) p=id(p-(1<<i));
+template<typename F> int convex_min(int n,F val){
+	assert(n>0);
+	auto low=[&](int i){return val(i)<=val((i+n-1)%n)&&val(i)<=val((i+1)%n);};
+	if(low(0))return 0;
+	int l=0,r=n;
+	while(l+1<r){
+		int mid=(l+r)>>1;
+		if(low(mid))return mid;
+		bool a=val((l+1)%n)>=val(l),b=val((mid+1)%n)>=val(mid);
+		if(a!=b){if(a)l=mid;else r=mid;}
+		else if((val(mid)>val(l))==a)l=mid;
+		else r=mid;
 	}
-	return I[p]*X;
+	return r%n;
+}
+inline ll min_cross(const vector<Point> &I,Point X){
+	// convex polygon in cyclic order, without collinear intermediate points
+	auto val=[&](int i){return I[i]*X;};
+	return val(convex_min(I.size(),val));
 }
 inline ld min_cross(const vector<Point> &I,ld x,ld y){
-	// please make sure I is convex, find min i\in I, x(i)*x+y(i)*y
-	int n=I.size();assert(n>0);
-	auto crs=[&](int p){
-		return I[p].x*x+I[p].y*y;
-	};
-	auto id=[&](int x){
-		if(x<0) x+=n;
-		if(x>=n) x-=n;
-		return x;
-	};
-	int p=0;
-	for(int i=__lg(n);i>=0;i--){
-		if(crs(p)>=crs(id(p+(1<<i)))) p=id(p+(1<<i));
-		if(crs(p)>=crs(id(p-(1<<i)))) p=id(p-(1<<i));
-	}
-	return crs(p);
+	auto val=[&](int i){return I[i].x*x+I[i].y*y;};
+	return val(convex_min(I.size(),val));
 }

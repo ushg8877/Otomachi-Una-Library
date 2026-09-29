@@ -1,54 +1,48 @@
-template <unsigned _M> struct ModInt{
-static constexpr unsigned MOD=_M;
-unsigned x;
-constexpr ModInt():x(0){}
-constexpr ModInt(unsigned y):x(y%MOD){}
-constexpr ModInt(int y):x((y%=static_cast<int>(MOD))<0?y+MOD:y){}
-constexpr ModInt(unsigned long long y):x(y%MOD){}
-constexpr ModInt(long long y):x((y%=static_cast<long long>(MOD))<0?y+MOD:y){}
-ModInt& operator +=(const ModInt &a){x=(((x+=a.x)>=MOD)?x-MOD:x);return *this;}
-ModInt& operator -=(const ModInt &a){x=(((x-=a.x)>=MOD)?x+MOD:x);return *this;}
-ModInt& operator *=(const ModInt &a){x=static_cast<unsigned long long>(x)*a.x%MOD;return *this;}
-ModInt& operator /=(const ModInt &a){return (*this)*=a.inv();}
-explicit operator bool() const { return x != 0; }
-bool operator!() const { return x == 0; }
-ModInt inv() const {
-	unsigned a=MOD,b=x;int y=0,z=1;
-	while(b){
-		const unsigned q=a/b,c=a-q*b;
-		a=b,b=c;
-		const int w=y-static_cast<int>(q)*z;
-		y=z,z=w;
-	}
-	assert(a==1);return ModInt(y);
+template<unsigned M>
+struct ModInt{
+static constexpr unsigned MOD=M;
+static_assert(1<M&&M<=INT_MAX);
+unsigned x=0;
+ModInt()=default;
+template<typename T> ModInt(T v){
+	if constexpr(is_signed_v<T>){ll y=v%(ll)M;x=y<0?y+M:y;}
+	else x=v%M;
 }
-ModInt pow(long long k) const {
-	if(k<0) return inv().pow(-k);
-	ModInt a=*this,b=1;
-	for(;k;k>>=1){if(k&1)b*=a;a*=a;}
+ModInt &operator+=(ModInt a){if((x+=a.x)>=M)x-=M;return *this;}
+ModInt &operator-=(ModInt a){if((x-=a.x)>=M)x+=M;return *this;}
+ModInt &operator*=(ModInt a){x=(ull)x*a.x%M;return *this;}
+ModInt &operator/=(ModInt a){return *this*=a.inv();}
+friend ModInt operator+(ModInt a,ModInt b){return a+=b;}
+friend ModInt operator-(ModInt a,ModInt b){return a-=b;}
+friend ModInt operator*(ModInt a,ModInt b){return a*=b;}
+friend ModInt operator/(ModInt a,ModInt b){return a/=b;}
+bool operator==(ModInt a)const{return x==a.x;}
+bool operator!=(ModInt a)const{return x!=a.x;}
+explicit operator bool()const{return x!=0;}
+bool operator!()const{return !x;}
+ModInt operator+()const{return *this;}
+ModInt operator-()const{ModInt a;a.x=x?M-x:0;return a;}
+ModInt &operator++(){return *this+=1;}
+ModInt &operator--(){return *this-=1;}
+ModInt operator++(int){ModInt a=*this;++*this;return a;}
+ModInt operator--(int){ModInt a=*this;--*this;return a;}
+ModInt inv()const{
+	ll a=M,b=x,y=0,z=1;
+	while(b){ll q=a/b;a-=q*b;swap(a,b);y-=q*z;swap(y,z);}
+	assert(a==1);return y;
+}
+ModInt pow(ll k)const{
+	ull e=k;ModInt a=*this,b=1;
+	if(k<0){a=a.inv();e=0-e;}
+	for(;e;e>>=1,a*=a)if(e&1)b*=a;
 	return b;
 }
-ModInt& operator++() {*this+=1;return *this;}
-ModInt& operator--() {*this-=1;return *this;}
-ModInt operator--(int){ModInt t=*this;--*this;return t;}
-ModInt operator++(int){ModInt t=*this;++*this;return t;}
-ModInt operator +()const{return *this;}
-ModInt operator -()const{ModInt a;a.x=(x?MOD-x:0u);return a;}
-ModInt operator +(const ModInt &a)const{return ModInt(*this)+=a;}
-ModInt operator -(const ModInt &a)const{return ModInt(*this)-=a;}
-ModInt operator *(const ModInt &a)const{return ModInt(*this)*=a;}
-ModInt operator /(const ModInt &a)const{return ModInt(*this)/=a;}
-
-template<typename T> ModInt friend operator +(T a,const ModInt &b){return ModInt(a)+=b;}
-template<typename T> ModInt friend operator -(T a,const ModInt &b){return ModInt(a)-=b;}
-template<typename T> ModInt friend operator *(T a,const ModInt &b){return ModInt(a)*=b;}
-template<typename T> ModInt friend operator /(T a,const ModInt &b){return ModInt(a)/=b;}
-friend istream& operator >> (istream &i,ModInt &x){i>>x.x;return i;}
-friend ostream& operator << (ostream &o,const ModInt &x){o<<x.x;return o;}
+friend istream &operator>>(istream &o,ModInt &a){
+	ll x;if(o>>x)a=x;return o;
+}
+friend ostream &operator<<(ostream &o,ModInt a){return o<<a.x;}
 };
-////////////////////////////////////////////////////////////////////
-// Basic function, fac, ifac, binom
-// init(n) prepares fac / ifac / inv through n
+
 const int MOD=998244353;
 using mint=ModInt<MOD>;
 vector<mint> fac{1},ifac{1},inv{0,1};
@@ -75,7 +69,7 @@ inline mint Apple_in_Box(int n,int m){
 	return C(m-1,n-1);
 }
 inline mint Apple_in_Box(int n,int m,int k){
-	// n apples into m boxes, 
+	// n apples into m boxes,
 	// the first k boxes must be non-empty (others can be empty)
 	assert(0<=k&&k<=m);
 	return Apple_in_Box(n+(m-k),m);

@@ -28,15 +28,15 @@ inline ll inv(ll x,ll M){
 	assert(a==1U);y%=M;
 	return (y>=0?y:M+y);
 }
-////////////////////////////////
 // Congruence equation, make, merge, etc.
 struct COE{
 ll r,M;
 COE():r(0),M(1){}
 COE(ll _r,ll _M):r(_r),M(_M){assert(M>0);r%=M;if(r<0)r+=M;}
 inline bool empty()const{return M==-1;}
-inline bool accept(ll x)const{if(empty())return false;x%=M;return (x<0?x+M:x)==r;}
-inline COE& operator +=(const COE &x){
+inline bool accept(ll x)const{if(empty())return false;x%=M;return
+	(x<0?x+M:x)==r;}
+inline COE& operator+=(const COE &x){
 	if(empty()||x.empty()){M=-1;return *this;}
 	ll g=gcd(M,x.M);
 	if(r%g!=x.r%g){M=-1;return *this;}
@@ -47,7 +47,7 @@ inline COE& operator +=(const COE &x){
 	if(r<0) r+=M;
 	return *this;
 }
-inline COE operator +(const COE &x)const{
+inline COE operator+(const COE &x)const{
 	return COE(*this)+=x;
 }
 };

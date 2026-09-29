@@ -8,8 +8,8 @@ vector<ll> pw1{1}, pw2{1};
 void init_hash(int n=0);
 
 struct Hash {
-	int l;
-	ll h1, h2;
+	int l=0;
+	ll h1=0,h2=0;
 	ll v() const { return h1 << 30 | h2; }
 };
 
@@ -32,6 +32,7 @@ inline Hash operator-(const Hash &x, const Hash &y) {
 template<typename T>
 inline Hash operator+(const Hash &h, const T &x) {
 	// append x to end of h
+	assert(0<=h.l&&h.l<INT_MAX);
 	return {h.l + 1,
 			(h.h1 * B1 + x) % MOD1,
 			(h.h2 * B2 + x) % MOD2};
@@ -57,7 +58,7 @@ vector<Hash> Hash_of(const string &s) {
 	int n = (int)s.length() - 1;
 	assert(!s.empty()&&s[0]==' '&&s.size()<=INT_MAX);init_hash(n);
 	vector<Hash> a(n+1);
-	for (int i = 1; i <= n; ++i)
-		a[i] = a[i-1] + s[i];
+	for(int i = 1; i <= n; ++i)
+		a[i] = a[i-1] + (unsigned char)s[i];
 	return a;
 }

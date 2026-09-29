@@ -5,6 +5,7 @@ vector<T*> II;
 // make compress values to 1 ~ size
 void set(){I.clear();II.clear();}
 void pb(T &x){I.push_back(x);II.push_back(&x);}
+void pb(const T &x){I.push_back(x);}
 int id(T x)const{
 	auto it=lower_bound(I.begin(),I.end(),x);
 	assert(it!=I.end()&&*it==x);
@@ -13,14 +14,16 @@ int id(T x)const{
 void build(){
 	sort(I.begin(),I.end());
 	I.erase(unique(I.begin(),I.end()),I.end());
-	for(auto i:II) *i=id(*i);
+	vector<int> a; a.reserve(II.size());
+	for(auto p:II)a.push_back(id(*p));
+	for(int i=0;i<(int)II.size();i++)*II[i]=a[i];
 	II.clear();
 }
 int size()const{return I.size();}
-array<int,2> range(int l,int r){
-	l=lower_bound(I.begin(),I.end(),l)-I.begin();
-	r=upper_bound(I.begin(),I.end(),r)-I.begin()-1;
-	return {l+1,r+1};
+array<int,2> range(const T &l,const T &r)const{
+	int a=lower_bound(I.begin(),I.end(),l)-I.begin();
+	int b=upper_bound(I.begin(),I.end(),r)-I.begin();
+	return {a+1,b};
 }
 T operator [](int x)const{
 	assert(1<=x&&x<=I.size());

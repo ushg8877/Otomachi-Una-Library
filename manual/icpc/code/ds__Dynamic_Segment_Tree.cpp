@@ -6,8 +6,8 @@ struct info{
 	ll s;
 	info():s(0){}
 	info(ll _s):s(_s){}
-	inline info& operator +=(const info &x){s+=x.s;return *this;}
-	inline info operator +(const info &x)const{return info(*this)+=x;}
+	inline info& operator+=(const info &x){s+=x.s;return *this;}
+	inline info operator+(const info &x)const{return info(*this)+=x;}
 };
 struct node{
 	int p=0,ls=0,rs=0;
@@ -44,7 +44,8 @@ void query(int ql,int qr,int id,int l,int r,info &X){
 	query(ql,qr,tr[id].rs,mid+1,r,X);
 }
 public:
-void init(int m=0){assert(m>=0);tot=rt=0;tr.assign(1,node());tr.reserve((size_t)m+1);}
+void set(int m=0){assert(m>=0);tot=rt=0;tr.assign(1,node());
+	tr.reserve((size_t)m+1);}
 void add(int p,ll s){
 	assert(L<=p&&p<=R);
 	rt=add(p,info(s),rt,L,R);

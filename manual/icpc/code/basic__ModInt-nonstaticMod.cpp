@@ -1,76 +1,50 @@
-struct mint {
-	static unsigned M;
-	static unsigned long long NEG_INV_M;
-	static void setM(unsigned m) {
-		assert(1<m&&m<=INT_MAX);M = m;
-		NEG_INV_M = -1ULL / M;
-	}
-	unsigned x;
-	mint() : x(0U) {}
-	mint(unsigned x_) : x(x_ % M) {}
-	mint(unsigned long long x_) : x(x_ % M) {}
-	mint(int x_) : x(((x_ %= static_cast<int>(M)) < 0) ? (x_ + static_cast<int>(M)) : x_) {}
-	mint(long long x_) : x(((x_ %= static_cast<long long>(M)) < 0) ? (x_ + static_cast<long long>(M)) : x_) {}
-	mint& operator+=(const mint &a) {
-		x = ((x += a.x) >= M) ? (x - M) : x;
-		return *this;
-	}
-	mint& operator-=(const mint &a) {
-		x = ((x -= a.x) >= M) ? (x + M) : x;
-		return *this;
-	}
-	mint& operator*=(const mint &a) {
-		const unsigned long long y = static_cast<unsigned long long>(x) * a.x;
-		const unsigned long long q = static_cast<unsigned long long>(
-			(static_cast<unsigned __int128>(NEG_INV_M) * y) >> 64
-		);
-		const unsigned long long r = y - M * q;
-		x = r - M * (r >= M);
-		return *this;
-	}
-	mint& operator/=(const mint &a) { return (*this *= a.inv()); }
-	mint pow(long long e) const {
-		if (e < 0) return inv().pow(-e);
-		mint a = *this, b = 1U;
-		for (; e; e >>= 1) { if (e & 1) b *= a; a *= a; }
-		return b;
-	}
-	mint inv() const {
-		unsigned a = M, b = x;
-		int y = 0, z = 1;
-		for (; b; ) {
-			const unsigned q = a / b;
-			const unsigned c = a - q * b;
-			a = b; b = c;
-			const int w = y - static_cast<int>(q) * z;
-			y = z; z = w;
-		}
-		assert(a == 1U);
-		return mint(y);
-	}
-	mint operator+() const { return *this; }
-	mint operator-() const { mint a; a.x = x ? (M - x) : 0U; return a;}
-	mint operator+(const mint &a) const { return (mint(*this) += a); }
-	mint operator-(const mint &a) const { return (mint(*this) -= a); }
-	mint operator*(const mint &a) const { return (mint(*this) *= a); }
-	mint operator/(const mint &a) const { return (mint(*this) /= a); }
-	mint& operator++() { *this += 1; return *this; }
-	mint& operator--() { *this -= 1; return *this; }
-	bool operator!() const { return x == 0; }
-	explicit operator bool() const { return x != 0; }
-	bool operator==(const mint &a) const { return (x == a.x); }
-	bool operator!=(const mint &a) const { return (x != a.x); }
-	template<class T> friend mint operator+(T a, const mint &b) { return (mint(a) += b); }
-	template<class T> friend mint operator-(T a, const mint &b) { return (mint(a) -= b); }
-	template<class T> friend mint operator*(T a, const mint &b) { return (mint(a) *= b); }
-	template<class T> friend mint operator/(T a, const mint &b) { return (mint(a) /= b); }
-	friend istream& operator>>(istream &i, mint &a) { i >> a.x; a.x %= M; return i; }
-	friend ostream& operator<<(ostream &o, const mint &a) { return o << a.x; }
+struct mint{
+static inline unsigned M=998244353;
+static inline ull R=-1ull/M;
+static void setM(unsigned m){assert(1<m&&m<=INT_MAX);M=m;R=-1ull/M;}
+unsigned x=0;
+mint()=default;
+template<typename T> mint(T v){
+	if constexpr(is_signed_v<T>){ll y=v%(ll)M;x=y<0?y+M:y;}
+	else x=v%M;
+}
+mint &operator+=(mint a){if((x+=a.x)>=M)x-=M;return *this;}
+mint &operator-=(mint a){if((x-=a.x)>=M)x+=M;return *this;}
+mint &operator*=(mint a){
+	ull v=(ull)x*a.x,q=(__uint128_t)R*v>>64;
+	v-=q*M;x=v>=M?v-M:v;return *this;
+}
+mint &operator/=(mint a){return *this*=a.inv();}
+friend mint operator+(mint a,mint b){return a+=b;}
+friend mint operator-(mint a,mint b){return a-=b;}
+friend mint operator*(mint a,mint b){return a*=b;}
+friend mint operator/(mint a,mint b){return a/=b;}
+bool operator==(mint a)const{return x==a.x;}
+bool operator!=(mint a)const{return x!=a.x;}
+explicit operator bool()const{return x!=0;}
+bool operator!()const{return !x;}
+mint operator+()const{return *this;}
+mint operator-()const{mint a;a.x=x?M-x:0;return a;}
+mint &operator++(){return *this+=1;}
+mint &operator--(){return *this-=1;}
+mint operator++(int){mint a=*this;++*this;return a;}
+mint operator--(int){mint a=*this;--*this;return a;}
+mint inv()const{
+	ll a=M,b=x,y=0,z=1;
+	while(b){ll q=a/b;a-=q*b;swap(a,b);y-=q*z;swap(y,z);}
+	assert(a==1);return y;
+}
+mint pow(ll k)const{
+	ull e=k;mint a=*this,b=1;
+	if(k<0){a=a.inv();e=0-e;}
+	for(;e;e>>=1,a*=a)if(e&1)b*=a;
+	return b;
+}
+friend istream &operator>>(istream &o,mint &a){
+	ll x;if(o>>x)a=x;return o;
+}
+friend ostream &operator<<(ostream &o,mint a){return o<<a.x;}
 };
-unsigned mint::M = 998244353;
-unsigned long long mint::NEG_INV_M = -1ULL / mint::M;
-
-// !!!!!!!!!!!Use mint::setM(<new mod>)!!!!!!!!!!
 
 vector<mint> fac,ifac,inv;
 unsigned fact_mod=0;

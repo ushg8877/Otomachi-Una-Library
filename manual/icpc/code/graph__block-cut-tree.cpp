@@ -4,7 +4,7 @@ vector<char> inq;
 vector<int> low,dfn,stk,dep,ff;
 vector<vector<int>> edg,tr;
 vector<vector<array<int,2>>> ec;
-void init(int _n){
+void setN(int _n){
 	assert(0<=_n&&_n<(INT_MAX-2)/2);n=_n;
 	low.assign(n+2,0);dfn.assign(n+2,0);stk.assign(n+2,0);inq.assign(n+2,0);
 	edg.assign(n+2,{});tr.assign(2*n+2,{});ec.assign(n+2,{});
@@ -16,31 +16,36 @@ void add_edge(int u,int v){
 	edg[v].push_back(u);
 }
 void tarjan(int u,int fa=0){
+	// frame: vertex, parent, next edge, skipped parent edge
+	vector<array<int,4>> q{{u,fa,0,0}};
 	low[u]=dfn[u]=++tot;stk[++top]=u;inq[u]=true;
-	bool vis_fa=false;
-	for(int v:edg[u]){
-		if(v==fa&&!vis_fa){vis_fa=true;continue;}
-		if(!dfn[v]){
-			tarjan(v,u);
-			if(low[v]>=dfn[u]){
-				++scc;
-				tr[scc].push_back(u);
-				tr[u].push_back(scc);
-				while(1){
-					int w=stk[top--];
-					tr[w].push_back(scc);
-					tr[scc].push_back(w);
-					inq[w]=false;
-					if(w==v)break;
-				}
+	while(!q.empty()){
+		auto &[x,p,i,skip]=q.back();
+		if(i<(int)edg[x].size()){
+			int v=edg[x][i++];
+			if(v==p&&!skip){skip=1;continue;}
+			if(!dfn[v]){
+				low[v]=dfn[v]=++tot;stk[++top]=v;inq[v]=true;q.push_back({v,x,
+					0,0});
+			}else if(inq[v])low[x]=min(low[x],dfn[v]);
+		}else{
+			int v=x,parent=p;q.pop_back();
+			if(q.empty())continue;
+			low[parent]=min(low[parent],low[v]);
+			if(low[v]>=dfn[parent]){
+				++scc;tr[scc].push_back(parent);tr[parent].push_back(scc);int y;
+				do{y=stk[top--];inq[y]=false;tr[y].push_back(scc);
+					tr[scc].push_back(y);}while(y!=v);
 			}
-			low[u]=min(low[u],low[v]);
-		}else if(inq[v]) low[u]=min(low[u],dfn[v]);
+		}
 	}
 }
 void dfs(int u,int fa){
-	ff[u]=fa;dep[u]=dep[fa]+1;
-	for(int v:tr[u]) if(v!=fa) dfs(v,u);
+	vector<int> q{u};ff[u]=fa;dep[u]=dep[fa]+1;
+	for(int i=0;i<(int)q.size();i++){
+		int x=q[i];
+		for(int v:tr[x])if(v!=ff[x]){ff[v]=x;dep[v]=dep[x]+1;q.push_back(v);}
+	}
 }
 void build(){
 	fill(dfn.begin(),dfn.end(),0);fill(inq.begin(),inq.end(),0);

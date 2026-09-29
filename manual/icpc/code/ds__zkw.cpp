@@ -1,29 +1,27 @@
 struct zkw_segt{
-//////////////////////////////////////////////////////////////
 // information
 struct info{
-	// modify here
+	// sum and maximum prefix sum, including the empty prefix
 	ll s,mx;
 	info():s(0),mx(0){}
 	info(ll _s,ll _mx):s(_s),mx(_mx){}
-	inline info& operator +=(const info &y){
+	inline info& operator+=(const info &y){
 		ll os=s;
 		s+=y.s;
-		mx=max({mx,y.mx,os+y.mx});
+		mx=max(mx,os+y.mx);
 		return *this;
 	}
-	inline info operator +(const info &y)const{
+	inline info operator+(const info &y)const{
 		return info(*this)+=y;
 	}
 };
-/////////////////////////////////////////////////////////////////
 // basic segment tree template, private operations
 private:
 int n=0,B=0;vector<info> a;
 void modify(int x,info v){
 	x+=B+1;
 	a[x]=v;
-	while(x>1) x>>=1,a[x]=a[x<<1]+a[x<<1|1]; 
+	while(x>1) x>>=1,a[x]=a[x<<1]+a[x<<1|1];
 }
 info query(int l,int r){
 	l+=B,r+=B+2;
@@ -35,7 +33,6 @@ info query(int l,int r){
 	}
 	return ql+qr;
 }
-/////////////////////////////////////////////////////////////////
 // basic segment tree template, public operations
 // please transfer (int,int) to info here
 public:
