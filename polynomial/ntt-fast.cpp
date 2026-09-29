@@ -1693,7 +1693,6 @@ poly S2line(int n){
 	}
 	return F;
 }
-// use init(n) before accessing fac / ifac / inv directly
 // Product of all factors; an empty list returns {1}.
 // Merge shortest first; pass move(a) to avoid copying the input.
 poly Product(vector<poly> a){
