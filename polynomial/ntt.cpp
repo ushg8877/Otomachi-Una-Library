@@ -403,61 +403,140 @@ void Div(poly f,poly g,poly &q,poly &r){
 	for(int i=0;i<m-1;i++)r[i]=f[i]-b[i];
 }
 
-// Return f(x[i]); repeated evaluation points are allowed.
-poly Eval(poly f,poly x){
-	int n=x.size();
-	if(!n)return{};
-	vector<poly>g(n*4);
-	auto build=[&](auto &&self,int u,int l,int r)->void{
-		if(l==r){g[u]={-x[l],1};return;}
-		int m=(l+r)>>1;
-		self(self,u*2,l,m);self(self,u*2+1,m+1,r);
-		g[u]=g[u*2]*g[u*2+1];
-	};
-	build(build,1,0,n-1);
+// Product tree shared by evaluation and interpolation; coefficients low first.
+struct Poly_Tree{
+private:
+int n=0;
+poly x,ig;
+vector<poly> g;
+void build(int u,int l,int r){
+	if(l==r){g[u]={-x[l],1};return;}
+	int m=(l+r)>>1,v=u+2*(m-l+1);
+	build(u+1,l,m);build(v,m+1,r);
+	g[u]=g[u+1]*g[v];
+}
+// First k coefficients of the correlation with reverse(b).
+static poly down(const poly &a,const poly &b,int k){
+	k=min(k,(int)a.size());
+	int m=b.size()-1;
+	if(k<=32){
+		poly c(k);
+		for(int i=0;i<k;i++)
+			for(int j=0;j<=m&&i+j<(int)a.size();j++)c[i]+=a[i+j]*b[m-j];
+		return c;
+	}
+	poly c=a*b;
+	return poly(c.begin()+m,c.begin()+m+k);
+}
+// Keep the original transform limit when the root correlation is too large.
+static poly rem(poly a,const poly &b){
+	if(a.size()<b.size())return a;
+	int k=a.size()-b.size()+1;
+	poly q(a.rbegin(),a.rbegin()+k),v(b.rbegin(),b.rend());
+	v.resize(k);q=q*Inv(v);q.resize(k);
+	reverse(q.begin(),q.end());q=q*b;a.resize(b.size()-1);
+	for(int i=0;i<(int)a.size();i++)a[i]-=q[i];
+	return a;
+}
+void eval_rem(poly a,int u,int l,int r,poly &ans)const{
+	if(r-l<32){
+		for(int i=l;i<=r;i++)ans[i]=value(a,x[i]);
+		return;
+	}
+	int m=(l+r)>>1,v=u+2*(m-l+1);
+	eval_rem(rem(a,g[u+1]),u+1,l,m,ans);
+	eval_rem(rem(move(a),g[v]),v,m+1,r,ans);
+}
+void eval(poly a,int u,int l,int r,poly &ans)const{
+	if(a.empty())return;
+	if(l==r){ans[l]=a[0];return;}
+	int m=(l+r)>>1,v=u+2*(m-l+1);
+	eval(down(a,g[v],m-l+1),u+1,l,m,ans);
+	eval(down(a,g[u+1],r-m),v,m+1,r,ans);
+}
+poly join(const poly &a,int u,int l,int r)const{
+	if(l==r)return {a[l]};
+	int m=(l+r)>>1,v=u+2*(m-l+1);
+	return join(a,u+1,l,m)*g[v]+join(a,v,m+1,r)*g[u+1];
+}
+public:
+Poly_Tree()=default;
+explicit Poly_Tree(poly a){set(move(a));}
+// Replace the evaluation points; empty input clears the tree and cache.
+void set(poly a={}){
+	assert(a.size()<(1u<<23));
+	x=move(a);n=x.size();ig.clear();g.clear();
+	if(n){g.resize(2*n-1);build(0,0,n-1);}
+}
+// f(x[i]); repeated points allowed. O(M(m)+M(n)log(n)), m=f.size().
+// One root inverse, then transposed products; cache reused for fixed points.
+poly eval(const poly &f){
 	poly ans(n);
-	auto solve=[&](auto &&self,poly a,int u,int l,int r)->void{
-		if(r-l<32){
-			for(int i=l;i<=r;i++)ans[i]=value(a,x[i]);
-			return;
-		}
-		int m=(l+r)>>1;
-		poly q,b;
-		Div(a,g[u*2],q,b);self(self,move(b),u*2,l,m);
-		Div(move(a),g[u*2+1],q,b);self(self,move(b),u*2+1,m+1,r);
-	};
-	solve(solve,move(f),1,0,n-1);
+	if(!n||f.empty())return ans;
+	if(n<=32||f.size()<=32){
+		for(int i=0;i<n;i++)ans[i]=value(f,x[i]);
+		return ans;
+	}
+	int m=f.size();
+	if(m>(1<<22)){eval_rem(f,0,0,n-1,ans);return ans;}
+	if((int)ig.size()<m){
+		poly a(g[0].rbegin(),g[0].rend());
+		a.resize(m);ig=Inv(a);
+	}
+	poly a(ig.begin(),ig.begin()+m);reverse(a.begin(),a.end());
+	eval(down(f,a,n),0,0,n-1,ans);
 	return ans;
 }
-
-poly BM(poly a){
-	poly C{1},B{1};
-	int L=0,m=1;
-	mint b=1;
-	for(int n=0;n<(int)a.size();n++){
-		mint d=0;
-		for(int i=0;i<=L;i++)d+=C[i]*a[n-i];
-		if(!d){
-			m++;
-		}else{
-			poly T=C;
-			mint coef=d*b.inv();
-			poly xmB(m,0);
-			for(mint val:B)xmB.push_back(val);
-			if(C.size()<xmB.size())C.resize(xmB.size(),0);
-			for(int i=0;i<(int)xmB.size();i++)C[i]-=coef*xmB[i];
-			if(2*L<=n){
-				L=n+1-L;
-				B=T;
-				b=d;
-				m=1;
-			}else{
-				m++;
-			}
-		}
+// n coefficients interpolating (x[i],y[i]); pairwise differences must be units.
+// O(n log^2 n) time, O(n log n) space; empty input returns empty.
+poly interpolate(const poly &y){
+	assert(y.size()==x.size());
+	if(!n)return{};
+	poly d=eval(diff(g[0])),pre(n+1,1);
+	for(int i=0;i<n;i++){assert(d[i]);pre[i+1]=pre[i]*d[i];}
+	mint v=pre[n].inv();
+	for(int i=n-1;i>=0;i--){
+		mint t=v*pre[i];v*=d[i];d[i]=y[i]*t;
 	}
-	return C;
+	return join(d,0,0,n-1);
 }
+};
+// One-shot evaluation; use Poly_Tree for repeated queries at the same points.
+poly Eval(poly f,poly x){
+	if(x.size()<=32||f.size()<=32){
+		poly ans(x.size());
+		for(int i=0;i<(int)x.size();i++)ans[i]=value(f,x[i]);
+		return ans;
+	}
+	return Poly_Tree(move(x)).eval(f);
+}
+
+
+
+// Shortest order d=c.size()-1: c[0]=1, sum c[j]*a[i-j]=0 for i>=d.
+// O(n*(d+1)) time, O(d+1) space; discrepancies must be invertible.
+poly BM(const poly &a){
+	poly c{1},b{1};
+	int len=0,shift=1;
+	mint inv_d=1;
+	for(int i=0;i<(int)a.size();i++){
+		mint d=a[i];
+		for(int j=1;j<=len;j++)d+=c[j]*a[i-j];
+		if(!d){shift++;continue;}
+		bool grow=2*len<=i;
+		poly old;
+		if(grow)old=c;
+		mint v=d*inv_d;
+		if(c.size()<b.size()+shift)c.resize(b.size()+shift);
+		for(int j=0;j<(int)b.size();j++)c[j+shift]-=v*b[j];
+		if(grow){
+			len=i+1-len;b=move(old);inv_d=d.inv();shift=1;
+		}else shift++;
+	}
+	c.resize(len+1);
+	return c;
+}
+
 
 mint FSPE(poly F,poly G,ll t){
 	// find [x^t] F/G
@@ -490,52 +569,7 @@ mint RSPE(poly f,ll x){
 // Interpolate arbitrary points; return n coefficients, degree < n.
 // O(n log^2 n) time, O(n log n) space. Pairwise x differences must be units.
 poly lagrange(vector<mint>x,vector<mint>y){
-	assert(x.size()==y.size()&&x.size()<(1u<<23));
-	int n=x.size();
-	if(!n)return{};
-	vector<poly>g(4*n);
-	auto build=[&](auto &&self,int u,int l,int r)->void{
-		if(l==r){g[u]={-x[l],1};return;}
-		int m=(l+r)>>1;
-		self(self,u*2,l,m);self(self,u*2+1,m+1,r);
-		g[u]=g[u*2]*g[u*2+1];
-	};
-	build(build,1,0,n-1);
-	// Remainder modulo a monic polynomial; no inverse of point differences.
-	auto rem=[&](poly a,const poly &b){
-		if(a.size()<b.size())return a;
-		int k=a.size()-b.size()+1;
-		poly q(a.rbegin(),a.rbegin()+k),v(b.rbegin(),b.rend());
-		v.resize(k);q=q*Inv(v);q.resize(k);
-		reverse(q.begin(),q.end());q=q*b;
-		a.resize(b.size()-1);
-		for(int i=0;i<(int)a.size();i++)a[i]-=q[i];
-		return a;
-	};
-	poly d(n),pre(n+1,1);
-	auto eval=[&](auto &&self,poly a,int u,int l,int r)->void{
-		if(r-l<32){
-			for(int i=l;i<=r;i++)d[i]=value(a,x[i]);
-			return;
-		}
-		int m=(l+r)>>1;
-		self(self,rem(a,g[u*2]),u*2,l,m);
-		self(self,rem(move(a),g[u*2+1]),u*2+1,m+1,r);
-	};
-	eval(eval,diff(g[1]),1,0,n-1);
-	// Batch inversion: w[i]=y[i]/g'(x[i]), using one modular inverse.
-	for(int i=0;i<n;i++){assert(d[i]);pre[i+1]=pre[i]*d[i];}
-	mint v=pre[n].inv();
-	for(int i=n-1;i>=0;i--){
-		mint t=v*pre[i];v*=d[i];d[i]=y[i]*t;
-	}
-	auto solve=[&](auto &&self,int u,int l,int r)->poly{
-		if(l==r)return {d[l]};
-		int m=(l+r)>>1;
-		poly a=self(self,u*2,l,m),b=self(self,u*2+1,m+1,r);
-		return a*g[u*2+1]+b*g[u*2];
-	};
-	return solve(solve,1,0,n-1);
+	return Poly_Tree(move(x)).interpolate(y);
 }
 
 poly to_ex(poly f){ // f(e^x)

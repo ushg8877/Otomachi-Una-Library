@@ -4405,11 +4405,11 @@ poly Ln(const poly &f); poly Exp(const poly &f)
 \noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
-poly BM(poly a)
+poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
 
-\textbf{复杂度：}O(样本数*d)，最坏二次。
+\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4477,6 +4477,23 @@ poly mtt_exact(const poly &f,const poly &g)
 \textbf{复杂度：}O(N log N) 时间、O(N) 空间，N 为补齐长度。
 \end{minipage}\par\vspace{0.4em}
 \TemplNote{这是浮点加速版。二维格坐标采用固定种子的随机舍入来减小偏差，精度预算是保守经验条件，不是对任意输入的数学保证。预算为 $(n+m-1)d\,MOD^2\le 2^{84}$，d 由模数自动计算；不满足时转到精确 CRT。FPS 中的卷积同样可能走 FFT。要求确定性精确答案时选 mtt.cpp，或卷积直接用 mtt\_exact。改模后旧 mint/poly 值失效；Ln/Exp/积分涉及的分母必须可逆。需要 AVX2/FMA 与 <immintrin.h>，不提供运行时 CPU 分派。}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{固定点的重复求值与插值}
+\begin{lstlisting}
+Poly_Tree t;          // Empty tree.
+t.set(xs);            // Replace points and clear cached inverse.
+Poly_Tree t2(xs);     // Same as set(xs).
+auto ys=t.eval(f);    // Also available as Eval(f,xs).
+auto a=t.interpolate(ys); // Also available as lagrange(xs,ys).
+t.set();              // Clear points and cache.
+\end{lstlisting}
+\textbf{参数、效果与返回：}xs 为 n 个取值点。构造/set 建立共享乘积树，只存 $2n-1$ 个节点；n 为零时不建树。eval 返回与 xs 等长的点值，允许重复点；空多项式在各点的值均为零。interpolate 要求 ys 长度为 n，返回 n 个系数，点差必须可逆；重复点不允许用于插值。
+
+同一批 xs 反复求值时，直接保留对象调用 eval，复用乘积树与根部逆多项式；传入更长的 f 时会扩充逆多项式缓存。单次调用仍可用 Eval(f,xs) 或 lagrange(xs,ys)，无需修改旧代码。底层模数改变后必须重新 set，旧的点值与缓存都不能继续使用。
+
+\textbf{复杂度：}建树、插值均为 $O(n\log^2 n)$。eval 时间为 $O(M(m)+M(n)\log(n+1))$，m=f.size()；M(k) 表示多项式乘法代价。树占用 $O(n\log n)$ 空间，另缓存已使用的根部逆多项式。小规模直接求值；超出根部相关乘积长度限制时采用余数树回退。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{polynomial/mtt.cpp}}
 \textbf{非 NTT 模数下的多项式}\par
@@ -4577,11 +4594,11 @@ poly Ln(const poly &f); poly Exp(const poly &f)
 \noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
-poly BM(poly a)
+poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
 
-\textbf{复杂度：}O(样本数*d)，最坏二次。
+\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4638,8 +4655,25 @@ void init(int n=0); mint C(int k,int n); mint binom(int n,int k); fac; ifac; inv
 
 \textbf{复杂度：}扩表 O(n)，表就绪查询 O(1)。
 
-\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度 n 还要小于模数，且 1..n-1 均可逆。init(n) 要求 n! 可逆，integ(f) 要求 1..f.size() 可逆；使用质数模数且次数小于模数即可满足这些条件。BM、递推求值和插值中的除数也必须可逆；合数模数下仅仅非零或取值点互异不足以保证这一点。没有 ntt 的 Sqrt/Div/Eval。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
+\TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 卷积结果长度最多 2\textasciicircum{}23，FPS 输入长度最多 2\textasciicircum{}22，Ln/Exp 长度 n 还要小于模数，且 1..n-1 均可逆。init(n) 要求 n! 可逆，integ(f) 要求 1..f.size() 可逆；使用质数模数且次数小于模数即可满足这些条件。BM、递推求值和插值中的除数也必须可逆；合数模数下仅仅非零或取值点互异不足以保证这一点。没有 ntt 的 Sqrt/Div；Eval 与 Poly\_Tree 已提供。RSPE 需要输入确实足以确定递推，通常至少给 2 倍阶数的样本，不适用于任意序列外推。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{固定点的重复求值与插值}
+\begin{lstlisting}
+Poly_Tree t;          // Empty tree.
+t.set(xs);            // Replace points and clear cached inverse.
+Poly_Tree t2(xs);     // Same as set(xs).
+auto ys=t.eval(f);    // Also available as Eval(f,xs).
+auto a=t.interpolate(ys); // Also available as lagrange(xs,ys).
+t.set();              // Clear points and cache.
+\end{lstlisting}
+\textbf{参数、效果与返回：}xs 为 n 个取值点。构造/set 建立共享乘积树，只存 $2n-1$ 个节点；n 为零时不建树。eval 返回与 xs 等长的点值，允许重复点；空多项式在各点的值均为零。interpolate 要求 ys 长度为 n，返回 n 个系数，点差必须可逆；重复点不允许用于插值。
+
+同一批 xs 反复求值时，直接保留对象调用 eval，复用乘积树与根部逆多项式；传入更长的 f 时会扩充逆多项式缓存。单次调用仍可用 Eval(f,xs) 或 lagrange(xs,ys)，无需修改旧代码。底层模数改变后必须重新 set，旧的点值与缓存都不能继续使用。
+
+\textbf{复杂度：}建树、插值均为 $O(n\log^2 n)$。eval 时间为 $O(M(m)+M(n)\log(n+1))$，m=f.size()；M(k) 表示多项式乘法代价。树占用 $O(n\log n)$ 空间，另缓存已使用的根部逆多项式。小规模直接求值；超出根部相关乘积长度限制时采用余数树回退。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{polynomial/ntt-fast.cpp}}
 \textbf{998244353 快速多项式}\par
@@ -4741,11 +4775,11 @@ poly Ln(poly f); poly Exp(poly f)
 \noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
-poly BM(poly a)
+poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
 
-\textbf{复杂度：}O(样本数*d)，最坏二次。
+\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4840,7 +4874,7 @@ poly Eval(poly f,poly xs)
 \end{lstlisting}
 \textbf{参数、效果与返回：}批量求 f(xs[i])，返回与 xs 等长，顺序不变，允许重复点。
 
-\textbf{复杂度：}保守 O((n+m) log\textasciicircum{}2(n+m+1))。
+\textbf{复杂度：}时间 $O(M(m)+M(n)\log(n+1))$；m=f.size()，n=xs.size()，M(k) 为长度 k 的多项式乘法代价。使用根部求逆与转置乘积；极长输入回退到余数树以保留变换长度上限。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4864,6 +4898,23 @@ poly S2line(int n)
 
 \TemplNote{必须先包含 \texttt{<immintrin.h>}，运行机器必须支持 AVX2；不支持时选普通 ntt.cpp。仅卷积自动检测 AVX-512F；AVX2 仍是最低运行条件，不提供纯标量回退。GCC target/optimize 选项只作用于内部内核，不会关闭 assert。AVX-512 路径已通过 C++17/20 编译和标量指令模拟对拍，当前测试机器无 AVX-512，尚无该路径的真实硬件性能数据。Inv、Exp、Sqrt 的输入长度可达 $2^{23}$；Ln 及其他接口仍按各自的中间卷积检查长度。Div 的 q、r 必须是不同对象。精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{固定点的重复求值与插值}
+\begin{lstlisting}
+Poly_Tree t;          // Empty tree.
+t.set(xs);            // Replace points and clear cached inverse.
+Poly_Tree t2(xs);     // Same as set(xs).
+auto ys=t.eval(f);    // Also available as Eval(f,xs).
+auto a=t.interpolate(ys); // Also available as lagrange(xs,ys).
+t.set();              // Clear points and cache.
+\end{lstlisting}
+\textbf{参数、效果与返回：}xs 为 n 个取值点。构造/set 建立共享乘积树，只存 $2n-1$ 个节点；n 为零时不建树。eval 返回与 xs 等长的点值，允许重复点；空多项式在各点的值均为零。interpolate 要求 ys 长度为 n，返回 n 个系数，点差必须可逆；重复点不允许用于插值。
+
+同一批 xs 反复求值时，直接保留对象调用 eval，复用乘积树与根部逆多项式；传入更长的 f 时会扩充逆多项式缓存。单次调用仍可用 Eval(f,xs) 或 lagrange(xs,ys)，无需修改旧代码。底层模数改变后必须重新 set，旧的点值与缓存都不能继续使用。
+
+\textbf{复杂度：}建树、插值均为 $O(n\log^2 n)$。eval 时间为 $O(M(m)+M(n)\log(n+1))$，m=f.size()；M(k) 表示多项式乘法代价。树占用 $O(n\log n)$ 空间，另缓存已使用的根部逆多项式。小规模直接求值；超出根部相关乘积长度限制时采用余数树回退。
+\end{minipage}\par
 \clearpage
 \subsection{\texttt{polynomial/ntt.cpp}}
 \textbf{带长除、多点求值的多项式}\par
@@ -4965,11 +5016,11 @@ poly Ln(poly f); poly Exp(poly f)
 \noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
-poly BM(poly a)
+poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，满足 a[t]+sum\_\{i=1\}\textasciicircum{}d C[i]*a[t-i]=0。实际递推系数是 -C[i]；只保证拟合已给样本。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
 
-\textbf{复杂度：}O(样本数*d)，最坏二次。
+\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -5064,7 +5115,7 @@ poly Eval(poly f,poly xs)
 \end{lstlisting}
 \textbf{参数、效果与返回：}批量求 f(xs[i])，返回与 xs 等长，顺序不变，允许重复点。
 
-\textbf{复杂度：}保守 O((n+m) log\textasciicircum{}2(n+m+1))。
+\textbf{复杂度：}时间 $O(M(m)+M(n)\log(n+1))$；m=f.size()，n=xs.size()，M(k) 为长度 k 的多项式乘法代价。使用根部求逆与转置乘积；极长输入回退到余数树以保留变换长度上限。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -5088,6 +5139,23 @@ poly S2line(int n)
 
 \TemplNote{精度由输入 vector 长度决定，想求前 n 项就先 resize(n)，不要删掉需要保留的高位零。\texttt{operator/} 是相关运算 (f/g)[i]=sum\_j f[i+j]*g[j]，不是多项式除法。形式幂级数相除要 f*Inv(g) 后截断。各多项式文件均内置模数类型和全局表，只选一份，不要再粘贴 ModInt。 不支持任意常数项的模平方根。长除前清除除数尾部多余的零。lagrange 要求互异取值点，允许零点。NTT 上限为 2\textasciicircum{}23。}
 \end{minipage}\par\vspace{0.4em}
+
+\noindent\begin{minipage}{\textwidth}
+\subsubsection*{固定点的重复求值与插值}
+\begin{lstlisting}
+Poly_Tree t;          // Empty tree.
+t.set(xs);            // Replace points and clear cached inverse.
+Poly_Tree t2(xs);     // Same as set(xs).
+auto ys=t.eval(f);    // Also available as Eval(f,xs).
+auto a=t.interpolate(ys); // Also available as lagrange(xs,ys).
+t.set();              // Clear points and cache.
+\end{lstlisting}
+\textbf{参数、效果与返回：}xs 为 n 个取值点。构造/set 建立共享乘积树，只存 $2n-1$ 个节点；n 为零时不建树。eval 返回与 xs 等长的点值，允许重复点；空多项式在各点的值均为零。interpolate 要求 ys 长度为 n，返回 n 个系数，点差必须可逆；重复点不允许用于插值。
+
+同一批 xs 反复求值时，直接保留对象调用 eval，复用乘积树与根部逆多项式；传入更长的 f 时会扩充逆多项式缓存。单次调用仍可用 Eval(f,xs) 或 lagrange(xs,ys)，无需修改旧代码。底层模数改变后必须重新 set，旧的点值与缓存都不能继续使用。
+
+\textbf{复杂度：}建树、插值均为 $O(n\log^2 n)$。eval 时间为 $O(M(m)+M(n)\log(n+1))$，m=f.size()；M(k) 表示多项式乘法代价。树占用 $O(n\log n)$ 空间，另缓存已使用的根部逆多项式。小规模直接求值；超出根部相关乘积长度限制时采用余数树回退。
+\end{minipage}\par
 \clearpage
 \section{计算几何 / geometry}
 \subsection{\texttt{geometry/geometry-2d.cpp}}
