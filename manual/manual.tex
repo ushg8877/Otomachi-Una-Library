@@ -15,7 +15,7 @@ keepspaces=true,tabsize=4,showstringspaces=false,aboveskip=0.3em,belowskip=0.3em
 \newcommand{\TemplApi}[1]{\textbf{调用概览}\par #1\par}
 \newcommand{\TemplNote}[1]{\textbf{注意事项}\par #1\par}
 \title{Otomachi Una Library\\接口参考手册}
-\author{Junlin Ye}\date{2026-09-28}
+\author{Junlin Ye}\date{2026-09-29}
 \begin{document}
 \begin{titlepage}\maketitle\thispagestyle{empty}
 \vspace{1cm}
@@ -4437,9 +4437,14 @@ mint RSPE(poly samples,ll k)
 \begin{lstlisting}
 poly lagrange(const vector<mint> &xs,const vector<mint> &ys)
 \end{lstlisting}
-\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+\textbf{参数、效果与返回：}等长 n 项，输入任意点值 $(x_i,y_i)$，返回长度恰为 n 的系数数组 f，满足 $f(x_i)=y_i$ 且次数不超过 $n-1$，末尾零系数保留。xs 不要求连续，但模意义下须两两不同；合数模数下还要求所有差值可逆。空输入返回空。要求 $n<2^{23}$。
 
-\textbf{复杂度：}O(n\textasciicircum{}2)。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，空间 $O(n\log n)$。乘积树复用于导数的多点求值和插值合并，权重用一次求逆批量计算；沿用所选模板的卷积内核。
+
+\begin{lstlisting}
+poly f=lagrange({2,5,9},{9,36,100});
+assert(f==poly({1,2,1})); // f(X)=(X+1)^2
+\end{lstlisting}
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4604,9 +4609,14 @@ mint RSPE(poly samples,ll k)
 \begin{lstlisting}
 poly lagrange(const vector<mint> &xs,const vector<mint> &ys)
 \end{lstlisting}
-\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+\textbf{参数、效果与返回：}等长 n 项，输入任意点值 $(x_i,y_i)$，返回长度恰为 n 的系数数组 f，满足 $f(x_i)=y_i$ 且次数不超过 $n-1$，末尾零系数保留。xs 不要求连续，但模意义下须两两不同；合数模数下还要求所有差值可逆。空输入返回空。要求 $n<2^{23}$。
 
-\textbf{复杂度：}O(n\textasciicircum{}2)。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，空间 $O(n\log n)$。乘积树复用于导数的多点求值和插值合并，权重用一次求逆批量计算；沿用所选模板的卷积内核。
+
+\begin{lstlisting}
+poly f=lagrange({2,5,9},{9,36,100});
+assert(f==poly({1,2,1})); // f(X)=(X+1)^2
+\end{lstlisting}
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4763,9 +4773,14 @@ mint RSPE(poly samples,ll k)
 \begin{lstlisting}
 poly lagrange(vector<mint> xs,vector<mint> ys)
 \end{lstlisting}
-\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+\textbf{参数、效果与返回：}等长 n 项，输入任意点值 $(x_i,y_i)$，返回长度恰为 n 的系数数组 f，满足 $f(x_i)=y_i$ 且次数不超过 $n-1$，末尾零系数保留。xs 不要求连续，但模意义下须两两不同；合数模数下还要求所有差值可逆。空输入返回空。要求 $n<2^{23}$。
 
-\textbf{复杂度：}O(n\textasciicircum{}2)。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，空间 $O(n\log n)$。乘积树复用于导数的多点求值和插值合并，权重用一次求逆批量计算；沿用所选模板的卷积内核。
+
+\begin{lstlisting}
+poly f=lagrange({2,5,9},{9,36,100});
+assert(f==poly({1,2,1})); // f(X)=(X+1)^2
+\end{lstlisting}
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4982,9 +4997,14 @@ mint RSPE(poly samples,ll k)
 \begin{lstlisting}
 poly lagrange(vector<mint> xs,vector<mint> ys)
 \end{lstlisting}
-\textbf{参数、效果与返回：}等长 n 项，返回次数<n 的插值多项式；xs 两两不同，允许零点。合数模数下还要求所有 xs 差值可逆。空输入返回空。
+\textbf{参数、效果与返回：}等长 n 项，输入任意点值 $(x_i,y_i)$，返回长度恰为 n 的系数数组 f，满足 $f(x_i)=y_i$ 且次数不超过 $n-1$，末尾零系数保留。xs 不要求连续，但模意义下须两两不同；合数模数下还要求所有差值可逆。空输入返回空。要求 $n<2^{23}$。
 
-\textbf{复杂度：}O(n\textasciicircum{}2)。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，空间 $O(n\log n)$。乘积树复用于导数的多点求值和插值合并，权重用一次求逆批量计算；沿用所选模板的卷积内核。
+
+\begin{lstlisting}
+poly f=lagrange({2,5,9},{9,36,100});
+assert(f==poly({1,2,1})); // f(X)=(X+1)^2
+\end{lstlisting}
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}

@@ -420,21 +420,55 @@ mint RSPE(poly f,ll x){
 }
 
 
+// Interpolate arbitrary points; return n coefficients, degree < n.
+// O(n log^2 n) time, O(n log n) space. Pairwise x differences must be units.
 poly lagrange(const vector<mint>&x,const vector<mint>&y){
-	int n=x.size();assert(y.size()==x.size());
-	poly g(n+1),f(n),q(n);g[0]=1;
-	for(int i=0;i<n;i++){
-		for(int j=i+1;j;j--)g[j]=g[j-1]-x[i]*g[j];
-		g[0]*=-x[i];
+	assert(x.size()==y.size()&&x.size()<(1u<<23));
+	int n=x.size();
+	if(!n)return{};
+	vector<poly>g(4*n);
+	auto build=[&](auto &&self,int u,int l,int r)->void{
+		if(l==r){g[u]={-x[l],1};return;}
+		int m=(l+r)>>1;
+		self(self,u*2,l,m);self(self,u*2+1,m+1,r);
+		g[u]=g[u*2]*g[u*2+1];
+	};
+	build(build,1,0,n-1);
+	// Remainder modulo a monic polynomial; no inverse of point differences.
+	auto rem=[&](poly a,const poly &b){
+		if(a.size()<b.size())return a;
+		int k=a.size()-b.size()+1;
+		poly q(a.rbegin(),a.rbegin()+k),v(b.rbegin(),b.rend());
+		v.resize(k);q=q*Inv(v);q.resize(k);
+		reverse(q.begin(),q.end());q=q*b;
+		a.resize(b.size()-1);
+		for(int i=0;i<(int)a.size();i++)a[i]-=q[i];
+		return a;
+	};
+	poly d(n),pre(n+1,1);
+	auto eval=[&](auto &&self,poly a,int u,int l,int r)->void{
+		if(r-l<32){
+			for(int i=l;i<=r;i++)d[i]=value(a,x[i]);
+			return;
+		}
+		int m=(l+r)>>1;
+		self(self,rem(a,g[u*2]),u*2,l,m);
+		self(self,rem(move(a),g[u*2+1]),u*2+1,m+1,r);
+	};
+	eval(eval,diff(g[1]),1,0,n-1);
+	// Batch inversion: w[i]=y[i]/g'(x[i]), using one modular inverse.
+	for(int i=0;i<n;i++){assert(d[i]);pre[i+1]=pre[i]*d[i];}
+	mint v=pre[n].inv();
+	for(int i=n-1;i>=0;i--){
+		mint t=v*pre[i];v*=d[i];d[i]=y[i]*t;
 	}
-	for(int i=0;i<n;i++){
-		q[n-1]=g[n];
-		for(int j=n-2;j>=0;j--)q[j]=g[j+1]+x[i]*q[j+1];
-		mint d=value(q,x[i]);assert(d);
-		mint c=y[i]/d;
-		for(int j=0;j<n;j++)f[j]+=q[j]*c;
-	}
-	return f;
+	auto solve=[&](auto &&self,int u,int l,int r)->poly{
+		if(l==r)return {d[l]};
+		int m=(l+r)>>1;
+		poly a=self(self,u*2,l,m),b=self(self,u*2+1,m+1,r);
+		return a*g[u*2+1]+b*g[u*2];
+	};
+	return solve(solve,1,0,n-1);
 }
 // end for polynomial/mtt.cpp
 /////////////////////////
