@@ -513,27 +513,240 @@ poly Eval(poly f,poly x){
 
 
 
-// Shortest order d=c.size()-1: c[0]=1, sum c[j]*a[i-j]=0 for i>=d.
-// O(n*(d+1)) time, O(d+1) space; discrepancies must be invertible.
-poly BM(const poly &a){
-	poly c{1},b{1};
-	int len=0,shift=1;
-	mint inv_d=1;
-	for(int i=0;i<(int)a.size();i++){
-		mint d=a[i];
-		for(int j=1;j<=len;j++)d+=c[j]*a[i-j];
-		if(!d){shift++;continue;}
-		bool grow=2*len<=i;
-		poly old;
-		if(grow)old=c;
-		mint v=d*inv_d;
-		if(c.size()<b.size()+shift)c.resize(b.size()+shift);
-		for(int j=0;j<(int)b.size();j++)c[j+shift]-=v*b[j];
-		if(grow){
-			len=i+1-len;b=move(old);inv_d=d.inv();shift=1;
-		}else shift++;
+struct Poly_Comp{
+	static void solve(poly &x,const poly &f,int m,int n,mint w){
+		int o=m*n;
+		if(n==1){
+			if(!w){x=f;x.resize(o);return;}
+			init(2*m-1);x.resize(m+1);
+			mint v=ifac[m-1];
+			for(int i=0;i<=m;i++){
+				x[m-i]=v*fac[m-1+i]*ifac[i];v*=w;
+			}
+			x=x*f;x.erase(x.begin(),x.begin()+m);x.resize(o);
+			return;
+		}
+		poly y(4*o),z(2*o),u(2*o);
+		for(int i=0;i<m;i++)
+			copy_n(x.begin()+i*n,n,y.begin()+2*i*n);
+		y[2*o]=1;fft(y);
+		for(int i=0;i<2*o;i++)z[i]=y[2*i]*y[2*i+1];
+		invFft(z);z[0]-=1;
+		for(int i=1;i<2*m;i++)
+			copy_n(z.begin()+i*n,n/2,z.begin()+i*(n/2));
+		z.resize(o);solve(z,f,2*m,n/2,w);
+		for(int i=0;i<2*m;i++)
+			copy_n(z.begin()+i*(n/2),n/2,u.begin()+i*n);
+		fft(u);x.resize(4*o);
+		for(int i=0;i<2*o;i++){
+			x[2*i]=y[2*i+1]*u[i];x[2*i+1]=y[2*i]*u[i];
+		}
+		invFft(x);
+		for(int i=0;i<m;i++)
+			copy_n(x.begin()+2*(i+m)*n,n,x.begin()+i*n);
+		x.resize(o);
 	}
-	c.resize(len+1);
+};
+
+// f(g(x)) mod x^n; n defaults to f.size(). g[0] may be nonzero.
+// O(k log^2 k), k=max(n,f.size()); at most 2^21 coefficients.
+poly Compose(poly f,const poly &g,int n=-1){
+	if(n<0)n=f.size();
+	assert(0<=n&&n<=(1<<21));
+	if(!n)return {};
+	mint w=g.empty()?mint(0):g[0];
+	if(!w&&f.size()>(size_t)n)f.resize(n);
+	assert(f.size()<=(1<<21));
+	if(f.empty())return poly(n);
+	if(n<=32){
+		poly x(n),y(n);
+		for(int i=(int)f.size()-1;i>=0;i--){
+			fill(y.begin(),y.end(),0);
+			for(int j=0;j<n;j++)
+				for(int k=0;k<min(n-j,(int)g.size());k++)
+					y[j+k]+=x[j]*g[k];
+			y[0]+=f[i];swap(x,y);
+		}
+		return x;
+	}
+	int k=1;
+	while(k<max(n,(int)f.size()))k<<=1;
+	poly x(k);
+	for(int i=0;i<min(n,(int)g.size());i++)x[i]=-g[i];
+	Poly_Comp::solve(x,f,1,k,w);x.resize(n);return x;
+}
+
+// g(0)=0, f(g(x))=x mod x^n; f[0]=0, f[1] and 1..n-1 invertible.
+// O(n log^2 n) time, O(n) space; n defaults to f.size().
+poly Compose_Inv(poly f,int n=-1){
+	if(n<0)n=f.size();
+	assert(0<=n&&n<=(1<<21));
+	if(!n)return {};
+	assert(f.empty()||!f[0]);
+	if(n==1)return {0};
+	assert(f.size()>1&&f[1]);
+	if(n==2)return {0,f[1].inv()};
+	f.resize(n);
+	int len=1;
+	while(len<n)len<<=1;
+	poly x(2*len),y(2*len),u(4*len),v(4*len),rt(2*len);
+	rt[0]=1;
+	for(int i=1;i<2*len;i<<=1){
+		mint w=mint(3).pow((MOD-1)/(4*i)).inv();
+		for(int j=0;j<i;j++)rt[i+j]=rt[j]*w;
+	}
+	mint w=f[1].inv(),p=-1,c=mint(2).inv();
+	for(int i=1;i<n;i++){p*=w;x[i]=f[i]*p;}
+	y[0]=1;
+	int j=1;
+	for(int i=n;i>1;j<<=1){
+		int o=(i+1)/2,m=1;
+		while(m<4*i*j)m<<=1;
+		u.assign(m,0);v.assign(m,0);
+		for(int k=0;k<j;k++){
+			copy_n(x.begin()+i*k,i,u.begin()+2*i*k);
+			copy_n(y.begin()+i*k,i,v.begin()+2*i*k);
+		}
+		u[2*i*j]=1;fft(u);fft(v);x.resize(m/2);y.resize(m/2);
+		for(int k=0;k<m/2;k++){
+			x[k]=u[2*k]*u[2*k+1];
+			mint a=u[2*k+1]*v[2*k],b=u[2*k]*v[2*k+1];
+			y[k]=(i&1)?(a+b)*c:(a-b)*rt[k]*c;
+		}
+		invFft(x);invFft(y);
+		if(4*i*j==m)x[0]-=1;
+		for(int k=1;k<2*j;k++){
+			copy_n(x.begin()+i*k,o,x.begin()+o*k);
+			copy_n(y.begin()+i*k,o,y.begin()+o*k);
+		}
+		i=o;
+	}
+	y.resize(j);reverse(y.begin(),y.end());y.resize(n);init(n-1);
+	for(int i=1;i<n;i++)y[i]*=(n-1)*inv[i];
+	reverse(y.begin(),y.end());y.resize(n-1);
+	y=Exp(Ln(move(y))*(-inv[n-1]))*w;
+	y.insert(y.begin(),0);return y;
+}
+
+
+struct BM_Work{
+	struct Mat{poly a{1},b,c,d{1};};
+	static void trim(poly &a){while(!a.empty()&&!a.back())a.pop_back();}
+	static poly high(const poly &a,int k){
+		return poly(a.begin()+min(k,(int)a.size()),a.end());
+	}
+	static void apply(const Mat &m,poly &a,poly &b){
+		int k=max({m.a.size(),m.b.size(),m.c.size(),m.d.size()});
+		if(k>64&&min(a.size(),b.size())>64){
+			int len=k+max(a.size(),b.size())-1,n=1;
+			while(n<len)n<<=1;
+			array<poly,4> f{m.a,m.b,m.c,m.d};
+			for(poly &v:f){v.resize(n);fft(v);}
+			a.resize(n);b.resize(n);fft(a);fft(b);
+			for(int i=0;i<n;i++){
+				mint x=f[0][i]*a[i]+f[1][i]*b[i];
+				b[i]=f[2][i]*a[i]+f[3][i]*b[i];a[i]=x;
+			}
+			invFft(a);invFft(b);a.resize(len);b.resize(len);
+			trim(a);trim(b);return;
+		}
+		poly x=m.a*a+m.b*b,y=m.c*a+m.d*b;
+		trim(x);trim(y);a=move(x);b=move(y);
+	}
+	static Mat mul(const Mat &x,const Mat &y){
+		int k=max({x.a.size(),x.b.size(),x.c.size(),x.d.size()});
+		int l=max({y.a.size(),y.b.size(),y.c.size(),y.d.size()});
+		if(min(k,l)>64){
+			int len=k+l-1,n=1;
+			while(n<len)n<<=1;
+			array<poly,4> a{x.a,x.b,x.c,x.d},b{y.a,y.b,y.c,y.d},c;
+			for(poly &v:a){v.resize(n);fft(v);}
+			for(poly &v:b){v.resize(n);fft(v);}
+			for(int i=0;i<4;i++){
+				c[i].resize(n);
+				for(int j=0;j<n;j++)
+					c[i][j]=a[i/2*2][j]*b[i%2][j]
+						+a[i/2*2+1][j]*b[i%2+2][j];
+				invFft(c[i]);c[i].resize(len);trim(c[i]);
+			}
+			return {move(c[0]),move(c[1]),move(c[2]),move(c[3])};
+		}
+		Mat z{x.a*y.a+x.b*y.c,x.a*y.b+x.b*y.d,
+			x.c*y.a+x.d*y.c,x.c*y.b+x.d*y.d};
+		trim(z.a);trim(z.b);trim(z.c);trim(z.d);return z;
+	}
+	static poly div(poly &a,const poly &b){
+		int n=a.size(),m=b.size(),k=n-m+1;
+		poly q(k);
+		if(min(m,k)<=32){
+			mint v=b.back().inv();
+			for(int i=k-1;i>=0;i--){
+				q[i]=a[i+m-1]*v;
+				for(int j=0;j<m;j++)a[i+j]-=q[i]*b[j];
+			}
+		}else{
+			poly x(a.rbegin(),a.rbegin()+k),y(b.rbegin(),b.rend());
+			y.resize(k);q=x*Inv(move(y));q.resize(k);
+			reverse(q.begin(),q.end());a-=q*b;
+		}
+		a.resize(m-1);trim(a);return q;
+	}
+	static void step(Mat &m,poly &a,poly &b){
+		poly q=div(a,b);swap(a,b);
+		poly x=m.a-q*m.c,y=m.b-q*m.d;
+		trim(x);trim(y);
+		m.a=move(m.c);m.b=move(m.d);m.c=move(x);m.d=move(y);
+	}
+	static Mat solve(poly a,poly b){
+		int k=(a.size()+1)/2;
+		Mat m;
+		if((int)b.size()<=k)return m;
+		if(a.size()<=64){
+			while((int)b.size()>k)step(m,a,b);
+			return m;
+		}
+		m=solve(high(a,k),high(b,k));apply(m,a,b);
+		if((int)b.size()<=k)return m;
+		step(m,a,b);
+		if((int)b.size()<=k)return m;
+		int j=2*k-(int)a.size()+1;
+		return mul(solve(high(a,j),high(b,j)),m);
+	}
+};
+
+// Shortest order d=c.size()-1: c[0]=1, sum c[j]*a[i-j]=0 for i>=d.
+// Half-GCD: O(n log^2 n). Work over a field; keep trailing zeroes.
+poly BM(const poly &a){
+	if(a.size()<=64){
+		poly c{1},b{1};
+		int len=0,shift=1;
+		mint inv_d=1;
+		for(int i=0;i<(int)a.size();i++){
+			mint d=a[i];
+			for(int j=1;j<=len;j++)d+=c[j]*a[i-j];
+			if(!d){shift++;continue;}
+			bool grow=2*len<=i;
+			poly old;
+			if(grow)old=c;
+			mint v=d*inv_d;
+			if(c.size()<b.size()+shift)c.resize(b.size()+shift);
+			for(int j=0;j<(int)b.size();j++)c[j+shift]-=v*b[j];
+			if(grow){
+				len=i+1-len;b=move(old);inv_d=d.inv();shift=1;
+			}else shift++;
+		}
+		c.resize(len+1);
+		return c;
+	}
+	poly x(a.size()+1),y(a.rbegin(),a.rend());x.back()=1;
+	BM_Work::trim(y);
+	if(y.empty())return {1};
+	auto m=BM_Work::solve(x,y);BM_Work::apply(m,x,y);
+	while(y.size()>=m.d.size())BM_Work::step(m,x,y);
+	poly c=move(m.d);
+	assert(!c.empty()&&c.back());
+	mint v=c.back().inv();reverse(c.begin(),c.end());
+	for(mint &i:c)i*=v;
 	return c;
 }
 
@@ -557,13 +770,13 @@ mint FSPE(poly F,poly G,ll t){
 }
 
 mint RSPE(poly f,ll x){
-	// find f[x] in O(n^2), note that f must be recursion
+	// Infer a recurrence, then return f[x].
+	assert(x>=0);
+	if(x<(ll)f.size())return f[x];
 	poly g=BM(f);
-	poly s(g.size()-1);
-	for(int i=0;i<(int)s.size();i++)
-		for(int j=0;j<=i&&j<(int)f.size();j++)
-			s[i]+=f[j]*g[i-j];
-	return FSPE(s,g,x);
+	f.resize(g.size()-1);
+	poly s=f*g;s.resize(g.size()-1);
+	return FSPE(move(s),move(g),x);
 }
 
 // Interpolate arbitrary points; return n coefficients, degree < n.

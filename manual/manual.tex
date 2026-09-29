@@ -4403,13 +4403,38 @@ poly Ln(const poly &f); poly Exp(const poly &f)
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
+\textbf{多项式复合与复合逆}
+\begin{lstlisting}
+poly Compose(poly f,const poly &g,int n=-1);
+poly Compose_Inv(poly f,int n=-1);
+auto h=Compose({1,2,3},{4,1},4); // {57,26,3,0}
+auto r=Compose_Inv({0,1,1},5);  // {0,1,-1,2,-5}
+// Compose({0,1,1},r,5) == poly({0,1,0,0,0})
+\end{lstlisting}
+\textbf{Compose：}返回 $f(g(x))\bmod x^n$ 的 n 个系数，n 默认取 f.size()。
+允许 g[0] 非零，空 g 按零多项式处理。n=0 返回空，空 f 返回 n 个零。
+g[0]=0 时自动忽略 f 的 n 次及以上项；否则完整保留 f 的系数。
+显式 n 不能改变输入 f 所表示的多项式，缺少的高次系数均视为零。
+
+\textbf{Compose\_Inv：}返回 $f(g(x))=x\bmod x^n$ 且 g[0]=0 的 g，
+n 默认取 f.size()；n=0 返回空，n=1 返回 \{0\}。
+要求 f[0]=0，n>=2 时还要求 f[1] 可逆，计算中的整数 $1,\ldots,n-1$ 也须可逆。
+只读取 f 的前 n 项，缺少的系数补零。
+
+\textbf{规模与复杂度：}取 $k=\max(n,\lvert f\rvert)$，g[0]=0 时先截断 f。
+本文件要求 $k\le 2^{20}$，复合逆要求 $n\le 2^{20}$。
+复合时间 $O(k\log^2 k)$、空间 $O(k\log k)$；
+复合逆时间 $O(n\log^2 n)$、空间 $O(n)$。
+任意模数版本中，g[0] 非零时还要求 $(2\lceil k\rceil_2-1)!$ 可逆，$\lceil k\rceil_2$ 为不小于 k 的最小二次幂。使用大于该界的质数模数即可。
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
 poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。长序列使用 Half-GCD，短序列直接 BM。要求在域上计算，任意模数版本请使用质数模数。样本不足时最短递推可能不唯一，返回系数可能与旧版不同，但阶数最短且满足全部已有样本。
 
-\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，额外空间 $O(n)$。NTT 版本合并矩阵运算中的变换，复用频域结果。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4427,9 +4452,9 @@ mint FSPE(poly F,poly G,ll k)
 \begin{lstlisting}
 mint RSPE(poly samples,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项，要求 k>=0；k 在输入范围内时直接返回。真实递推阶数 d 时通常至少给 2d 项，不能任意外推。分子由截断卷积构造，不再使用二重循环。
 
-\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+\textbf{复杂度：}时间 $O(n\log^2 n+d\log(d+1)\log(k+1))$。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4592,13 +4617,38 @@ poly Ln(const poly &f); poly Exp(const poly &f)
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
+\textbf{多项式复合与复合逆}
+\begin{lstlisting}
+poly Compose(poly f,const poly &g,int n=-1);
+poly Compose_Inv(poly f,int n=-1);
+auto h=Compose({1,2,3},{4,1},4); // {57,26,3,0}
+auto r=Compose_Inv({0,1,1},5);  // {0,1,-1,2,-5}
+// Compose({0,1,1},r,5) == poly({0,1,0,0,0})
+\end{lstlisting}
+\textbf{Compose：}返回 $f(g(x))\bmod x^n$ 的 n 个系数，n 默认取 f.size()。
+允许 g[0] 非零，空 g 按零多项式处理。n=0 返回空，空 f 返回 n 个零。
+g[0]=0 时自动忽略 f 的 n 次及以上项；否则完整保留 f 的系数。
+显式 n 不能改变输入 f 所表示的多项式，缺少的高次系数均视为零。
+
+\textbf{Compose\_Inv：}返回 $f(g(x))=x\bmod x^n$ 且 g[0]=0 的 g，
+n 默认取 f.size()；n=0 返回空，n=1 返回 \{0\}。
+要求 f[0]=0，n>=2 时还要求 f[1] 可逆，计算中的整数 $1,\ldots,n-1$ 也须可逆。
+只读取 f 的前 n 项，缺少的系数补零。
+
+\textbf{规模与复杂度：}取 $k=\max(n,\lvert f\rvert)$，g[0]=0 时先截断 f。
+本文件要求 $k\le 2^{20}$，复合逆要求 $n\le 2^{20}$。
+复合时间 $O(k\log^2 k)$、空间 $O(k\log k)$；
+复合逆时间 $O(n\log^2 n)$、空间 $O(n)$。
+任意模数版本中，g[0] 非零时还要求 $(2\lceil k\rceil_2-1)!$ 可逆，$\lceil k\rceil_2$ 为不小于 k 的最小二次幂。使用大于该界的质数模数即可。
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
 poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。长序列使用 Half-GCD，短序列直接 BM。要求在域上计算，任意模数版本请使用质数模数。样本不足时最短递推可能不唯一，返回系数可能与旧版不同，但阶数最短且满足全部已有样本。
 
-\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，额外空间 $O(n)$。NTT 版本合并矩阵运算中的变换，复用频域结果。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4616,9 +4666,9 @@ mint FSPE(poly F,poly G,ll k)
 \begin{lstlisting}
 mint RSPE(poly samples,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项，要求 k>=0；k 在输入范围内时直接返回。真实递推阶数 d 时通常至少给 2d 项，不能任意外推。分子由截断卷积构造，不再使用二重循环。
 
-\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+\textbf{复杂度：}时间 $O(n\log^2 n+d\log(d+1)\log(k+1))$。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4773,13 +4823,38 @@ poly Ln(poly f); poly Exp(poly f)
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
+\textbf{多项式复合与复合逆}
+\begin{lstlisting}
+poly Compose(poly f,const poly &g,int n=-1);
+poly Compose_Inv(poly f,int n=-1);
+auto h=Compose({1,2,3},{4,1},4); // {57,26,3,0}
+auto r=Compose_Inv({0,1,1},5);  // {0,1,-1,2,-5}
+// Compose({0,1,1},r,5) == poly({0,1,0,0,0})
+\end{lstlisting}
+\textbf{Compose：}返回 $f(g(x))\bmod x^n$ 的 n 个系数，n 默认取 f.size()。
+允许 g[0] 非零，空 g 按零多项式处理。n=0 返回空，空 f 返回 n 个零。
+g[0]=0 时自动忽略 f 的 n 次及以上项；否则完整保留 f 的系数。
+显式 n 不能改变输入 f 所表示的多项式，缺少的高次系数均视为零。
+
+\textbf{Compose\_Inv：}返回 $f(g(x))=x\bmod x^n$ 且 g[0]=0 的 g，
+n 默认取 f.size()；n=0 返回空，n=1 返回 \{0\}。
+要求 f[0]=0，n>=2 时还要求 f[1] 可逆，计算中的整数 $1,\ldots,n-1$ 也须可逆。
+只读取 f 的前 n 项，缺少的系数补零。
+
+\textbf{规模与复杂度：}取 $k=\max(n,\lvert f\rvert)$，g[0]=0 时先截断 f。
+本文件要求 $k\le 2^{21}$，复合逆要求 $n\le 2^{21}$。
+复合时间 $O(k\log^2 k)$、空间 $O(k\log k)$；
+复合逆时间 $O(n\log^2 n)$、空间 $O(n)$。
+NTT 版本使用成对频域乘积，避免每层重复进行完整卷积。
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
 poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。长序列使用 Half-GCD，短序列直接 BM。要求在域上计算，任意模数版本请使用质数模数。样本不足时最短递推可能不唯一，返回系数可能与旧版不同，但阶数最短且满足全部已有样本。
 
-\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，额外空间 $O(n)$。NTT 版本合并矩阵运算中的变换，复用频域结果。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -4797,9 +4872,9 @@ mint FSPE(poly F,poly G,ll k)
 \begin{lstlisting}
 mint RSPE(poly samples,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项，要求 k>=0；k 在输入范围内时直接返回。真实递推阶数 d 时通常至少给 2d 项，不能任意外推。分子由截断卷积构造，不再使用二重循环。
 
-\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+\textbf{复杂度：}时间 $O(n\log^2 n+d\log(d+1)\log(k+1))$。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -5014,13 +5089,38 @@ poly Ln(poly f); poly Exp(poly f)
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
+\textbf{多项式复合与复合逆}
+\begin{lstlisting}
+poly Compose(poly f,const poly &g,int n=-1);
+poly Compose_Inv(poly f,int n=-1);
+auto h=Compose({1,2,3},{4,1},4); // {57,26,3,0}
+auto r=Compose_Inv({0,1,1},5);  // {0,1,-1,2,-5}
+// Compose({0,1,1},r,5) == poly({0,1,0,0,0})
+\end{lstlisting}
+\textbf{Compose：}返回 $f(g(x))\bmod x^n$ 的 n 个系数，n 默认取 f.size()。
+允许 g[0] 非零，空 g 按零多项式处理。n=0 返回空，空 f 返回 n 个零。
+g[0]=0 时自动忽略 f 的 n 次及以上项；否则完整保留 f 的系数。
+显式 n 不能改变输入 f 所表示的多项式，缺少的高次系数均视为零。
+
+\textbf{Compose\_Inv：}返回 $f(g(x))=x\bmod x^n$ 且 g[0]=0 的 g，
+n 默认取 f.size()；n=0 返回空，n=1 返回 \{0\}。
+要求 f[0]=0，n>=2 时还要求 f[1] 可逆，计算中的整数 $1,\ldots,n-1$ 也须可逆。
+只读取 f 的前 n 项，缺少的系数补零。
+
+\textbf{规模与复杂度：}取 $k=\max(n,\lvert f\rvert)$，g[0]=0 时先截断 f。
+本文件要求 $k\le 2^{21}$，复合逆要求 $n\le 2^{21}$。
+复合时间 $O(k\log^2 k)$、空间 $O(k\log k)$；
+复合逆时间 $O(n\log^2 n)$、空间 $O(n)$。
+NTT 版本使用成对频域乘积，避免每层重复进行完整卷积。
+\end{minipage}\par\vspace{0.4em}
+\noindent\begin{minipage}{\textwidth}
 \textbf{9. 声明 / 调用形式}
 \begin{lstlisting}
 poly BM(const poly &a)
 \end{lstlisting}
-\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。直接在系数数组上更新，仅在阶数增加时备份旧数组和更新差值的逆元。
+\textbf{参数、效果与返回：}返回 C[0]=1 的最短递推分母，阶数 d=C.size()-1，满足 $a_t+\sum_{i=1}^d C_i a_{t-i}=0$（$t\ge d$）。实际递推系数是 -C[i]；只保证拟合已给样本。空序列与全零序列返回 \{1\}。末尾零系数也表示阶数，不能删去。长序列使用 Half-GCD，短序列直接 BM。要求在域上计算，任意模数版本请使用质数模数。样本不足时最短递推可能不唯一，返回系数可能与旧版不同，但阶数最短且满足全部已有样本。
 
-\textbf{复杂度：}时间 $O(n(d+1))$，额外空间 $O(d+1)$；最坏二次。
+\textbf{复杂度：}时间 $O(n\log^2 n)$，额外空间 $O(n)$。NTT 版本合并矩阵运算中的变换，复用频域结果。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
@@ -5038,9 +5138,9 @@ mint FSPE(poly F,poly G,ll k)
 \begin{lstlisting}
 mint RSPE(poly samples,ll k)
 \end{lstlisting}
-\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项；真实递推阶数 d 时通常至少给 2d 项，不能任意外推。
+\textbf{参数、效果与返回：}推断递推后求 0 起第 k 项，要求 k>=0；k 在输入范围内时直接返回。真实递推阶数 d 时通常至少给 2d 项，不能任意外推。分子由截断卷积构造，不再使用二重循环。
 
-\textbf{复杂度：}BM 代价加 O(d log(d+1) log(k+1))。
+\textbf{复杂度：}时间 $O(n\log^2 n+d\log(d+1)\log(k+1))$。
 
 \end{minipage}\par\vspace{0.4em}
 \noindent\begin{minipage}{\textwidth}
