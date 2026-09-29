@@ -19,6 +19,22 @@ vector<T> vrange(T l,T r){
 	for(size_t i=1;i<a.size();i++)a[i]=a[i-1]+1;
 	return a;
 }
+// Return {f(l),...,f(r)}; inclusive, in order, without a temporary range.
+template<typename T,typename F>
+auto vrange(T l,T r,F f){
+	static_assert(is_integral_v<T>&&sizeof(T)<=8&&!is_same_v<T,bool>);
+	using U=decay_t<decltype(f((const T&)l))>;
+	assert(l<=r);
+	__int128 n=(__int128)r-l+1;
+	vector<U> a;
+	assert(n<=a.max_size());a.reserve((size_t)n);
+	for(;;){
+		const T x=l;a.push_back(f(x));
+		if(l==r)break;
+		++l;
+	}
+	return a;
+}
 // Concatenate two vectors; O(a.size()+b.size()).
 template<typename T>
 vector<T> vcat(vector<T> a,const vector<T> &b){

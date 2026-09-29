@@ -706,6 +706,35 @@ mint RSPE(poly f,ll x){
 poly lagrange(const vector<mint>&x,const vector<mint>&y){
 	return Poly_Tree(x).interpolate(y);
 }
+// Product of all factors; an empty list returns {1}.
+// Merge shortest first; pass move(a) to avoid copying the input.
+poly Product(vector<poly> a){
+	using T=poly::value_type;
+	using P=pair<size_t,int>;
+	assert(a.size()<=INT_MAX);
+	priority_queue<P,vector<P>,greater<P>> q;
+	T c=1;
+	size_t n=1;
+	for(int i=0;i<(int)a.size();i++){
+		if(a[i].empty())return {};
+		assert(a[i].size()-1<=poly().max_size()-n);
+		n+=a[i].size()-1;
+		if(a[i].size()==1)c*=a[i][0];
+		else q.push({a[i].size(),i});
+	}
+	if(!c)return poly(n);
+	if(q.empty())return {c};
+	while(q.size()>1){
+		int u=q.top().second;q.pop();
+		int v=q.top().second;q.pop();
+		a[u]=move(a[u])*move(a[v]);poly().swap(a[v]);
+		q.push({a[u].size(),u});
+	}
+	poly &f=a[q.top().second];
+	if(c!=T(1))for(T &x:f)x*=c;
+	return move(f);
+}
+
 // end for polynomial/mtt.cpp
 /////////////////////////
 // !!!!! Call mint::setM(mod) before creating values; changing mod
